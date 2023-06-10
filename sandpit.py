@@ -35,17 +35,25 @@ bodytable = pd.read_html(str(body))
 
 
 scorecard = soup.find("div", {"class": "sc-jrsJCI fFicEV"})
+scorecard2 = soup.find("div", {"class": "c5jfdg-2 ihUGeK"})
 
-t1 = soup.find("div", {"class": "sc-jrsJCI glcFNO"})
+divs = scorecard2.find_all('div',{"class": "sc-jrsJCI zcQYy sc-1x5e4rc-0 dSIIez"})
+spans = scorecard2.find_all('span')
 
-scorecard = body.find("div", {"class": "sc-jrsJCI fFicEV"})
+df1 = pd.DataFrame(columns=['batter','how_out','R','B','4s','6s','SR'])
 
-t1 = scorecard.find("div", {"class": "c5jfdg-0 fEQKQo"})
+for i in range(1,len(divs)-1):
+    data=[]
+    # spans = divs[i].find_all('span')#, recursive=False)
+    # spans = divs[i].select('span:not(.sc-jrsJCI.GABnk.sc-1x5e4rc-0.dBWdOW span)')
+    spans = divs[i].select('span:not(.sc-jrsJCI.hXclEb span)')
+    for span in spans:
+        # print(span.text)
+        data.append(span.text)
+    df1.loc[i-1] = data
+    # print(div)
 
 
-
-# can only get 1st innings batting team like this. can't access 2nd innings yet...
-battingTeamName = t1.find("span", {"class": "sc-jrsJCI ktPSBm"}).get_text()
 
 
 
@@ -80,60 +88,6 @@ soup = bs.BeautifulSoup(page_source, 'lxml')
 
 driver.close()
 
-
-
-
-
-
-
-url = 'https://www.playhq.com/cricket-australia/org/adelaide-turf-cricket-association/mens-senior-competitions-summer-202223/senior-men-isc-teamwear-lo-division-1/game-centre/bd01fb60'
-
-req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-
-source = urllib.request.urlopen(req).read()
-
-soup = bs.BeautifulSoup(source,'xml')
-
-# title of the page
-print(soup.title)
-
-# get attributes:
-print(soup.title.name)
-
-# get values:
-print(soup.title.string)
-
-# beginning navigation:
-print(soup.title.parent.name)
-
-# getting specific values:
-print(soup.p)
-
-print(soup.find_all('p'))
-
-for paragraph in soup.find_all('p'):
-    print(paragraph.string)
-    print(str(paragraph.text))
-
-for url in soup.find_all('a'):
-    print(url.get('href'))
-
-print(soup.get_text())
-
-
-
-
-body = soup.find('body')
-
-body.find('div')
-
-
-scorecard = body.find("div", {"class": "sc-jrsJCI fFicEV"})
-
-t1 = scorecard.find("div", {"class": "c5jfdg-0 fEQKQo"})
-
-# can only get 1st innings batting team like this. can't access 2nd innings yet...
-battingTeamName = t1.find("span", {"class": "sc-jrsJCI ktPSBm"}).get_text()
 
 
 
