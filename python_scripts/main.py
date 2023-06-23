@@ -1,3 +1,4 @@
+import os
 import python_scripts.scrape_scorecard
 
 # maybe put all this into a function that pauses running when the excel spreadsheet is open
@@ -10,7 +11,8 @@ url = "https://www.playhq.com/cricket-australia/org/adelaide-turf-cricket-associ
 # scrape scorecard (return multiple tables I guess...)
 scrape_scorecard(url)
 
-# export to excel for validation/modification
+# open for validation/modification
+os.system('code -r ./data/test1.md')
 
 # open excel file for validation/modification
 
