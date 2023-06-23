@@ -8,13 +8,15 @@
 //*[@id="root"]/section/main/div/div/div[1]/section/section[2]
 /div[3]/div[4]/div[1]/div[2]/div/div[2]/div/span[1]
 
-innings of: //*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[1]/div[1]/div/div[1]/span
+innings of: 
+//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[1]/div[1]/div/div[1]/span
 
 
 batter i name: 
 //*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[1]/div[2]/div/div[{i+1}]/div/span[1]
 
-batter i how out type 1: //*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[1]/div[2]/div/div[{i+1}]/div/span[2]/div/span[1]
+batter i how out type 1: 
+//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[1]/div[2]/div/div[{i+1}]/div/span[2]/div/span[1]
 batter i how out type 2: 
 //*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[1]/div[2]/div/div[{i+1}]/div/span[2]/span
 

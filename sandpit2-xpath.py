@@ -7,7 +7,6 @@ soup = BeautifulSoup(f.read(), 'lxml')
 
 print(soup.head)
 
-soup.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div/span[2]/text()')
 
 
 dom = lxml.etree.HTML(str(soup))
