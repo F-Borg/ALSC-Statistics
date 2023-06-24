@@ -6,6 +6,7 @@ import re
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import lxml
+import os
 
 # def scrape_scorecard(url):
 #     """
@@ -22,9 +23,9 @@ page_source = driver.page_source
 soup = BeautifulSoup(page_source, 'lxml')
 dom = lxml.etree.HTML(str(soup))
 
-####################################################################################
+#########################################################################################################################
 # Match info
-####################################################################################
+#########################################################################################################################
 # NOT DONE:
 # captain, wicketkeeper
 # 2-day games
@@ -39,6 +40,11 @@ mi_date = re.split(', ',head.xpath('div[2]/span[2]/div/span/text()')[0])[2]
 # mi_date_day_1
 # mi_date_day_2
 # mi_num_days
+if (re.split(' ',mi_date)[1] in ['Sep','Oct','Nov','Dec']):
+    mi_season = f"{int(re.split(' ',mi_date)[2])-2000}-{int(re.split(' ',mi_date)[2])-1999}"
+else:
+    mi_season = f"{int(re.split(' ',mi_date)[2])-2001}-{int(re.split(' ',mi_date)[2])-2000}"
+
 mi_venue = head.xpath('div[2]/span[3]/span/a/text()')[0]
 
 # opponent
@@ -70,83 +76,75 @@ mi_second_innings_team = re.split(' 1st Innings',second_innings)[0]
 
 
 
-####################################################################################
-# First Innings Scorecard
-####################################################################################
 
-# Get number of players
-# -3 because column names, extras, and total are all divs
-num_players = len(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[1]/div[2]/div/*'))-3
+#########################################################################################################################
+# Create directories for markdown tables
+#########################################################################################################################
+os.mkdir(f'data/{mi_season}')
+os.mkdir(f'data/{mi_season}/{mi_grade}')
+os.mkdir(f'data/{mi_season}/{mi_grade}/{mi_round}')
 
-# get batting scorecard - ignore strike rate from playhq
-scorecard=dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[1]/div[2]/div/*')
-scorecard_df = pd.DataFrame(columns=['batter','how_out','R','B','4s','6s'])
-for i in range(1,num_players+1):
-    # initiate row
-    data=[]
-    # name 
-    data.append(scorecard[i].xpath('div/span[1]/text()')[0])
-    # how out
-    if len(scorecard[i].xpath('div/span[2]/span/text()'))>0: 
-        how_out = scorecard[i].xpath('div/span[2]/span/text()')
-    elif len(scorecard[i].xpath('div/span[2]/div/span[1]/text()'))>0: 
-        how_out = [scorecard[i].xpath('div/span[2]/div/span[1]/text()')[0] + ' ' + scorecard[i].xpath('div/span[2]/div/span[2]/text()')[0]]
-    elif len(scorecard[i].xpath('div/span[2]/text()'))>0:
-        how_out = scorecard[i].xpath('div/span[2]/text()')
-    else:
-        how_out = ['did not bat']
-    data.append(how_out[0])
-    # batter 1 runs, bf, 4s, 6s
-    data.append(scorecard[i].xpath('span[1]/text()')[0])
-    data.append(scorecard[i].xpath('span[2]/text()')[0])
-    data.append(scorecard[i].xpath('span[3]/text()')[0])
-    data.append(scorecard[i].xpath('span[4]/text()')[0])
-    scorecard_df.loc[i-1] = data
+game_dir = f'data/{mi_season}/{mi_grade}/{mi_round}'
 
+num_innings = len(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[3]/*'))
 
-# FOW:
-dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div/span[2]/text()')
+for ii in range(1,num_innings+1):
+    #########################################################################################################################
+    # Batting Scorecard
+    #########################################################################################################################
+    # -3 because column names, extras, and total are all divs
+    num_players = len(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[1]/div[2]/div/*'))-3
+    # get batting scorecard - ignore strike rate from playhq
+    scorecard=dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[1]/div[2]/div/*')
+    batting_df = pd.DataFrame(columns=['batter','how_out','R','B','4s','6s'])
+    for i in range(1,num_players+1):
+        # initiate row
+        data=[]
+        # name 
+        data.append(scorecard[i].xpath('div/span[1]/text()')[0])
+        # how out
+        if len(scorecard[i].xpath('div/span[2]/span/text()'))>0: 
+            how_out = scorecard[i].xpath('div/span[2]/span/text()')
+        elif len(scorecard[i].xpath('div/span[2]/div/span[1]/text()'))>0: 
+            how_out = [scorecard[i].xpath('div/span[2]/div/span[1]/text()')[0] + ' ' + scorecard[i].xpath('div/span[2]/div/span[2]/text()')[0]]
+        elif len(scorecard[i].xpath('div/span[2]/text()'))>0:
+            how_out = scorecard[i].xpath('div/span[2]/text()')
+        else:
+            how_out = ['did not bat']
+        data.append(how_out[0])
+        # batter 1 runs, bf, 4s, 6s
+        data.append(scorecard[i].xpath('span[1]/text()')[0])
+        data.append(scorecard[i].xpath('span[2]/text()')[0])
+        data.append(scorecard[i].xpath('span[3]/text()')[0])
+        data.append(scorecard[i].xpath('span[4]/text()')[0])
+        batting_df.loc[i-1] = data
+    # FOW:
+    fow = dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div/span[2]/text()')
+    # Write scorecard to file
+    sc = batting_df.to_markdown()
+    f=open(f'{game_dir}/innings_{ii}_batting.md','w')
+    f.write(sc)
+    f.close()
+    # temp = pd.read_table('data/test1.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
 
-
-
-
-
-
-page_title = soup.title.text
-# 'Kilburn v Adelaide Lutheran, Summer 2022/23, R2 - Game Centre | PlayHQ'
-text1 = re.split(', ',page_title)
-teams = re.split(' v ',text1[0])
-if teams[0] == 'Adelaide Lutheran':
-    opponent = teams[1]
-else :
-    opponent = teams[0]
-
-year = re.split(' ',text1[1])[1]
-
-round = re.split(' ',text1[2])[0]
-
-venue = soup.find("a", {"class": "sc-bqGHjH sc-1swl5w-19 lnVPQZ eMQkmb"}).text
-# 'Blair Athol Reserve / Blair Athol Reserve - Main Oval'
-
-date_text = soup.find("span", {"class": "sc-bqGHjH cUXLAP"}).text
-# '12:30 PM, Saturday, 22 Oct 2022'
-date_day_1 = re.split(', ',date_text)[2]
-
-grade_text = soup.find("a", {"class": "sc-1swl5w-2 FHMNq"}).text
-# '< ISC Teamwear LO Division 1, Round 2'
-
-toss_text = soup.find("span", {"class": "sc-jrsJCI gXUjpw"}).text
-# 'Adelaide Lutheran won the toss and elected to bat'
+    #########################################################################################################################
+    # Bowling Scorecard
+    #########################################################################################################################
+    num_bowlers = 
+    bowling_df = pd.DataFrame(columns=['bowler','O','M','R','W','Wd','NB'])
 
 
 
-
-
-
-
-# Second Innings
-second_innings_button = driver.find_element(By.XPATH, '//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[3]/button[2]')
-second_innings_button.click()
+    #########################################################################################################################
+    # Load Next Innings
+    #########################################################################################################################
+    if ii < num_innings:
+        next_innings_button = driver.find_element(By.XPATH, f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[3]/button[{ii+1}]')
+        next_innings_button.click()
+        time.sleep(1)
+        page_source = driver.page_source
+        soup = BeautifulSoup(page_source, 'lxml')
+        dom = lxml.etree.HTML(str(soup))
 
 
 
