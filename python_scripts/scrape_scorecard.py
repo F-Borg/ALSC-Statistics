@@ -126,15 +126,31 @@ for ii in range(1,num_innings+1):
     f.write(sc)
     f.close()
     # temp = pd.read_table('data/test1.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
-
     #########################################################################################################################
     # Bowling Scorecard
     #########################################################################################################################
-    num_bowlers = 
-    bowling_df = pd.DataFrame(columns=['bowler','O','M','R','W','Wd','NB'])
-
-
-
+    # need to add 4's and 6's manually
+    num_bowlers = len(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[3]/div[2]/div/*'))-1 # -1 for the heading row
+    bowling_sc = dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[3]/div[2]/div/*')
+    bowling_df = pd.DataFrame(columns=['bowler','O','M','R','W','Wd','Nb','_4s','_6s'])
+    for i in range(1,num_bowlers+1):
+        # initiate row
+        data=[]
+        data.append(bowling_sc[i].xpath('span[1]/text()')[0])
+        data.append(bowling_sc[i].xpath('span[2]/text()')[0])
+        data.append(bowling_sc[i].xpath('span[3]/text()')[0])
+        data.append(bowling_sc[i].xpath('span[4]/text()')[0])
+        data.append(bowling_sc[i].xpath('span[5]/text()')[0])
+        data.append(bowling_sc[i].xpath('span[7]/text()')[0])
+        data.append(bowling_sc[i].xpath('span[8]/text()')[0])
+        data.append(0) #4s
+        data.append(0) #6s
+        bowling_df.loc[i-1] = data
+    # Write scorecard to file
+    sc = bowling_df.to_markdown()
+    f=open(f'{game_dir}/innings_{ii}_bowling.md','w')
+    f.write(sc)
+    f.close()
     #########################################################################################################################
     # Load Next Innings
     #########################################################################################################################
