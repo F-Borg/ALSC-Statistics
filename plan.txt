@@ -11,23 +11,25 @@ Open source software:
 ###############################################################################
 #             0.1 - pilot
 ###############################################################################
-	scrape a playhq scorecard web page
-	
-	output for validation (either excel or VSCode)
-		- editable version
+	DONE - scrape a playhq scorecard web page
+	DONE - output for validation
+		- editable version from vscode
+		- markdown in data/...
 
 ###############################################################################
 #             0.2 - base tables
 ###############################################################################
-	import all tables to postgres from MS Access
+	DONE - import all tables to postgres from MS Access
+	wrangle scraped data into output format
 	export python tables into postgres
-    auto update player list with new players
-	generate new player id for new player
-		- handle private players manually
+    alert for new players so that they can be entered manually
+		- need to handle order that they first played for the club
+	private players can be dealt with in the markdowns
 	auto generate innings id, match id, season id, whatever the other ones are
 		- need to extract date for this
+		- ids do not need to be ordered - we have date & grade for that
 
-               
+
 ###############################################################################
 #             0.3 - calculated tables
 ###############################################################################

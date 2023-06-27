@@ -1,0 +1,8 @@
+py -m pip install beautifulsoup4
+py -m pip install lxml
+py -m pip install pandas
+py -m pip install selenium
+py -m pip install psycopg2
+py -m pip install tabulate
+py -m pip install sqlalchemy
+py -m pip install openpyxl
