@@ -28,11 +28,14 @@ def scrape_scorecard(url):
     soup = BeautifulSoup(page_source, 'lxml')
     dom = lxml.etree.HTML(str(soup))
 
+    # setup - default value
+    mi_captain = 'ERROR'
+
     #########################################################################################################################
     # Match info
     #########################################################################################################################
     # NOT DONE:
-    # captain, wicketkeeper
+    # wicketkeeper
     # draws and outright wins
 
     head = dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[1]')[0]
@@ -132,8 +135,14 @@ def scrape_scorecard(url):
             data.append(scorecard[i].xpath('span[3]/text()')[0])
             data.append(scorecard[i].xpath('span[4]/text()')[0])
             batting_df.loc[i-1] = data
+
+            if '(c)' in data[0] & 'Adelaide Lutheran' in innings[ii-1]:
+                mi_captain = data[0].replace(' (c)','')
+
         # FOW
-        fow = dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div/span[2]/text()')
+        # fow = dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div/span[2]/text()')
+        # Extras
+        
         # Write scorecard to file
         sc = batting_df.to_markdown()
         f=open(f'{game_dir}/innings_{ii}_batting.md','w')
@@ -146,7 +155,7 @@ def scrape_scorecard(url):
         # need to add 4's and 6's manually
         num_bowlers = len(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div[2]/div/*'))-1 # -1 for the heading row
         bowling_sc = dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div[2]/div/*')
-        bowling_df = pd.DataFrame(columns=['bowler','O','M','R','W','Wd','Nb','_4s','_6s'])
+        bowling_df = pd.DataFrame(columns=['bowler','O','M','R','W','Wd','Nb','_4s','_6s','high_over','high_over_2'])
         for i in range(1,num_bowlers+1):
             # initiate row
             data=[]
@@ -159,6 +168,8 @@ def scrape_scorecard(url):
             data.append(bowling_sc[i].xpath('span[8]/text()')[0])
             data.append(0) #4s
             data.append(0) #6s
+            data.append(0) #High Over
+            data.append(0) #2nd High Over
             bowling_df.loc[i-1] = data
         # Write scorecard to file
         sc = bowling_df.to_markdown()
@@ -193,6 +204,7 @@ def scrape_scorecard(url):
         'venue' 		: mi_venue,
         'opponent' 		: opponent,
         'winner' 	    : mi_winner,
+        'captain'       : mi_captain,
         'game_dir'		: game_dir
         }
 
