@@ -20,14 +20,14 @@ Open source software:
 #             0.2 - base tables
 ###############################################################################
 	DONE - import all tables to postgres from MS Access
-	wrangle scraped data into output format
+	DONE - wrangle scraped data into output format
 	export python tables into postgres
     alert for new players so that they can be entered manually
 		- need to handle order that they first played for the club
 	private players can be dealt with in the markdowns
-	auto generate innings id, match id, season id, whatever the other ones are
-		- need to extract date for this
+	auto generate innings id, match id
 		- ids do not need to be ordered - we have date & grade for that
+		- input season manually
 
 
 ###############################################################################

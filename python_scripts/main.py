@@ -18,6 +18,8 @@ url = "https://www.playhq.com/cricket-australia/org/adelaide-turf-cricket-associ
 
 # scrape scorecard (return multiple tables I guess...)
 match_info = ss.scrape_scorecard(url)
+# match_info = {'season': '22-23', 'grade': 'ISC Teamwear LO Division 1', 'round': '2', 'num_days': 1, 'date_day_1': '22 Oct 2022', 'date_day_2': '', 'num_innings': 2, 'innings_list': ['Adelaide Lutheran 1st Innings', 'Kilburn 1st Innings'], 'venue': 'Blair Athol Reserve / Blair Athol Reserve - Main Oval', 'opponent': 'Kilburn', 'winner': 'Kilburn', 'captain': 'Finley Borgas', 'game_dir': 'data/22-23/ISC Teamwear LO Division 1/Rnd_2'}
+
 
 # open for validation/modification
 # os.system('code -r ./data/test1.md')

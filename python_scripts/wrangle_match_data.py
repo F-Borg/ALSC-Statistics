@@ -4,32 +4,32 @@ import re
 
 
 def get_how_out(how_out_str):
-        if re.search('c\&b:',how_out_str):
-            return 'c & b'
-        elif re.search('^c:',how_out_str):
-            return 'caught'
-        elif re.search('^b:',how_out_str):
-            return 'bowled'
-        elif re.search('did not bat',how_out_str):
-            return 'DNB'
-        elif re.search('not out',how_out_str):
-            return 'Not Out'
-        elif re.search('^lbw:',how_out_str):
-            return 'LBW'
-        elif re.search('run out',how_out_str):
-            return 'Run Out'
-        elif re.search('stumped',how_out_str):
-            return 'Stumped'
-        elif re.search('absent out',how_out_str):
-            return 'Absent Out'
-        elif re.search('retired hurt',how_out_str):
-            return 'Retired Hurt'
-        elif re.search('retired',how_out_str):
-            return 'Retired'
-        elif re.search('hit wicket',how_out_str):
-            return 'Hit Wicket'
-        else:
-            raise Exception(f"Unknown dismissal method - batting posn {j+1}")
+    if re.search('c\&b:',how_out_str):
+        return 'c & b'
+    elif re.search('^c:',how_out_str):
+        return 'caught'
+    elif re.search('^b:',how_out_str):
+        return 'bowled'
+    elif re.search('did not bat',how_out_str):
+        return 'DNB'
+    elif re.search('not out',how_out_str):
+        return 'Not Out'
+    elif re.search('^lbw:',how_out_str):
+        return 'LBW'
+    elif re.search('run out',how_out_str):
+        return 'Run Out'
+    elif re.search('stumped',how_out_str):
+        return 'Stumped'
+    elif re.search('absent out',how_out_str):
+        return 'Absent Out'
+    elif re.search('retired hurt',how_out_str):
+        return 'Retired Hurt'
+    elif re.search('retired',how_out_str):
+        return 'Retired'
+    elif re.search('hit wicket',how_out_str):
+        return 'Hit Wicket'
+    else:
+        return 'ERROR'
 
 def name_FL_to_LFi(name):
     return re.sub('(\S)(\S+)\s?(\S)?(\S+)? (\S+)$','\\5, \\1\\3',name)
@@ -39,10 +39,13 @@ def how_out_bowler(how_out_str):
         return re.sub('.*?(?:lbw|b): (\S)(\S+)\s?(\S)?(\S+)? (\S+)$','\\5, \\1\\3',how_out_str)
     else:
         return ''
-    
+
 def how_out_assist(how_out_str):
     if get_how_out(how_out_str) in ['caught','Stumped','c & b','Run Out']:
-        return re.sub('.*?(?:c|stumped|run out|c\&b): (\S)(\S+)\s?(\S)?(\S+)? (\S+)$','\\5, \\1\\3',how_out_str)
+        if '?' in how_out_str:
+            return ''
+        else:
+            return re.sub('.*?(?:c|stumped|run out|c\&b): (\S)(\S+)\s?(\S)?(\S+)? (\S+)$','\\5, \\1\\3',how_out_str)
     else:
         return ''
     
@@ -121,7 +124,7 @@ wickets['batting_posn'] = wickets.reset_index().index + 1
 wickets['bowler_name'] = wickets['how_out'].apply(how_out_bowler)
 wickets['assist'] = wickets['how_out'].apply(how_out_assist)
 wickets['how_out2'] = wickets['how_out'].apply(get_how_out)
-
+wickets['hat_trick'] = 0
 
 
 

@@ -136,7 +136,7 @@ def scrape_scorecard(url):
             data.append(scorecard[i].xpath('span[4]/text()')[0])
             batting_df.loc[i-1] = data
 
-            if '(c)' in data[0] & 'Adelaide Lutheran' in innings[ii-1]:
+            if '(c)' in data[0] and 'Adelaide Lutheran' in innings[ii-1]:
                 mi_captain = data[0].replace(' (c)','')
 
         # FOW
@@ -209,3 +209,4 @@ def scrape_scorecard(url):
         }
 
     return match_info
+
