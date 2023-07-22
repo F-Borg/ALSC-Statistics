@@ -9,8 +9,8 @@ importlib.reload(ss)
 # Issues:
 # FOW is currently missing from website
 
-# maybe put all this into a function that pauses running when the excel spreadsheet is open
-# need manual input for season ID, match ID, innings ID
+
+# need manual input for season ID, match ID, innings ID at this stage
 
 # fetch match url
 # url = get_url(season,grade,rnd)
