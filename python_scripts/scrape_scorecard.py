@@ -82,14 +82,23 @@ def scrape_scorecard(url):
     else:
         opponent = mi_team_1
 
-    # result - greyed out one is the loser
-    # !!! draws?
-    # team2 = head.xpath('div[1]/span[2]/span/div/span[2]/@color')
+    # result - black is the winner
+    # !!! outright?
     team1 = head.xpath('div[1]/span[1]/span/div/span[2]/@color')[0]
+    team2 = head.xpath('div[1]/span[2]/span/div/span[2]/@color')
     if team1 == 'black400':
         mi_winner = mi_team_1
-    else:
+    elif team2 == 'black400':
         mi_winner = mi_team_2
+    else:
+        mi_winner = "draw"
+    
+    if 'Adelaide Lutheran' in mi_winner:
+        mi_result = 'W1'
+    elif mi_winner == "draw":
+        mi_result = 'D'
+    else:
+        mi_result = 'L1'
 
 
     #########################################################################################################################
@@ -204,9 +213,18 @@ def scrape_scorecard(url):
         'venue' 		: mi_venue,
         'opponent' 		: opponent,
         'winner' 	    : mi_winner,
+        'result'        : mi_result,
         'captain'       : mi_captain,
         'game_dir'		: game_dir
         }
+    
+    match_info_df = pd.DataFrame.from_dict(match_info,orient='index').to_markdown()
+
+    game_dir = "data/22-23/ISC Teamwear LO Division 1/Rnd_2"
+    
+    f=open(f'{game_dir}/match_info.md','w')
+    f.write(match_info_df)
+    f.close()
 
     return match_info
 

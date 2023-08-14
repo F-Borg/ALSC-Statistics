@@ -6,3 +6,4 @@ py -m pip install psycopg2
 py -m pip install tabulate
 py -m pip install sqlalchemy
 py -m pip install openpyxl
+py -m pip install XlsxWriter
