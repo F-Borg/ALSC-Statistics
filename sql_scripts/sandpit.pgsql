@@ -39,7 +39,7 @@ alter table batting rename column "6s" to _6s;
 alter table batting rename column "Balls Faced" to balls_faced;
 alter table batting rename column "FOW" to fow;
 alter table batting rename column "Wicket" to wicket;
-alter table batting rename column "Not Out Batsman" to not_out_batsman;
+alter table batting rename column "Not Out Batsman" to not_out_batter;
 alter table bowling rename column "InningsID" to inningsid;
 alter table bowling rename column "PlayerID" to playerid;
 alter table bowling rename column "Overs" to overs;
@@ -55,7 +55,7 @@ alter table bowling rename column "2nd High Over" to _2nd_high_over;
 alter table bowling rename column "3rd High Over" to _3rd_high_over;
 alter table wickets rename column "InningsID" to inningsid;
 alter table wickets rename column "batting position" to batting_position;
-alter table wickets rename column "batsman dismissed" to batsman_dismissed;
+alter table wickets rename column "batsman dismissed" to batter_name;
 alter table wickets rename column "how out" to how_out;
 --alter table wickets rename column "assist" to assist;
 alter table wickets rename column "playerID" to playerid;
@@ -92,8 +92,20 @@ where inningsid=1494
 select distinct how_out from batting
 
 
-select case when 'Not Out' = 'not out' then 1 else 0 end as test
+select case when 'Not Out' = 'not out' then 1 else 0 end as test;
 
-select upper('asdfa')
+
+
+
+
+select * from wickets where inningsid > 1650;
+
+select * from batting where inningsid > 1650;
+
+select * from bowling where inningsid > 1650;
+
+select * from seasons where seasonid > 50;
+
+select * from matches where matchid > 720;
 
 
