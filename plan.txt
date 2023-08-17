@@ -28,12 +28,14 @@ Open source software:
 	DONE - import all tables to postgres from MS Access
 	DONE - wrangle scraped data into output format
 	export python tables into postgres
+		batting, bowling, wickets, matches, 
     check for new players so that they can be entered manually
 		- need to handle order that they first played for the club
 	private players can be dealt with in the markdowns
 	auto generate innings id, match id
 		- ids do not need to be ordered - we have date & grade for that
 		- input season manually
+	add name_FL column to players table
 
 
 ###############################################################################
