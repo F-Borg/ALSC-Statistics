@@ -108,4 +108,11 @@ select * from seasons where seasonid > 50;
 
 select * from matches where matchid > 720;
 
+select * from innings where inningsid > 1650;
 
+
+delete from wickets where inningsid in (1657,1656);
+delete from batting where inningsid in (1657,1656);
+delete from bowling where inningsid in (1657,1656);
+delete from innings where inningsid in (1657,1656);
+delete from matches where seasonid in (76);

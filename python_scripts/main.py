@@ -5,6 +5,7 @@ import python_scripts.wrangle_match_data as wd
 # reload when required
 import importlib
 importlib.reload(ss)
+importlib.reload(wd)
 
 # Issues:
 # FOW is currently missing from website
@@ -18,13 +19,16 @@ url = "https://www.playhq.com/cricket-australia/org/adelaide-turf-cricket-associ
 
 # scrape scorecard (return multiple tables I guess...)
 match_info = ss.scrape_scorecard(url)
-# {'season': '22-23', 'grade': 'ISC Teamwear LO Division 1', 'round': '2', 'num_days': 1, 'date_day_1': '22 Oct 2022', 'date_day_2': '', 'num_innings': 2, 'innings_list': ['Adelaide Lutheran 1st Innings', 'Kilburn 1st Innings'], 'extras': [{'wd': 2, 'nb': 2, 'lb': 0, 'b': 4, 'p': 0}, {'wd': 7, 'nb': 1, 'lb': 0, 'b': 0, 'p': 0}], 'venue': 'Blair Athol Reserve / Blair Athol Reserve - Main Oval', 'opponent': 'Kilburn', 'winner': 'Kilburn', 'result': 'L1', 'captain': 'Finley Borgas', 'game_dir': 'data/22-23/ISC Teamwear LO Division 1/Rnd_2'}
+# match_info = {'season': '22-23', 'grade': 'ISC Teamwear LO Division 1', 'round': '2', 'num_days': 1, 'date_day_1': '22 Oct 2022', 'date_day_2': '', 'num_innings': 2, 'innings_list': ['Adelaide Lutheran 1st Innings', 'Kilburn 1st Innings'], 'extras': [{'wd': 2, 'nb': 2, 'lb': 0, 'b': 4, 'p': 0}, {'wd': 7, 'nb': 1, 'lb': 0, 'b': 0, 'p': 0}], 'overs': ['40', '31.2'], 'venue': 'Blair Athol Reserve / Blair Athol Reserve - Main Oval', 'opponent': 'Kilburn', 'winner': 'Kilburn', 'result': 'L1', 'captain': 'Finley Borgas', 'game_dir': 'data/22-23/ISC Teamwear LO Division 1/Rnd_2'}
 
+match_info['wicketkeeper'] = 'Marko Fedojuk'
 
 # open for validation/modification
 # os.system('code -r ./data/22-23/ISC Teamwear LO Division 1')
 
-# wrangle data
+# wrangle data and export
+wd.wrangle_match_data(match_info, write_to_postgres = False)
 
 
-# export to postgres
+
+    

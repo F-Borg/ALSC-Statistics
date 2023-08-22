@@ -110,6 +110,7 @@ def scrape_scorecard(url):
     num_innings = len(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[3]/*'))
     innings = []
     extras = []
+    overs = []
     for ii in range(1,num_innings+1):
         # check if innings was played
         if len(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div[2]/div/div[2]/span[1]/text()')) == 0:
@@ -160,6 +161,9 @@ def scrape_scorecard(url):
             'b' : int(scorecard[num_players+1].xpath('div/span[6]/text()')[0].replace('B','')),
             'p' : int(scorecard[num_players+1].xpath('div/span[7]/text()')[0].replace('P',''))
         })
+        # Overs
+        overs.append(re.sub('\(([\d\.]+) Overs\)','\\1',scorecard[num_players+2].xpath('span[3]/text()')[0]))
+
         
         # Write scorecard to file
         sc = batting_df.to_markdown()
@@ -220,6 +224,7 @@ def scrape_scorecard(url):
         'num_innings' 	: num_innings,
         'innings_list'  : innings,
         'extras'        : extras,
+        'overs'         : overs,
         'venue' 		: mi_venue,
         'opponent' 		: opponent,
         'winner' 	    : mi_winner,
