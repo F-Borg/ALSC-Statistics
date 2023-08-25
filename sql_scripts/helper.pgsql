@@ -1,7 +1,7 @@
 create or replace view z_wickin AS
 SELECT
     innings.inningsid
-    , sum(case when upper(how_out) not in ('DNB','NOT OUT','RETIRED','RETIRED HURT','FORCED RETIREMENT','0') then 1 else 0 end) as num_wickets
+    , sum(case when upper(how_out) not in ('NOT OUT','RETIRED HURT') then 1 else 0 end) as num_wickets
 FROM Innings 
 INNER JOIN Wickets 
 ON Innings.InningsID = Wickets.InningsID
@@ -50,39 +50,26 @@ ON i.InningsID = b.inningsid
 ;
 
 
+
 create or replace view z_bowling_totals AS
-SELECT
-    case when z_wickin.num_wickets=10 then (b.bowl_runs+innings.extras)::varchar
-        else concat(z_wickin.num_wickets,'/',(b.bowl_runs+innings.extras)) end as Score
-    , concat(b.tot_overs,'.',b.tot_extra_balls) as Ov
-    , 6*(b.bowl_runs+innings.extras)/(6*b.tot_overs + b.tot_extra_balls) as run_rate
-    , b.bowl_runs+innings.extras as runs
-    , z_wickin.num_wickets as wickets
-    , innings.inningsno
+SELECT  
+    (CASE WHEN max(z_wickin.num_wickets)=10 then '' else max(z_wickin.num_wickets) ||'/' end) || Sum(Bowling.no_balls)+Sum(Bowling.Wides)+Sum(Bowling.runs_off_bat)+max(Innings.Extras) AS score
+    , Sum(bowling.overs) ||'.'|| Sum(bowling.extra_balls) AS ov
+    , 6*(Sum(Bowling.no_balls)+Sum(Bowling.Wides)+Sum(Bowling.runs_off_bat)+max(Innings.Extras))/Sum(6*bowling.overs+bowling.extra_balls) AS run_rate
     , Matches.Opponent
-    , Seasons.Year
-    , Matches.Round
-    , Matches.Ground
-    , Seasons.Eleven
-    , Seasons.Grade
-    , Seasons.Association
-    , matches.MatchID
-FROM seasons
-inner join matches
-ON seasons.SeasonID = matches.SeasonID
-INNER JOIN innings
-on Matches.MatchID = Innings.MatchID
-inner join (
-    SELECT inningsid
-        , sum(wides+no_balls+runs_off_bat) as bowl_runs
-        , sum(overs) as tot_overs
-        , sum(extra_balls) as tot_extra_balls
-    FROM bowling
-    GROUP BY inningsid
-) b
-on innings.inningsid = b.inningsid
-inner join z_wickin
-on innings.inningsid = z_wickin.inningsid
-where innings.innings_type = 'Bowl'
-and   b.tot_overs > 0
-;
+    , Sum(Bowling.no_balls)+Sum(Bowling.Wides)+Sum(Bowling.runs_off_bat)+max(Innings.Extras) AS runs
+    , Matches.MatchID
+    , Innings.InningsNO
+FROM Seasons 
+INNER JOIN Matches
+ON Seasons.SeasonID=Matches.SeasonID
+INNER JOIN Innings
+ON Matches.MatchID=Innings.MatchID
+INNER JOIN z_wickin 
+ON Innings.InningsID=z_wickin.InningsID
+INNER JOIN Bowling 
+ON Innings.InningsID=Bowling.InningsID
+
+GROUP BY Matches.Opponent, Innings.InningsID, Matches.MatchID, Innings.InningsNO
+HAVING Innings.InningsNO in (1,2)
+ORDER BY Sum(Bowling.no_balls)+Sum(Bowling.Wides)+Sum(Bowling.runs_off_bat)+max(Innings.Extras) DESC;
