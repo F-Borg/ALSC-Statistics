@@ -37,8 +37,8 @@ def get_how_out(how_out_str):
     else:
         return 'ERROR'
 
-def name_FL_to_LFi(name):
-    return re.sub('(\S)(\S+)\s?(\S)?(\S+)? (\S+)$','\\5, \\1\\3',name)
+# def name_FL_to_LFi(name):
+#     return re.sub('(\S)(\S+)\s?(\S)?(\S+)? (\S+)$','\\5, \\1\\3',name)
 
 def how_out_bowler(how_out_str):
     if get_how_out(how_out_str) in ['caught','bowled','LBW','Stumped','c & b','Hit Wicket']:
@@ -64,7 +64,6 @@ def wrangle_match_data(match_info, write_to_postgres = False):
 
     # Player IDs
     players = pd.read_sql(con=pgconn, sql=f"select * from players")
-    players['name_FL'] = players['firstname'] + ' ' + players['surname']
 
     #########################################################################################################################
     # Season, Match - numerical order does not matter
@@ -76,8 +75,8 @@ def wrangle_match_data(match_info, write_to_postgres = False):
 
     this_match = pd.DataFrame(columns=['matchid','opponent','ground','round','seasonid','result','date1','date2','nodays','captain','wicketkeeper','fv_1st','fv_2nd'])
 
-    captain_id = players.loc[players['name_FL'] == match_info['captain']]['playerid'].values[0].tolist()
-    wicketkeeper_id = players.loc[players['name_FL'] == match_info['wicketkeeper']]['playerid'].values[0].tolist()
+    captain_id = players.loc[players['name_fl'] == match_info['captain']]['playerid'].values[0].tolist()
+    wicketkeeper_id = players.loc[players['name_fl'] == match_info['wicketkeeper']]['playerid'].values[0].tolist()
 
     this_match.loc[0] = [matchid, match_info['opponent'], match_info['venue'], match_info['round'], season['seasonid'][0], match_info['result'], 
                         match_info['date_day_1'], match_info['date_day_2'], match_info['num_days'], captain_id, wicketkeeper_id,0,0]
@@ -106,9 +105,9 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             batting['wicket'] = 0
             batting['fow'] = 0
             batting['not_out_batter'] = 0
-            batting['name_FL'] = batting['batter']
+            batting['name_fl'] = batting['batter']
 
-            batting2 = pd.merge(batting, players, on="name_FL", how="left")
+            batting2 = pd.merge(batting, players, on="name_fl", how="left")
             batting3 = batting2[['inningsid','playerid','batting_position','how_out','bowler_name','score','_4s','_6s','balls_faced','fow','wicket','not_out_batter']]
             if(write_to_postgres):
                 batting3.to_sql('batting', engine, if_exists='append', index=False)
@@ -144,8 +143,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             bowling = bowling.applymap(lambda x: x.replace('-','0'))
 
             bowling['inningsid'] = inningsid + (i-1)
-            # bowling['bowler_name2'] = bowling['bowler'].apply(name_FL_to_LFi)
-            bowling['name_FL'] = bowling['bowler']
+            bowling['name_fl'] = bowling['bowler']
             bowling['extra_balls'] = bowling['overs'].apply(lambda x: round(10* (float(x) - math.floor(float(x)))))
             bowling['overs'] = bowling['overs'].apply(lambda x: math.floor(float(x)))
             bowling['runs'] = bowling['runs'].astype(int)
@@ -154,7 +152,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             bowling['runs_off_bat'] = bowling['runs'] - bowling['wides'] - bowling['no_balls']
 
 
-            bowling2 = pd.merge(bowling, players, on="name_FL", how="left")
+            bowling2 = pd.merge(bowling, players, on="name_fl", how="left")
             bowling3 = bowling2[['inningsid','playerid','overs','extra_balls','maidens','wides','no_balls','runs_off_bat','_4s_against','_6s_against','highover','_2nd_high_over']]
             if(write_to_postgres):
                 bowling3.to_sql('bowling', engine, if_exists='append', index=False)
@@ -185,15 +183,15 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             wickets['inningsid'] = inningsid + (i-1)
             wickets['batting_position'] = wickets.reset_index().index + 1
             wickets['batter_name'] = wickets['batter']
-            wickets['name_FL'] = wickets['how_out'].apply(how_out_bowler)
-            wickets['name_FL2'] = wickets['how_out'].apply(how_out_assist)
+            wickets['name_fl'] = wickets['how_out'].apply(how_out_bowler)
+            wickets['name_fl2'] = wickets['how_out'].apply(how_out_assist)
             wickets['how_out'] = wickets['how_out'].apply(get_how_out)
             wickets['hat_trick'] = 0
 
-            wickets2 = pd.merge(wickets, players, on="name_FL", how="left")
-            wickets2 = wickets2[['inningsid','batting_position','batter_name','how_out','playerid','hat_trick','name_FL2']]
-            players2 = players[['playerid','name_FL']].rename(columns={'playerid':'assist','name_FL':'name_FL2'})
-            wickets2 = pd.merge(wickets2, players2, on="name_FL2", how="left")
+            wickets2 = pd.merge(wickets, players, on="name_fl", how="left")
+            wickets2 = wickets2[['inningsid','batting_position','batter_name','how_out','playerid','hat_trick','name_fl2']]
+            players2 = players[['playerid','name_fl']].rename(columns={'playerid':'assist','name_fl':'name_fl2'})
+            wickets2 = pd.merge(wickets2, players2, on="name_fl2", how="left")
 
             wickets3 = wickets2[['inningsid','batting_position','batter_name','how_out','assist','playerid','hat_trick']]
             if(write_to_postgres):

@@ -67,6 +67,16 @@ alter table players rename column "Surname" to surname;
 alter table players rename column "DOB" to dob;
 
 
+-- add player name
+alter table players add column name_FL VARCHAR;
+update players 
+set name_fl = firstname||' '||surname
+;
+
+
+
+
+
 
 
 select 

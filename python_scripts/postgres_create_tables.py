@@ -19,12 +19,12 @@ engine = create_engine('postgresql+psycopg2://postgres:postgres1!@localhost/dev'
 #########################################################################################################################
 # Import from excel
 #########################################################################################################################
-seasons = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2020-21\20-21 db temp.xlsx', sheet_name='seasons')
-matches = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2020-21\20-21 db temp.xlsx', sheet_name='Matches')
-innings = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2020-21\20-21 db temp.xlsx', sheet_name='Innings')
-batting = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2020-21\20-21 db temp.xlsx', sheet_name='Batting')
-bowling = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2020-21\20-21 db temp.xlsx', sheet_name='Bowling')
-wickets = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2020-21\20-21 db temp.xlsx', sheet_name='Wickets')
+seasons = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2021-22\21-22 db temp.xlsx', sheet_name='seasons')
+matches = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2021-22\21-22 db temp.xlsx', sheet_name='Matches')
+innings = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2021-22\21-22 db temp.xlsx', sheet_name='Innings')
+batting = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2021-22\21-22 db temp.xlsx', sheet_name='Batting')
+bowling = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2021-22\21-22 db temp.xlsx', sheet_name='Bowling')
+wickets = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2021-22\21-22 db temp.xlsx', sheet_name='Wickets')
 
 # players = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2020-21\20-21 db temp.xlsx', sheet_name='Players2')
 
