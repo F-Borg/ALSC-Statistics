@@ -111,9 +111,10 @@ def scrape_scorecard(url):
     innings = []
     extras = []
     overs = []
+    fow = []
     for ii in range(1,num_innings+1):
-        # check if innings was played
-        if len(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div[2]/div/div[2]/span[1]/text()')) == 0:
+        # check if innings was played - path to first batter name in scorecard
+        if len(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[1]/div[2]/div/div[2]/div/span[1]/text()')) == 0:
             print(f'innings {ii} not played.')
             break
         innings.append(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[3]/button[{ii}]/text()')[0])
@@ -153,7 +154,8 @@ def scrape_scorecard(url):
             batting_df.loc[i-1] = data
 
         # FOW
-        # fow = dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div/span[2]/text()')
+        fow.append(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div/span[2]/text()'))
+
         # Extras
         extras.append({'wd' : int(scorecard[num_players+1].xpath('div/span[3]/text()')[0].replace('WD','')),
             'nb' : int(scorecard[num_players+1].xpath('div/span[4]/text()')[0].replace('NB','')),
@@ -175,8 +177,8 @@ def scrape_scorecard(url):
         # Bowling Scorecard
         #########################################################################################################################
         # need to add 4's and 6's manually
-        num_bowlers = len(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div[2]/div/*'))-1 # -1 for the heading row
-        bowling_sc = dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[2]/div[2]/div/*')
+        num_bowlers = len(dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[3]/div[2]/div/*'))-1 # -1 for the heading row
+        bowling_sc =      dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[4]/div[3]/div[2]/div/*')
         bowling_df = pd.DataFrame(columns=['bowler','overs','maidens','runs','wickets','wides','no_balls','_4s_against','_6s_against','highover','_2nd_high_over'])
         for i in range(1,num_bowlers+1):
             # initiate row
@@ -223,6 +225,7 @@ def scrape_scorecard(url):
         'date_day_2' 	: mi_date_day_2,
         'num_innings' 	: num_innings,
         'innings_list'  : innings,
+        'fow_list'      : fow,
         'extras'        : extras,
         'overs'         : overs,
         'venue' 		: mi_venue,

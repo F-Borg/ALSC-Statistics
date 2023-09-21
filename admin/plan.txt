@@ -37,8 +37,7 @@ Open source software:
 		- ids do not need to be ordered - we have date & grade for that
 		- input season manually
 	DONE - add name_FL column to players table - eventually - when everything is moved from access
-
-	!!! include FOW 
+	DONE - include FOW when it's back on playhq
 
 
 ###############################################################################

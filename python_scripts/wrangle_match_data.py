@@ -50,20 +50,30 @@ def how_out_bowler(how_out_str):
 def how_out_assist(how_out_str):
     if get_how_out(how_out_str) in ['caught','Stumped','c & b','Run Out']:
         if '?' in how_out_str:
-            return ''
+            return None
         else:
-            return re.sub('.*?(?:c|stumped|run out|c\&b): (\S)(\S+)\s?(\S)?(\S+)? (\S+)$','\\5, \\1\\3',how_out_str)
+            return re.sub('(?:c|stumped|run out|c\&b): (\S+)\s(\S+).*','\\1 \\2',how_out_str)
     else:
-        return ''
+        return None
+
+def split_fow(s):
+    # s='1-0 Daniel Grosser'
+    wicket = s.split('-',1)[0]
+    fow = s.split('-',1)[1].split(' ',1)[0]
+    name = s.split(' ',1)[1]
+    return [wicket,fow,name]
 
 # !!! test
-# match_info = {'season': '22-23', 'grade': 'ISC Teamwear LO Division 1', 'round': '2', 'num_days': 1, 'date_day_1': '22 Oct 2022', 'date_day_2': '', 'num_innings': 2, 'innings_list': ['Adelaide Lutheran 1st Innings', 'Kilburn 1st Innings'], 'extras': [{'wd': 2, 'nb': 2, 'lb': 0, 'b': 4, 'p': 0}, {'wd': 7, 'nb': 1, 'lb': 0, 'b': 0, 'p': 0}], 'overs': ['40', '31.2'], 'venue': 'Blair Athol Reserve / Blair Athol Reserve - Main Oval', 'opponent': 'Kilburn', 'winner': 'Kilburn', 'result': 'L1', 'captain': 'Finley Borgas', 'game_dir': 'data/22-23/ISC Teamwear LO Division 1/Rnd_2'}
+# match_info = {'season': '22-23', 'grade': 'ISC Teamwear LO Division 1', 'round': '2', 'num_days': 1, 'date_day_1': '22 Oct 2022', 'date_day_2': '', 'num_innings': 2, 'innings_list': ['Adelaide Lutheran 1st Innings', 'Kilburn 1st Innings'], 'fow_list': [['1-0 Daniel Grosser, 2-25 Jeremy Borgas, 3-64 Marko Fedojuk, 4-67 Manmeet Singh, 5-102 Joshua Waldhuter, 6-109 Finley Borgas, 7-126 Ajay Agnihotri, 8-132 Matthew Nitschke, 9-142 Azadar Malik'], ['1-4 Hussain Ahmadi, 2-36 Irfan Raza, 3-69 Ali Khan, 4-74 Asif Ali Shafa']], 'extras': [{'wd': 2, 'nb': 2, 'lb': 0, 'b': 4, 'p': 0}, {'wd': 7, 'nb': 1, 'lb': 0, 'b': 0, 'p': 0}], 'overs': ['40', '31.2'], 'venue': 'Blair Athol Reserve / Blair Athol Reserve - Main Oval', 'opponent': 'Kilburn', 'winner': 'Kilburn', 'result': 'L1', 'captain': 'Finley Borgas', 'game_dir': 'data/22-23/ISC Teamwear LO Division 1/Rnd_2', 'wicketkeeper': 'Marko Fedojuk'}
 
 def wrangle_match_data(match_info, write_to_postgres = False):
     match_dir = match_info['game_dir']
 
     # Player IDs
     players = pd.read_sql(con=pgconn, sql=f"select * from players")
+    players1 = players.loc[:,['playerid','name_fl']]
+    players2 = players1.rename(columns={'playerid':'not_out_batter','name_fl':'not_out_batter_name'})
+    players3 = players1.rename(columns={'playerid':'assist','name_fl':'assist_name'})
 
     #########################################################################################################################
     # Season, Match - numerical order does not matter
@@ -102,12 +112,36 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             batting['batting_position'] = batting.reset_index().index + 1
             batting['bowler_name'] = batting['how_out'].apply(how_out_bowler)
             batting['how_out'] = batting['how_out'].apply(get_how_out)
-            batting['wicket'] = 0
-            batting['fow'] = 0
-            batting['not_out_batter'] = 0
+            batting['wicket'] = None
+            batting['fow'] = None
+            batting['not_out_batter_name'] = None
             batting['name_fl'] = batting['batter']
 
-            batting2 = pd.merge(batting, players, on="name_fl", how="left")
+            # FOW
+            fow = [split_fow(s) for s in match_info['fow_list'][i-1][0].split(', ')]
+            batter_pos_1 = 1
+            batter_pos_2 = 2
+            for jj in range(0,len(fow)):
+                # jj=3
+                # if batter 1 is out, then batter 2 is the not out batter, and update batter 1 to the next batter
+                if batting.loc[batting['batting_position']==batter_pos_1, 'batter'][0] == fow[jj][2]:
+                    not_out_batter = batting.loc[batting['batting_position']==batter_pos_2, 'batter'][0]
+                    batter_pos_1 = max(batter_pos_1,batter_pos_2)+1
+                else:
+                    not_out_batter = batting.loc[batting['batting_position']==batter_pos_1, 'batter'][0]
+                    batter_pos_2 = max(batter_pos_1,batter_pos_2)+1
+                batting.loc[batting['batter']==fow[jj][2], 'wicket']         = fow[jj][0]
+                batting.loc[batting['batter']==fow[jj][2], 'fow']            = fow[jj][1]
+                batting.loc[batting['batter']==fow[jj][2], 'not_out_batter_name'] = not_out_batter
+
+            # not out batters - calc final score
+            batting.loc[batting['batting_position']==batter_pos_1, 'wicket']         = len(fow)+1
+            batting.loc[batting['batting_position']==batter_pos_1, 'fow']            = sum(batting['score'].astype('int')) + sum(match_info['extras'][i-1].values())
+            batting.loc[batting['batting_position']==batter_pos_1, 'not_out_batter_name'] = batting.loc[batting['batting_position']==batter_pos_2, 'batter'][0]
+
+
+            batting2 = batting.merge(players1, on="name_fl", how="left").merge(players2, on="not_out_batter_name", how="left")
+
             batting3 = batting2[['inningsid','playerid','batting_position','how_out','bowler_name','score','_4s','_6s','balls_faced','fow','wicket','not_out_batter']]
             if(write_to_postgres):
                 batting3.to_sql('batting', engine, if_exists='append', index=False)
@@ -152,7 +186,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             bowling['runs_off_bat'] = bowling['runs'] - bowling['wides'] - bowling['no_balls']
 
 
-            bowling2 = pd.merge(bowling, players, on="name_fl", how="left")
+            bowling2 = bowling.merge(players1, on="name_fl", how="left")
             bowling3 = bowling2[['inningsid','playerid','overs','extra_balls','maidens','wides','no_balls','runs_off_bat','_4s_against','_6s_against','highover','_2nd_high_over']]
             if(write_to_postgres):
                 bowling3.to_sql('bowling', engine, if_exists='append', index=False)
@@ -184,14 +218,11 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             wickets['batting_position'] = wickets.reset_index().index + 1
             wickets['batter_name'] = wickets['batter']
             wickets['name_fl'] = wickets['how_out'].apply(how_out_bowler)
-            wickets['name_fl2'] = wickets['how_out'].apply(how_out_assist)
+            wickets['assist_name'] = wickets['how_out'].apply(how_out_assist)
             wickets['how_out'] = wickets['how_out'].apply(get_how_out)
             wickets['hat_trick'] = 0
 
-            wickets2 = pd.merge(wickets, players, on="name_fl", how="left")
-            wickets2 = wickets2[['inningsid','batting_position','batter_name','how_out','playerid','hat_trick','name_fl2']]
-            players2 = players[['playerid','name_fl']].rename(columns={'playerid':'assist','name_fl':'name_fl2'})
-            wickets2 = pd.merge(wickets2, players2, on="name_fl2", how="left")
+            wickets2 = wickets.merge(players1, on="name_fl", how="left").merge(players3, on="assist_name", how="left")
 
             wickets3 = wickets2[['inningsid','batting_position','batter_name','how_out','assist','playerid','hat_trick']]
             if(write_to_postgres):
