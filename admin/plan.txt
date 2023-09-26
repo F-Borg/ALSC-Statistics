@@ -49,6 +49,7 @@ Open source software:
 					- e.g. career batting & bowling
 	maybe leave these as queries/views?
 	milestones
+		- games/runs/wickets until milestone
                
 
 ###############################################################################
@@ -84,6 +85,8 @@ Open source software:
 ###############################################################################
 	additional calculated stats
 		- e.g. games played together (if this isn't already in 0.3 update)
+		- averages etc. in finals
+		- finals played, won
 		- consult others for ideas
 	additional web scraping
 		- if there is access to ball-by-ball, then 4's and 6's against and high over

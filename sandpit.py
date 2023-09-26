@@ -21,21 +21,29 @@ import re
 
 
 str1 = """
-SELECT DISTINCTROW IIf(First(w_wickin!w)=10,"",First(w_wickin!w) & "/") & Sum(Bowling![No Balls])+Sum(Bowling!Wides)+Sum(Bowling![Runs off Bat])+First(Innings!Extras) AS Score, Sum(bowling!overs) & "." & Sum(bowling![extra balls]) AS [Overs Bowled], 6*(Sum(Bowling![No Balls])+Sum(Bowling!Wides)+Sum(Bowling![Runs off Bat])+First(Innings!Extras))/Sum(6*bowling!overs+bowling![extra balls]) AS [Run Rate], Matches.Opponent, Sum(Bowling![No Balls])+Sum(Bowling!Wides)+Sum(Bowling![Runs off Bat])+First(Innings!Extras) AS totala, Matches.MatchID, Innings.InningsNO
-FROM Seasons INNER JOIN (Matches INNER JOIN ((Innings INNER JOIN w_wickin ON Innings.InningsID=w_wickin.InningsID) INNER JOIN Bowling ON Innings.InningsID=Bowling.InningsID) ON Matches.MatchID=Innings.MatchID) ON Seasons.SeasonID=Matches.SeasonID
-GROUP BY Matches.Opponent, Innings.InningsID, Matches.MatchID, Innings.InningsNO
-HAVING (((Innings.InningsNO)=1 Or (Innings.InningsNO)=2))
-ORDER BY Sum(Bowling![No Balls])+Sum(Bowling!Wides)+Sum(Bowling![Runs off Bat])+First(Innings!Extras) DESC;"""
+SELECT Players!surname & ", " & players![first name] AS Name, 100*batting!score/batting![balls faced] AS [Strike Rate], batting!score & IIf(batting![how out]="not out" Or batting![how out]="retired hurt" Or batting![how out]="forced retirement","*","") AS Runs, Batting.[Balls Faced], Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association
+FROM Seasons INNER JOIN (Matches INNER JOIN (Innings INNER JOIN (Players INNER JOIN Batting ON Players.PlayerID = Batting.PlayerID) ON Innings.InningsID = Batting.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
+GROUP BY Players!surname & ", " & players![first name], 100*batting!score/batting![balls faced], batting!score & IIf(batting![how out]="not out" Or batting![how out]="retired hurt" Or batting![how out]="forced retirement","*",""), Batting.[Balls Faced], Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association, Batting.Score
+HAVING (((Batting.Score)>29))
+ORDER BY 100*batting!score/batting![balls faced] DESC;
+
+
+"""
 
 print(re.sub('\[([\w\s]+)\]','\\1',str1).
       replace('DISTINCTROW','').
       replace('& "." &',"||'.'||").
+      replace('& ", " &',"||', '||").
       replace('& "/"',"||'/'").
+      replace(',1,0',' then 1 else 0 end').
       replace('First(','max(').
       replace('extra balls','extra_balls').
       replace('how out','how_out').
       replace('No Balls','no_balls').
       replace('Runs off Bat','runs_off_bat').
+      replace('first name','firstname').
+      replace('date of birth','dob').
+      replace('Batting_Career_Summary','batting_01_summary_ind').
       replace('!','.').
       replace('IIf(','(CASE WHEN ')
 )

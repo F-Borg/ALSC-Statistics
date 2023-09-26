@@ -11,3 +11,8 @@ where playerid = 265
 
 
 select * from players where playerid = 265
+
+
+
+-- drop view z_All_Player_Dates cascade
+
