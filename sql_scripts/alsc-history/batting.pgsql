@@ -289,3 +289,112 @@ WHERE Batting.balls_faced > 59
 ORDER BY "Strike Rate";
 
 
+CREATE OR REPLACE VIEW batting_18_dismissals_ct AS
+SELECT Name, C::float/dismissals AS percentage, dismissals, C as caught
+FROM z_bat_ind_dismissal_types
+WHERE dismissals > 9
+ORDER BY percentage DESC , dismissals DESC;
+
+
+CREATE OR REPLACE VIEW batting_19_dismissals_b AS
+SELECT Name, B::float/dismissals AS percentage, dismissals, B as bowled
+FROM z_bat_ind_dismissal_types
+WHERE dismissals > 9
+ORDER BY percentage DESC , dismissals DESC;
+
+
+CREATE OR REPLACE VIEW batting_20_dismissals_lbw AS
+SELECT Name, LBW::float/dismissals AS percentage, dismissals, LBW
+FROM z_bat_ind_dismissal_types
+WHERE dismissals > 9
+ORDER BY percentage DESC , dismissals DESC;
+
+CREATE OR REPLACE VIEW batting_21_dismissals_no_lbw AS
+SELECT dismissals, Name
+FROM z_bat_ind_dismissal_types
+WHERE LBW = 0
+ORDER BY dismissals DESC;
+
+CREATE OR REPLACE VIEW batting_22_dismissals_st AS
+SELECT ST as stumpings, Name
+FROM z_bat_ind_dismissal_types
+WHERE dismissals > 0
+ORDER BY stumpings DESC;
+
+
+CREATE OR REPLACE VIEW batting_23_partnerships_highest AS
+SELECT 
+    Runs
+    , Wicket
+    , "Player 1"
+    , "Player 2"
+    , Opponent, Year, Round, Eleven, Grade, Association
+FROM z_batting_partnerships_highest 
+ORDER BY p DESC;
+
+
+-- change from overall to 1st XI
+CREATE OR REPLACE VIEW batting_24_partnerships_wicket_1stXI AS
+SELECT 
+    a.Runs
+    , a.Wicket
+    , a."Player 1"
+    , a."Player 2"
+    , a.Opponent, a.Year, a.Round, a.Eleven, a.Grade, a.Association
+FROM z_batting_partnerships_highest a
+INNER JOIN (
+    SELECT wicket
+        , max(p) as p
+    FROM z_batting_partnerships_highest
+    where eleven = '1st'
+    group by wicket
+) max_part
+on a.p = max_part.p
+and a.wicket = max_part.wicket
+WHERE a.eleven = '1st'
+order by a.wicket
+;
+
+
+CREATE OR REPLACE VIEW batting_25_partnerships_wicket_2ndXI AS
+SELECT 
+    a.Runs
+    , a.Wicket
+    , a."Player 1"
+    , a."Player 2"
+    , a.Opponent, a.Year, a.Round, a.Eleven, a.Grade, a.Association
+FROM z_batting_partnerships_highest a
+INNER JOIN (
+    SELECT wicket
+        , max(p) as p
+    FROM z_batting_partnerships_highest
+    where eleven = '2nd'
+    group by wicket
+) max_part
+on a.p = max_part.p
+and a.wicket = max_part.wicket
+WHERE a.eleven = '2nd'
+order by a.wicket
+
+
+CREATE OR REPLACE VIEW batting_26_partnerships_wicket_3rdXI AS
+SELECT 
+    a.Runs
+    , a.Wicket
+    , a."Player 1"
+    , a."Player 2"
+    , a.Opponent, a.Year, a.Round, a.Eleven, a.Grade, a.Association
+FROM z_batting_partnerships_highest a
+INNER JOIN (
+    SELECT wicket
+        , max(p) as p
+    FROM z_batting_partnerships_highest
+    where eleven = '3rd'
+    group by wicket
+) max_part
+on a.p = max_part.p
+and a.wicket = max_part.wicket
+WHERE a.eleven = '3rd'
+order by a.wicket
+
+

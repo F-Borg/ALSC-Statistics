@@ -21,13 +21,11 @@ import re
 
 
 str1 = """
-SELECT Players!surname & ", " & players![first name] AS Name, 100*batting!score/batting![balls faced] AS [Strike Rate], batting!score & IIf(batting![how out]="not out" Or batting![how out]="retired hurt" Or batting![how out]="forced retirement","*","") AS Runs, Batting.[Balls Faced], Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association
-FROM Seasons INNER JOIN (Matches INNER JOIN (Innings INNER JOIN (Players INNER JOIN Batting ON Players.PlayerID = Batting.PlayerID) ON Innings.InningsID = Batting.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
-GROUP BY Players!surname & ", " & players![first name], 100*batting!score/batting![balls faced], batting!score & IIf(batting![how out]="not out" Or batting![how out]="retired hurt" Or batting![how out]="forced retirement","*",""), Batting.[Balls Faced], Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association, Batting.Score
-HAVING (((Batting.Score)>29))
-ORDER BY 100*batting!score/batting![balls faced] DESC;
-
-
+SELECT Batting_Partnerships_All.Wicket, Max(Batting_Partnerships_All.p) AS MaxOfp, Seasons.Eleven
+FROM Seasons INNER JOIN (Matches INNER JOIN (Players AS Players_1 INNER JOIN (Players INNER JOIN (Batting_Partnerships_All INNER JOIN Innings ON Batting_Partnerships_All.InningsID = Innings.InningsID) ON Players.PlayerID = Batting_Partnerships_All.PlayerID) ON Players_1.PlayerID = Batting_Partnerships_All.[Not Out Batsman]) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
+GROUP BY Batting_Partnerships_All.Wicket, Seasons.Eleven
+HAVING (((Seasons.Eleven)="3rd"))
+ORDER BY Batting_Partnerships_All.Wicket, Max(Batting_Partnerships_All.p) DESC;
 """
 
 print(re.sub('\[([\w\s]+)\]','\\1',str1).

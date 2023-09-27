@@ -386,7 +386,7 @@ ORDER BY AGE(z_all_player_dates.debut,z_all_player_dates.dob);
 
 
 
-
+select * from players
 
 select * from matches where result='T'
 select * from z_batting_totals where matchid = 417

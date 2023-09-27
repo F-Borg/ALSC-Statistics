@@ -1,3 +1,5 @@
+-- drop table batting cascade
+
 
 alter table seasons rename column "SeasonID" to seasonid;
 alter table seasons rename column "Year" to year;
@@ -72,8 +74,6 @@ alter table players add column name_FL VARCHAR;
 update players 
 set name_fl = firstname||' '||surname
 ;
-
-
 
 
 

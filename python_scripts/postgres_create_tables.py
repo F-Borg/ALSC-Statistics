@@ -26,7 +26,7 @@ batting = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2021-22\2
 bowling = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2021-22\21-22 db temp.xlsx', sheet_name='Bowling')
 wickets = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2021-22\21-22 db temp.xlsx', sheet_name='Wickets')
 
-# players = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2020-21\20-21 db temp.xlsx', sheet_name='Players2')
+players = pd.read_excel(r'C:\Users\Fin\Documents\ALSC stats\ALSC Stats 2021-22\21-22 db temp.xlsx', sheet_name='Players2')
 
 
 #########################################################################################################################
@@ -51,8 +51,6 @@ seasons = pd.concat([seasons,appendrow])
 
 
 
-
-
 #########################################################################################################################
 # Create tables in postgres
 #########################################################################################################################
@@ -63,7 +61,8 @@ batting.to_sql('batting', engine, if_exists='replace', index=False)
 bowling.to_sql('bowling', engine, if_exists='replace', index=False)
 wickets.to_sql('wickets', engine, if_exists='replace', index=False)
 
-# players.to_sql('players', engine, if_exists='replace', index=False)
+players.rename(columns={'PlayerID':'playerid','First Name':'firstname','Surname':'surname','Date of Birth':'dob'}, inplace=True)
+# players.to_sql('players', engine, if_exists='append', index=False)
 
 
 
