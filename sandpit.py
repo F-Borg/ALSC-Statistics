@@ -21,11 +21,10 @@ import re
 
 
 str1 = """
-SELECT Batting_Partnerships_All.Wicket, Max(Batting_Partnerships_All.p) AS MaxOfp, Seasons.Eleven
-FROM Seasons INNER JOIN (Matches INNER JOIN (Players AS Players_1 INNER JOIN (Players INNER JOIN (Batting_Partnerships_All INNER JOIN Innings ON Batting_Partnerships_All.InningsID = Innings.InningsID) ON Players.PlayerID = Batting_Partnerships_All.PlayerID) ON Players_1.PlayerID = Batting_Partnerships_All.[Not Out Batsman]) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
-GROUP BY Batting_Partnerships_All.Wicket, Seasons.Eleven
-HAVING (((Seasons.Eleven)="3rd"))
-ORDER BY Batting_Partnerships_All.Wicket, Max(Batting_Partnerships_All.p) DESC;
+SELECT Sum(IIf(Bowling_Figures_All!w>4,1,0)) AS 5WI, players!surname & ", " & players![first name] AS Name, Batting_Career_Summary.Mat, Bowling_Figures_All.PlayerID
+FROM Batting_Career_Summary INNER JOIN (Players INNER JOIN Bowling_Figures_All ON Players.PlayerID = Bowling_Figures_All.PlayerID) ON Batting_Career_Summary.PlayerID = Players.PlayerID
+GROUP BY players!surname & ", " & players![first name], Batting_Career_Summary.Mat, Bowling_Figures_All.PlayerID
+ORDER BY Sum(IIf(Bowling_Figures_All!w>4,1,0)) DESC;
 """
 
 print(re.sub('\[([\w\s]+)\]','\\1',str1).

@@ -375,6 +375,7 @@ on a.p = max_part.p
 and a.wicket = max_part.wicket
 WHERE a.eleven = '2nd'
 order by a.wicket
+;
 
 
 CREATE OR REPLACE VIEW batting_26_partnerships_wicket_3rdXI AS
