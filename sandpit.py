@@ -21,10 +21,14 @@ import re
 
 
 str1 = """
-SELECT Sum(IIf(Bowling_Figures_All!w>4,1,0)) AS 5WI, players!surname & ", " & players![first name] AS Name, Batting_Career_Summary.Mat, Bowling_Figures_All.PlayerID
-FROM Batting_Career_Summary INNER JOIN (Players INNER JOIN Bowling_Figures_All ON Players.PlayerID = Bowling_Figures_All.PlayerID) ON Batting_Career_Summary.PlayerID = Players.PlayerID
-GROUP BY players!surname & ", " & players![first name], Batting_Career_Summary.Mat, Bowling_Figures_All.PlayerID
-ORDER BY Sum(IIf(Bowling_Figures_All!w>4,1,0)) DESC;
+SELECT players!surname & ", " & players![first name] AS Name, Seasons.Eleven, Matches.Round, Matches.Opponent, batting!score & IIf(batting![how out]="not out" Or batting![how out]="retired hurt" Or batting![how out]="forced retirement","*","") AS Score, Batting.[Balls Faced], Batting.[4s], Batting.[6s], Batting.[Batting Position]
+FROM Seasons INNER JOIN (Matches INNER JOIN (Innings INNER JOIN (Players INNER JOIN Batting ON Players.PlayerID = Batting.PlayerID) ON Innings.InningsID = Batting.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
+WHERE (((Seasons.SeasonID)=73 Or (Seasons.SeasonID)=74 Or (Seasons.SeasonID)=75))
+GROUP BY players!surname & ", " & players![first name], Seasons.Eleven, Matches.Round, Matches.Opponent, batting!score & IIf(batting![how out]="not out" Or batting![how out]="retired hurt" Or batting![how out]="forced retirement","*",""), Batting.[Balls Faced], Batting.[4s], Batting.[6s], Batting.[Batting Position], Seasons.Grade, Seasons.Year, Seasons.Grade, Matches.Date1, Matches.MatchID, Innings.InningsNO, Matches.Round, Batting.Score, Players.PlayerID
+HAVING (((Batting.[Balls Faced]) Is Not Null))
+ORDER BY players!surname & ", " & players![first name], Matches.Date1, Matches.MatchID, Innings.InningsNO, Matches.Round, Batting.[Balls Faced] DESC , Batting.Score DESC , batting!score & IIf(batting![how out]="not out" Or batting![how out]="retired hurt" Or batting![how out]="forced retirement","*","") DESC;
+
+
 """
 
 print(re.sub('\[([\w\s]+)\]','\\1',str1).
