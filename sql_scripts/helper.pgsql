@@ -247,7 +247,7 @@ create or replace view z_player_matches_all AS
 SELECT players.player_name AS Name
     , Sum(CASE WHEN innings.inningsno=1 Or innings.inningsno=2 then 1 else 0 end) AS Mat
     , batting_01_summary_ind.Debut
-    , batting_01_summary_ind.Last Season
+    , batting_01_summary_ind."Last Season"
     , Players.PlayerID
 FROM Matches 
 INNER JOIN (Innings 
@@ -255,7 +255,7 @@ INNER JOIN (batting_01_summary_ind
 INNER JOIN (Players 
 INNER JOIN Batting ON Players.PlayerID = Batting.PlayerID) ON batting_01_summary_ind.PlayerID = Players.PlayerID) ON Innings.InningsID = 
 Batting.InningsID) ON Matches.MatchID = Innings.MatchID
-GROUP BY players.Surname ||', '|| players.firstname, batting_01_summary_ind.Debut, batting_01_summary_ind.Last Season, Players.PlayerID, Players.PlayerID
+GROUP BY players.player_name, batting_01_summary_ind.Debut, batting_01_summary_ind."Last Season", Players.PlayerID
 ORDER BY Sum((CASE WHEN innings.inningsno=1 Or innings.inningsno=2 then 1 else 0 end)) DESC;
 ;
 
@@ -317,10 +317,18 @@ ORDER BY "5WI" DESC;
 
 
 create or replace view z_bbf AS
-SELECT w_bbf_A.PlayerID, z_Bowling_Figures_All.Figures, z_Bowling_Figures_All."5WI", z_Bowling_Figures_All.InningsID
-FROM z_Bowling_Figures_All
-GROUP BY w_bbf_A.PlayerID;
-
+select * from (
+    SELECT 
+        z_Bowling_Figures_All.PlayerID
+        , z_Bowling_Figures_All.Figures
+        , Sum((CASE WHEN z_Bowling_Figures_All.w>4 then 1 else 0 end)) over (partition by playerid) AS "5WI"
+        , z_Bowling_Figures_All.InningsID
+        , row_number() over (partition by playerid order by w desc, runs) as bowling_figures_rank
+    FROM z_Bowling_Figures_All
+) a
+where bowling_figures_rank = 1
+order by playerid
+;
 
 create or replace view z_bocsa AS
 SELECT 
@@ -339,25 +347,23 @@ SELECT
     , Sum(z_Bowling_Figures_All.tbd)/Sum(z_Bowling_Figures_All.w) AS ABD
     , Sum(Bowling._4s_against) AS _4s
     , Sum(Bowling._6s_against) AS _6s
-    , w_bbf.Figures
-    , w_bbf.5WI
+    , z_bbf.Figures
+    , z_bbf."5WI"
     , Max(Bowling.HighOver) AS "Expensive Over"
     , Players.PlayerID
 FROM Matches 
 INNER JOIN (Innings 
 INNER JOIN (z_player_matches_all 
-INNER JOIN (w_bbf RIGHT JOIN (z_Bowling_Figures_All RIGHT JOIN (Players INNER JOIN Bowling ON Players.PlayerID = Bowling.PlayerID) 
+INNER JOIN (z_bbf RIGHT JOIN (z_Bowling_Figures_All RIGHT JOIN (Players INNER JOIN Bowling ON Players.PlayerID = Bowling.PlayerID) 
         ON (z_Bowling_Figures_All.InningsID = Bowling.InningsID) AND (z_Bowling_Figures_All.PlayerID = Bowling.PlayerID)) 
-    ON w_bbf.PlayerID = Bowling.PlayerID) 
+    ON z_bbf.PlayerID = Bowling.PlayerID) 
 ON z_player_matches_all.PlayerID = Players.PlayerID) 
 ON Innings.InningsID = Bowling.InningsID) 
 ON Matches.MatchID = Innings.MatchID
-GROUP BY Players.player_name, z_player_matches_all.Mat, w_bbf.Figures, w_bbf.5WI, Players.PlayerID, z_Bowling_Figures_All.PlayerID
+GROUP BY Players.player_name, z_player_matches_all.Mat, z_bbf.Figures, z_bbf."5WI", Players.PlayerID, z_Bowling_Figures_All.PlayerID
 ORDER BY Players.player_name, Sum(z_Bowling_Figures_All.w) DESC;
 ;
 
-
-select floor('155.9')
 
 
 
@@ -365,31 +371,31 @@ create or replace view z_bcsa AS
 SELECT 
     z_player_matches_all.Name
     , z_player_matches_all.Mat
-    , bocsa.O
-    , bocsa.Balls
-    , bocsa.Mdns
-    , bocsa."Total Runs"
-    , bocsa."Total Wickets"
-    , bocsa.Average
-    , bocsa.Strike Rate
-    , bocsa.RPO
-    , bocsa.ABD
-    , bocsa.4s
-    , bocsa.6s
-    , bocsa.Figures
-    , bocsa.5WI
-    , bocsa."Expensive Over"
-    , Sum((CASE WHEN wickets.how_out="caught" then 1 else 0 end))+Sum((CASE WHEN wickets.how_out="stumped" then 1 else 0 end)) AS Dismissals
-    , Sum((CASE WHEN wickets.how_out="caught" then 1 else 0 end)) AS Catches
-    , Sum((CASE WHEN wickets.how_out="stumped" then 1 else 0 end)) AS Stumpings
+    , z_bocsa.O
+    , z_bocsa.Balls
+    , z_bocsa.Mdns
+    , z_bocsa."Total Runs"
+    , z_bocsa."Total Wickets"
+    , z_bocsa.Average
+    , z_bocsa."Strike Rate"
+    , z_bocsa.RPO
+    , z_bocsa.ABD
+    , z_bocsa._4s
+    , z_bocsa._6s
+    , z_bocsa.Figures
+    , z_bocsa."5WI"
+    , z_bocsa."Expensive Over"
+    , Sum(CASE WHEN lower(wickets.how_out) in ('caught','stumped') then 1 else 0 end) AS Dismissals
+    , Sum(CASE WHEN lower(wickets.how_out)='caught' then 1 else 0 end) AS Catches
+    , Sum(CASE WHEN lower(wickets.how_out)='stumped' then 1 else 0 end) AS Stumpings
     , Players.PlayerID
 FROM (Players 
     LEFT JOIN Wickets 
     ON Players.PlayerID = Wickets.assist) 
 INNER JOIN z_player_matches_all 
 ON Players.PlayerID = z_player_matches_all.PlayerID
-LEFT JOIN bocsa 
-ON z_player_matches_all.Name = bocsa.Name
-GROUP BY z_player_matches_all.Name, z_player_matches_all.Mat, bocsa.O, bocsa.Balls, bocsa.Mdns, bocsa.Total Runs, bocsa.Total Wickets, bocsa.Average, bocsa.Strike Rate, bocsa.RPO, bocsa.ABD, bocsa.4s, bocsa.6s, bocsa.Figures, bocsa.5WI, bocsa.Expensive Over, Players.PlayerID, z_player_matches_all.Mat
-ORDER BY Sum((CASE WHEN wickets.how_out="caught" then 1 else 0 end))+Sum((CASE WHEN wickets.how_out="stumped" then 1 else 0 end)) DESC , Sum((CASE WHEN wickets.how_out="caught" then 1 else 0 end)) DESC;
+LEFT JOIN z_bocsa 
+ON z_player_matches_all.Name = z_bocsa.Name
+GROUP BY z_player_matches_all.Name, z_player_matches_all.Mat, z_bocsa.O, z_bocsa.Balls, z_bocsa.Mdns, z_bocsa."Total Runs", z_bocsa."Total Wickets", z_bocsa.Average, z_bocsa."Strike Rate", z_bocsa.RPO, z_bocsa.ABD, z_bocsa._4s, z_bocsa._6s, z_bocsa.Figures, z_bocsa."5WI", z_bocsa."Expensive Over", Players.PlayerID, z_player_matches_all.Mat
+ORDER BY Dismissals DESC , catches DESC;
 
