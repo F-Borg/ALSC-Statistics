@@ -86,6 +86,7 @@ Open source software:
 		- averages etc. in finals
 		- finals played, won
 		- consult others for ideas
+	Individual summary - maybe Power BI, or one-pager
 	additional web scraping
 		- if there is access to ball-by-ball, then 4's and 6's against and high over
 		- date & venue
