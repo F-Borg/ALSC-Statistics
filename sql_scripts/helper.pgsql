@@ -45,6 +45,20 @@ ON z_batmax_A.MaxOfScore = Batting.Score
 AND z_batmax_A.PlayerID = Batting.PlayerID
 GROUP BY z_batmax_A.PlayerID;
 
+create or replace view z_batmax_season_A AS
+SELECT Batting.PlayerID, Max(Batting.Score) AS MaxOfScore, seasons.seasonid
+FROM Seasons INNER JOIN (Matches INNER JOIN (Innings INNER JOIN Batting ON Innings.InningsID = Batting.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
+GROUP BY Batting.PlayerID, Seasons.SeasonID;
+
+create or replace view z_batmax_season AS
+SELECT z_batmax_season_A.PlayerID
+    , Max(CASE WHEN Batting.how_out='Not Out' Or Batting.how_out='Retired Hurt' then TO_CHAR(Batting.score,'999')||'*' else TO_CHAR(Batting.score,'999') end) AS HS
+    , Seasons.SeasonID
+FROM Matches INNER JOIN (Innings INNER JOIN (Seasons INNER JOIN (Batting INNER JOIN z_batmax_season_A ON (Batting.PlayerID = z_batmax_season_A.PlayerID) AND (Batting.Score = z_batmax_season_A.MaxOfScore)) ON Seasons.SeasonID = z_batmax_season_A.SeasonID) ON Innings.InningsID = Batting.InningsID) ON (Seasons.SeasonID = Matches.SeasonID) AND (Matches.MatchID = Innings.MatchID)
+GROUP BY z_batmax_season_A.PlayerID, Seasons.SeasonID;
+
+
+
 create or replace view z_batpos_max as
 SELECT 
     seasons.eleven
@@ -192,6 +206,17 @@ FROM Seasons INNER JOIN (Matches INNER JOIN (Players AS Players_1 INNER JOIN (Pl
 GROUP BY z_bat_partnerships.Wicket, Seasons.Eleven
 ORDER BY eleven, z_bat_partnerships.Wicket, Max(z_bat_partnerships.p) DESC;
 
+create or replace view z_bat_part_max_season AS
+SELECT z_bat_partnerships.Wicket, Max(z_bat_partnerships.p) AS MaxOfp, Matches.SeasonID
+FROM Matches INNER JOIN (Players AS Players_1 
+INNER JOIN (Players INNER JOIN (z_bat_partnerships 
+INNER JOIN Innings ON z_bat_partnerships.InningsID = Innings.InningsID) 
+ON Players.PlayerID = z_bat_partnerships.PlayerID) 
+ON Players_1.PlayerID = z_bat_partnerships.not_out_batter) ON Matches.MatchID = Innings.MatchID
+GROUP BY z_bat_partnerships.Wicket, Matches.SeasonID
+;
+
+
 
 CREATE OR REPLACE VIEW z_batting_partnerships_highest AS
 SELECT 
@@ -274,11 +299,12 @@ SELECT Count(wickets.playerid) ||'/'|| (CASE WHEN lower(Seasons.nbw_status)='tru
 , Matches.MatchID
 , Bowling.Wides
 , Bowling.no_balls
+, Seasons.SeasonID
 FROM Seasons 
 INNER JOIN (Matches INNER JOIN (Innings 
 INNER JOIN (Wickets RIGHT JOIN Bowling ON (Wickets.playerID = Bowling.PlayerID) AND (Wickets.InningsID = Bowling.InningsID)) 
 ON Innings.InningsID = Bowling.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
-GROUP BY Bowling.PlayerID, Bowling.InningsID, Bowling.Overs, Bowling.Extra_Balls, Bowling.Maidens, Matches.MatchID, bowling.no_balls, bowling.wides, bowling.runs_off_bat, seasons.nbw_status
+GROUP BY Bowling.PlayerID, Seasons.SeasonID, Bowling.InningsID, Bowling.Overs, Bowling.Extra_Balls, Bowling.Maidens, Matches.MatchID, bowling.no_balls, bowling.wides, bowling.runs_off_bat, seasons.nbw_status
 ORDER BY w DESC, runs;
 
 
@@ -329,6 +355,21 @@ select * from (
 where bowling_figures_rank = 1
 order by playerid
 ;
+
+create or replace view z_bbf_season AS
+select * from (
+    SELECT 
+        z_Bowling_Figures_All.PlayerID
+        , z_Bowling_Figures_All.seasonid
+        , z_Bowling_Figures_All.Figures
+        , Sum((CASE WHEN z_Bowling_Figures_All.w>4 then 1 else 0 end)) over (partition by playerid) AS "5WI"
+        , z_Bowling_Figures_All.InningsID
+        , row_number() over (partition by playerid, seasonid order by w desc, runs) as bowling_figures_rank
+    FROM z_Bowling_Figures_All
+) a
+where bowling_figures_rank = 1
+;
+
 
 create or replace view z_bocsa AS
 SELECT 

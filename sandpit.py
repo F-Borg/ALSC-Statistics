@@ -21,13 +21,11 @@ import re
 
 
 str1 = """
-SELECT players!surname & ", " & players![first name] AS Name, Seasons.Eleven, Matches.Round, Matches.Opponent, batting!score & IIf(batting![how out]="not out" Or batting![how out]="retired hurt" Or batting![how out]="forced retirement","*","") AS Score, Batting.[Balls Faced], Batting.[4s], Batting.[6s], Batting.[Batting Position]
-FROM Seasons INNER JOIN (Matches INNER JOIN (Innings INNER JOIN (Players INNER JOIN Batting ON Players.PlayerID = Batting.PlayerID) ON Innings.InningsID = Batting.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
-WHERE (((Seasons.SeasonID)=73 Or (Seasons.SeasonID)=74 Or (Seasons.SeasonID)=75))
-GROUP BY players!surname & ", " & players![first name], Seasons.Eleven, Matches.Round, Matches.Opponent, batting!score & IIf(batting![how out]="not out" Or batting![how out]="retired hurt" Or batting![how out]="forced retirement","*",""), Batting.[Balls Faced], Batting.[4s], Batting.[6s], Batting.[Batting Position], Seasons.Grade, Seasons.Year, Seasons.Grade, Matches.Date1, Matches.MatchID, Innings.InningsNO, Matches.Round, Batting.Score, Players.PlayerID
-HAVING (((Batting.[Balls Faced]) Is Not Null))
-ORDER BY players!surname & ", " & players![first name], Matches.Date1, Matches.MatchID, Innings.InningsNO, Matches.Round, Batting.[Balls Faced] DESC , Batting.Score DESC , batting!score & IIf(batting![how out]="not out" Or batting![how out]="retired hurt" Or batting![how out]="forced retirement","*","") DESC;
-
+SELECT Players!surname & ", " & players![first name] AS Name, w_player_season_matches.Mat, Sum(IIf(wickets![how out]="caught",1,0)) AS Catches, Sum(IIf(wickets![how out]="stumped",1,0)) AS Stumpings, Sum(IIf(wickets![how out]="run out",1,0)) AS [Run Outs]
+FROM Matches INNER JOIN (Innings INNER JOIN (Seasons INNER JOIN ((Players INNER JOIN Wickets ON Players.PlayerID = Wickets.assist) INNER JOIN w_player_season_matches ON Players.PlayerID = w_player_season_matches.PlayerID) ON Seasons.SeasonID = w_player_season_matches.SeasonID) ON Innings.InningsID = Wickets.InningsID) ON (Seasons.SeasonID = Matches.SeasonID) AND (Matches.MatchID = Innings.MatchID)
+GROUP BY Players!surname & ", " & players![first name], w_player_season_matches.Mat, Seasons.Year, Seasons.Eleven, Matches.SeasonID, w_player_season_matches.Mat
+HAVING (((Matches.SeasonID)=[Enter Season ID]))
+ORDER BY Sum(IIf(wickets![how out]="caught",1,0)) DESC , Sum(IIf(wickets![how out]="stumped",1,0)) DESC , Sum(IIf(wickets![how out]="run out",1,0)) DESC , w_player_season_matches.Mat DESC;
 
 """
 

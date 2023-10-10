@@ -124,7 +124,6 @@ SELECT
     , Innings.InningsNO
     , Sum(batting.score)+max(innings.extras) AS Expr1
     , Innings.InningsID
-    , Seasons.Year
     , Seasons.Association
 FROM Seasons 
 INNER JOIN Matches 
@@ -172,20 +171,21 @@ ORDER BY Sum(batting.Score)+max(Innings.Extras);
 
 
 CREATE OR REPLACE VIEW team_07_scores_opp_highest AS
-SELECT case when max(z_wickin.num_wickets)=10 then '' else max(z_wickin.num_wickets) || '/' end || Sum(Bowling.no_balls)+Sum(Bowling.Wides)+Sum(Bowling.runs_off_bat)+max(Innings.extras) AS Score
-, Sum(bowling.overs) ||'.'|| Sum(bowling.extra_balls) AS "Overs Bowled"
-, 6*(Sum(Bowling.no_balls)+Sum(Bowling.Wides)+Sum(Bowling.runs_off_bat)+max(Innings.Extras))/Sum(6*bowling.overs+bowling.extra_balls) AS "Run Rate"
-, Matches.Opponent
-, Seasons.Year
-, Matches.Round
-, Matches.Ground
-, Seasons.Eleven
-, Innings.InningsNO
-, Matches.MatchID
-, Seasons.Year
-, Seasons.Association
-, Seasons.Grade
-
+SELECT 
+    case when max(z_wickin.num_wickets)=10 then '' else max(z_wickin.num_wickets) || '/' end || 
+        Sum(Bowling.no_balls)+Sum(Bowling.Wides)+Sum(Bowling.runs_off_bat)+max(Innings.extras) 
+        AS Score
+    , Sum(bowling.overs) ||'.'|| Sum(bowling.extra_balls) AS "Overs Bowled"
+    , 6*(Sum(Bowling.no_balls)+Sum(Bowling.Wides)+Sum(Bowling.runs_off_bat)+max(Innings.Extras))/Sum(6*bowling.overs+bowling.extra_balls) AS "Run Rate"
+    , Matches.Opponent
+    , Seasons.Year
+    , Matches.Round
+    , Matches.Ground
+    , Seasons.Eleven
+    , Innings.InningsNO
+    , Matches.MatchID
+    , Seasons.Association
+    , Seasons.Grade
 FROM Seasons 
 INNER JOIN Matches 
 ON Seasons.SeasonID = Matches.SeasonID
@@ -212,7 +212,6 @@ SELECT case when max(z_wickin.num_wickets)=10 then '' else max(z_wickin.num_wick
 , Innings.InningsNO
 , Matches.MatchID
 , Innings.Inningsid
-, Seasons.Year
 , Seasons.Association
 , Seasons.Grade
 

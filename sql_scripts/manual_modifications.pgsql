@@ -75,6 +75,23 @@ update players
 set name_fl = firstname||' '||surname
 ;
 
+-- wrong date for match - update
+update matches 
+set date1 = '2021-11-20'
+where matchid = 740
+;
+update matches 
+set date1 = '2021-10-23'
+where matchid = 737
+;
+update matches 
+set date1 = '2022-01-15'
+where matchid = 758
+;
+
+select * from matches where seasonid in (73,74,75)
+--and round = '2'
+order by seasonid, date1
 
 
 

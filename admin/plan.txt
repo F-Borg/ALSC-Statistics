@@ -43,11 +43,11 @@ Open source software:
 ###############################################################################
 #             0.3 - calculated tables
 ###############################################################################
-	all the ones currently in ms access - see list_of_tables.xlsx
+	DONE - all the ones currently in ms access - see list_of_tables.xlsx
 		DONE - Statistical History
-		- Yearbook
-	milestones
-		- games/runs/wickets until milestone
+		DONE - Yearbook
+	DONE - milestones
+		DONE - games/runs/wickets until milestone
                
 
 ###############################################################################
