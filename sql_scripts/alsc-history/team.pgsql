@@ -2,20 +2,21 @@
 * Season Summary
 ****************************************************************************************************/
 
-CREATE OR REPLACE VIEW team_01_season_summary_1stXI AS
+CREATE OR REPLACE VIEW team_01_season_summary_all AS
 SELECT 
     Seasons.Year
     , Count(Matches.MatchID) AS Played
     , Sum(case when upper(matches.result)='W2' then 1 else 0 end) AS WO
     , Sum(case when upper(matches.result)='W1' then 1 else 0 end) AS W1
-    , Sum(case when upper(matches.result)= 'D' then 1 else 0 end) AS D
+    , Sum(case when upper(matches.result) in ('D','T') then 1 else 0 end) AS D
     , Sum(case when upper(matches.result)='L1' then 1 else 0 end) AS L1
     , Sum(case when upper(matches.result)='L2' then 1 else 0 end) AS LO
     , Seasons.posn as "Position"
+    , Seasons.Association
     , Seasons.Grade
     , players.surname || ', ' || players.firstname AS Captain
     , players_1.surname || ', ' || players_1.firstname AS "Vice Captain"
-    , Seasons.Association
+    , seasons.eleven
 
 FROM Seasons
 INNER JOIN Matches 
@@ -24,63 +25,9 @@ INNER JOIN players
 ON Players.PlayerID = Seasons.Captain
 LEFT JOIN players AS players_1 
 ON Players_1.PlayerID = Seasons.vice_captain
-WHERE seasons.eleven = '1st'
-GROUP BY Seasons.Year, Seasons.posn, Seasons.Grade, players.surname || ', ' || players.firstname, players_1.surname || ', ' || players_1.firstname, Seasons.Association
+--WHERE seasons.eleven = '1st' and (seasons.grade != 'T20' or seasons.grade is null)
+GROUP BY Seasons.Year, Seasons.posn, Seasons.Grade, players.surname || ', ' || players.firstname, players_1.surname || ', ' || players_1.firstname, Seasons.Association, eleven
 ORDER BY Seasons.Year;
-
-
-CREATE OR REPLACE VIEW team_02_season_summary_2ndXI as
-SELECT 
-    Seasons.Year
-    , Count(Matches.MatchID) AS Played
-    , Sum(case when upper(matches.result)='W2' then 1 else 0 end) AS WO
-    , Sum(case when upper(matches.result)='W1' then 1 else 0 end) AS W1
-    , Sum(case when upper(matches.result)= 'D' then 1 else 0 end) AS D
-    , Sum(case when upper(matches.result)='L1' then 1 else 0 end) AS L1
-    , Sum(case when upper(matches.result)='L2' then 1 else 0 end) AS LO
-    , Seasons.posn as "Position"
-    , Seasons.Grade
-    , players.surname || ', ' || players.firstname AS Captain
-    , players_1.surname || ', ' || players_1.firstname AS "Vice Captain"
-    , Seasons.Association
-
-FROM Seasons
-INNER JOIN Matches 
-ON Seasons.SeasonID = Matches.SeasonID
-INNER JOIN players 
-ON Players.PlayerID = Seasons.Captain
-LEFT JOIN players AS players_1 
-ON Players_1.PlayerID = Seasons.vice_captain
-WHERE seasons.eleven = '2nd'
-GROUP BY Seasons.Year, Seasons.posn, Seasons.Grade, players.surname || ', ' || players.firstname, players_1.surname || ', ' || players_1.firstname, Seasons.Association
-ORDER BY Seasons.Year;
-
-
-CREATE OR REPLACE VIEW team_03_season_summary_3rdXI AS
-SELECT 
-    Seasons.Year
-    , Count(Matches.MatchID) AS Played
-    , Sum(case when upper(matches.result)='W2' then 1 else 0 end) AS WO
-    , Sum(case when upper(matches.result)='W1' then 1 else 0 end) AS W1
-    , Sum(case when upper(matches.result)= 'D' then 1 else 0 end) AS D
-    , Sum(case when upper(matches.result)='L1' then 1 else 0 end) AS L1
-    , Sum(case when upper(matches.result)='L2' then 1 else 0 end) AS LO
-    , Seasons.posn as "Position"
-    , Seasons.Grade
-    , players.surname || ', ' || players.firstname AS Captain
-    , players_1.surname || ', ' || players_1.firstname AS "Vice Captain"
-    , Seasons.Association
-
-FROM Seasons
-INNER JOIN Matches 
-ON Seasons.SeasonID = Matches.SeasonID
-INNER JOIN players 
-ON Players.PlayerID = Seasons.Captain
-LEFT JOIN players AS players_1 
-ON Players_1.PlayerID = Seasons.vice_captain
-WHERE seasons.eleven = '3rd'
-GROUP BY Seasons.year, Seasons.posn, Seasons.Grade, players.surname || ', ' || players.firstname, players_1.surname || ', ' || players_1.firstname, Seasons.Association
-ORDER BY Seasons.year;
 
 
 /****************************************************************************************************
@@ -156,7 +103,6 @@ SELECT
     , Innings.InningsNO
     , Sum(batting.score)+max(innings.extras) AS Expr1
     , Innings.InningsID
-    , Seasons.Year
     , Seasons.Association
 FROM Seasons 
 INNER JOIN Matches 
@@ -231,18 +177,18 @@ ORDER BY Sum(Bowling.no_balls)+Sum(Bowling.Wides)+Sum(Bowling.runs_off_bat)+max(
 ;
 
 
-
+-- drop view team_09_misc_fast;
 CREATE OR REPLACE VIEW team_09_misc_fast AS
 SELECT  6*(Sum(Batting.score)+max(innings.extras))/(6*max(innings.bat_overs) + CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) AS "Run Rate"
-    , max(innings.bat_overs) ||'.'|| (CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) AS Ov
-    , CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10 then '' 
-        else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end) ||'/') || Sum(Batting.Score)+max(Innings.Extras) END AS Score
-    , Matches.Opponent
-    , Seasons.Year
-    , Matches.Round
-    , Seasons.Eleven
-    , Seasons.Grade
-    , Seasons.Association
+    , max(innings.bat_overs) ||'.'|| (CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) AS "Overs"
+    , (CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10 then '' 
+        else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end) ||'/') end) || Sum(Batting.Score)+max(Innings.Extras) AS "Score"
+    , Matches.opponent as "Opponent"
+    , Seasons.Year as "Year"
+    , Matches.round as "Round"
+    , Seasons.Eleven as "XI"
+    , Seasons.Association as "Association"
+    , Seasons.Grade as "Grade"
 FROM Seasons 
 INNER JOIN Matches
 ON Seasons.SeasonID = Matches.SeasonID
@@ -258,18 +204,18 @@ HAVING (max(innings.bat_overs)>15) AND (
 ORDER BY 6*(Sum(Batting.score)+max(innings.extras))/(6*max(innings.bat_overs) + CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) DESC , Sum(Batting.Score)+max(Innings.Extras) DESC;
 
 
-
+-- drop view team_10_misc_slow;
 CREATE OR REPLACE VIEW team_10_misc_slow AS
 SELECT  6*(Sum(Batting.score)+max(innings.extras))/(6*max(innings.bat_overs) + CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) AS "Run Rate"
-    , max(innings.bat_overs) ||'.'|| (CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) AS Ov
-    , CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10 then '' 
-        else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end) ||'/') || Sum(Batting.Score)+max(Innings.Extras) END AS Score
-    , Matches.Opponent
-    , Seasons.Year
-    , Matches.Round
-    , Seasons.Eleven
-    , Seasons.Grade
-    , Seasons.Association
+    , max(innings.bat_overs) ||'.'|| (CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) AS "Overs"
+    , (CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10 then '' 
+        else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end) ||'/') end) || Sum(Batting.Score)+max(Innings.Extras) AS "Score"
+    , Matches.opponent as "Opponent"
+    , Seasons.Year as "Year"
+    , Matches.round as "Round"
+    , Seasons.Eleven as "XI"
+    , Seasons.Association as "Association"
+    , Seasons.Grade as "Grade"
 FROM Seasons 
 INNER JOIN Matches
 ON Seasons.SeasonID = Matches.SeasonID
@@ -285,21 +231,21 @@ HAVING (max(innings.bat_overs)>15) AND (
 ORDER BY 6*(Sum(Batting.score)+max(innings.extras))/(6*max(innings.bat_overs) + CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) , Sum(Batting.Score)+max(Innings.Extras);
 
 
-
+--   drop view team_11_misc_margin;
 CREATE OR REPLACE VIEW team_11_misc_margin AS
 SELECT 
-    z_batting_totals.runs-z_bowling_totals.runs AS Margin
-    , z_batting_totals.Score AS "Score For"
-    , z_bowling_totals.Score AS "Score Against"
-    , Matches.Opponent
-    , Seasons.Year
-    , Matches.Round
-    , Seasons.Eleven
-    , Seasons.Grade
+    z_batting_totals.runs-z_bowling_totals.runs AS "Margin"
+    , z_batting_totals.Score AS "For"
+    , z_bowling_totals.Score AS "Against"
+    , Matches.opponent as "Opponent"
+    , Seasons.Year as "Year"
+    , Matches.round as "Round"
+    , Seasons.Eleven as "XI"
+    , Seasons.Association as "Association"
+    , Seasons.Grade as "Grade"
     , Matches.MatchID
     , z_batting_totals.runs
-    , z_bowling_totals.runs
-    , Seasons.Association
+    , z_bowling_totals.runs as runs_against
 FROM Seasons 
 INNER JOIN Matches 
 ON Seasons.SeasonID = Matches.SeasonID
@@ -312,16 +258,16 @@ GROUP BY z_batting_totals.Score, z_bowling_totals.Score, Matches.Opponent, Seaso
 ORDER BY z_batting_totals.runs-z_bowling_totals.runs DESC;
 
 
-
+-- drop view team_12_misc_ties;
 CREATE OR REPLACE VIEW team_12_misc_ties AS
 SELECT 
     z_batting_totals.runs AS "Score"
-    , Matches.Opponent
-    , Seasons.Year
-    , Matches.Round
-    , Seasons.Eleven
-    , Seasons.Association
-    , Seasons.Grade
+    , Matches.opponent as "Opponent"
+    , Seasons.Year as "Year"
+    , Matches.round as "Round"
+    , Seasons.Eleven as "XI"
+    , Seasons.Association as "Association"
+    , Seasons.Grade as "Grade"
 FROM Seasons 
 INNER JOIN Matches 
 ON Seasons.SeasonID = Matches.SeasonID
@@ -385,23 +331,23 @@ ORDER BY AGE(z_all_player_dates.debut,z_all_player_dates.dob);
 
 
 
-select * from players
+-- select * from players
 
-select * from matches where result='T'
-select * from z_batting_totals where matchid = 417
-select * from innings where matchid = 417
+-- select * from matches where result='T'
+-- select * from z_batting_totals where matchid = 417
+-- select * from innings where matchid = 417
 
-select * from z_all_player_dates
-order by "Name"
+-- select * from z_all_player_dates
+-- order by "Name"
 
 
-select opponent, date1
-    , seasons.association
-    , seasons.eleven
-    , seasons.grade
-    , seasons.year
-from matches
-inner join seasons
-on matches.seasonid = seasons.seasonid
-where matches.round = 'GF'
-order by year
+-- select opponent, date1
+--     , seasons.association
+--     , seasons.eleven
+--     , seasons.grade
+--     , seasons.year
+-- from matches
+-- inner join seasons
+-- on matches.seasonid = seasons.seasonid
+-- where matches.round = 'GF'
+-- order by year

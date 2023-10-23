@@ -19,6 +19,3 @@ order by "Games Played", Runs, wickets, playerid
 ;
 
 
-
-
-
