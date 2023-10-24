@@ -54,8 +54,8 @@ worksheet.set_row(0, heading1_height)
 worksheet.merge_range('C4:D4',"Debut")
 worksheet.merge_range('E4:G4',"Last Season")
 for ii in range(stats_table.shape[0]):
-    worksheet.merge_range(ii+4,2,ii+4,3,stats_table['Debut'][ii])
-    worksheet.merge_range(ii+4,4,ii+4,6,stats_table['Last Season'][ii])
+    worksheet.merge_range(ii+4,2,ii+4,3,stats_table['Debut'][ii],centre)
+    worksheet.merge_range(ii+4,4,ii+4,6,stats_table['Last Season'][ii],centre)
 
 row_end += stats_table.shape[0] + 2
 
@@ -69,29 +69,22 @@ worksheet = writer.sheets[sheetname]
 worksheet.merge_range('I1:L1',"Youngest Known Players",heading1)
 
 
-# ##########################
-# # Greatest Winning Margins team_11_misc_margin
-# ##########################
-# stats_table = pd.read_sql(con=pgconn, sql=f"""select "Margin",	"For",	"Against",	"Opponent",	"Year",	"Round",	"XI",	"Association",	"Grade"
-#     from team_11_misc_margin where "Grade" <> 'T20' limit 10""")
-# stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
-# worksheet = writer.sheets[sheetname]
-# worksheet.merge_range(row_end+2,0,row_end+2,8,"Greatest Winning Margins",heading1)
-# worksheet.set_row(row_end+2, heading1_height)
+##########################
+# Most Matches as Captain
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Matches", "WO", "W1", "D", "T", "L1", "LO", "Win Pct", "Premierships"
+    from team_14_ind_most_matches_capt limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,10,"Most Matches as Captain",heading1)
+worksheet.set_row(row_end+2, heading1_height)
 
-# row_end += stats_table.shape[0] + 4
+row_end += stats_table.shape[0] + 4
 
-# ##########################
-# # Tied matches team_12_misc_ties
-# ##########################
-# stats_table = pd.read_sql(con=pgconn, sql=f"""select "Score",	"Opponent",	"Year",	"Round",	"XI",	"Association",	"Grade"
-#     from team_12_misc_ties""")
-# stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, startcol=2, index=False)
-# worksheet = writer.sheets[sheetname]
-# worksheet.merge_range(row_end+2,2,row_end+2,8,"Tied Matches",heading1)
-# worksheet.set_row(row_end+2, heading1_height)
 
-# row_end += stats_table.shape[0] + 4
+
+
+
 
 
 

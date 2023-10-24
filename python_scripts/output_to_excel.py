@@ -40,6 +40,7 @@ wb = writer.book
 heading1 = wb.add_format({'size':20,'bold':True,'underline':True})
 bold14centre = wb.add_format({'size':14,'bold':True,'align':'centre'})
 heading1_height = 35
+centre = wb.add_format({'align':'centre'})
 
 
 #########################################################################################################################

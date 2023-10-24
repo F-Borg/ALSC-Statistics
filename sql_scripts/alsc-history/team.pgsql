@@ -298,17 +298,18 @@ GROUP BY players.Surname ||', '||players.firstname, batting_01_summary_ind.Debut
 ORDER BY Sum(CASE WHEN innings.inningsno=1 Or innings.inningsno=2 then 1 else 0 end) DESC;
 
 
+--drop view team_14_ind_most_matches_capt;
 CREATE OR REPLACE VIEW team_14_ind_most_matches_capt AS
 SELECT players.Surname ||', '|| players.firstname AS "Name"
-    , Count(Matches.Captain) AS Games
-    , Sum((CASE WHEN upper(matches.result)='W2' then 1 else 0 end)) AS WO
-    , Sum((CASE WHEN upper(matches.result)='W1' then 1 else 0 end)) AS W1
-    , Sum((CASE WHEN upper(matches.result)='D'  then 1 else 0 end)) AS D
-    , Sum((CASE WHEN upper(matches.result)='T'  then 1 else 0 end)) AS T
-    , Sum((CASE WHEN upper(matches.result)='L1' then 1 else 0 end)) AS L1
-    , Sum((CASE WHEN upper(matches.result)='L2' then 1 else 0 end)) AS LO
-    , Sum((CASE WHEN upper(matches.result) in ('W2','W1') then 1 else 0 end)::float)*100/Count(matches.captain) AS "Winning Percentage"
-    , Sum((CASE WHEN matches.Round='GF' And upper(matches.result) in ('W1','W2') then 1 else 0 end)) AS Premierships
+    , Count(Matches.Captain) AS "Matches"
+    , Sum((CASE WHEN upper(matches.result)='W2' then 1 else 0 end)) AS "WO"
+    , Sum((CASE WHEN upper(matches.result)='W1' then 1 else 0 end)) AS "W1"
+    , Sum((CASE WHEN upper(matches.result)='D'  then 1 else 0 end)) AS "D"
+    , Sum((CASE WHEN upper(matches.result)='T'  then 1 else 0 end)) AS "T"
+    , Sum((CASE WHEN upper(matches.result)='L1' then 1 else 0 end)) AS "L1"
+    , Sum((CASE WHEN upper(matches.result)='L2' then 1 else 0 end)) AS "LO"
+    , Sum((CASE WHEN upper(matches.result) in ('W2','W1') then 1 else 0 end)::float)*100/Count(matches.captain) AS "Win Pct"
+    , Sum((CASE WHEN matches.Round='GF' And upper(matches.result) in ('W1','W2') then 1 else 0 end)) AS "Premierships"
 FROM Seasons INNER JOIN (Players INNER JOIN Matches ON Players.PlayerID = Matches.Captain) ON Seasons.SeasonID = Matches.SeasonID
 GROUP BY players.Surname ||', '|| players.firstname
 ORDER BY Count(Matches.Captain) DESC 
