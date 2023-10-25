@@ -229,7 +229,7 @@ worksheet.set_row(row_end+2, heading1_height)
 row_end += stats_table.shape[0] + 4
 
 ##########################
-# Tied matches team_12_misc_ties
+# Tied matches
 ##########################
 stats_table = pd.read_sql(con=pgconn, sql=f"""select "Score",	"Opponent",	"Year",	"Round",	"XI",	"Association",	"Grade"
     from team_12_misc_ties""")
@@ -241,57 +241,335 @@ worksheet.set_row(row_end+2, heading1_height)
 row_end += stats_table.shape[0] + 4
 
 
-
-
-
 #########################################################################################################################
 #########################################################################################################################
 # Team Ind
 #########################################################################################################################
 #########################################################################################################################
-sheetname = ''
+sheetname = 'Team Ind'
+row_end = 0
+
+##########################
+# Most Matches
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Name as "Name", mat as "Matches", debut as "Debut"
+                          , CASE WHEN "Last Season" = '{_season_}' THEN '-' ELSE "Last Season" END AS "Last Season"
+    from team_13_ind_most_matches limit 20""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 3, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:G1',"Most Matches",heading1)
+worksheet.set_row(0, heading1_height)
+
+# merged cells:
+worksheet.merge_range('C4:D4',"Debut")
+worksheet.merge_range('E4:G4',"Last Season")
+for ii in range(stats_table.shape[0]):
+    worksheet.merge_range(ii+4,2,ii+4,3,stats_table['Debut'][ii],centre)
+    worksheet.merge_range(ii+4,4,ii+4,6,stats_table['Last Season'][ii],centre)
+
+row_end += stats_table.shape[0] + 2
+
+##########################
+# Youngest Known Players
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Age on Debut", "First Season", "Age on Final Game"
+    from team_15_ind_youngest limit 20""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 3, startcol = 8, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('I1:L1',"Youngest Known Players",heading1)
+
+
+##########################
+# Most Matches as Captain
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Matches", "WO", "W1", "D", "T", "L1", "LO", "Win Pct", "Premierships"
+    from team_14_ind_most_matches_capt limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,10,"Most Matches as Captain",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += stats_table.shape[0] + 4
+
 
 #########################################################################################################################
 #########################################################################################################################
 # Player Batting Summary
 #########################################################################################################################
 #########################################################################################################################
-sheetname = ''
+row_end = 0
+
+player_count = pd.read_sql(con=pgconn, sql=f"""select count(*) from batting_01_summary_ind""")['count'][0]
+num_pages = ceil(player_count/70)
+
+stats_table_tmp = pd.read_sql(con=pgconn, sql=f"""select name as "Name", debut as "Debut", "Last Season", mat as "Matches", inn as "Innings", "NO" as "Not Outs", ducks as "Ducks"
+                          , fours as "Fours", Sixes as "Sixes", Fifties as "Fifties", hundreds as "Hundreds", hs as "Highest Score", total as "Total Runs", "Average", bf as "Balls Faced"
+                          , "Average BF" as "Average Balls Faced/Dismissal", "Runs/100 Balls" as "Strike Rate", "Pct Runs in Boundaries"  
+    from batting_01_summary_ind where mat>0""")
+
+for ii in range(num_pages):
+    sheetname = f'Player Batting Summary ({ii+1})'
+    stats_table = stats_table_tmp.loc[70*ii:(70*(ii+1)-1)]
+    stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
+    worksheet = writer.sheets[sheetname]
+    worksheet.merge_range('A1:R1',"ALCC Player Batting Career Summary",heading1)
+    worksheet.set_row(0, heading1_height)
+
 
 #########################################################################################################################
 #########################################################################################################################
-# Batting Career
+# Career Batting
 #########################################################################################################################
 #########################################################################################################################
-sheetname = ''
+sheetname = 'Career Batting'
+row_end = 0
+
+##########################
+# Most Career Runs
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Runs", "Name", "Inn", "Average"
+    from batting_02_career_runs limit 25""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 3, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:D1',"Most Career Runs",heading1)
+worksheet.set_row(0, heading1_height)
+
+##########################
+# Highest Career Average
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Runs", "Name", "Inn", "Average"
+    from batting_03_career_ave limit 25""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 3, startcol=5, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('F1:I1',"Highest Career Average",heading1)
+worksheet.set_row(0, heading1_height)
+
+row_end = stats_table.shape[0] + 3
+
+##########################
+# Fastest Career Strike Rate
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Runs/100 Balls", "Name", "Runs", "Balls"
+    from batting_04_career_sr_high limit 20""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+5, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,3,"Fastest Career Strike Rate",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+##########################
+# Slowest Career Strike Rate
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Runs/100 Balls", "Name", "Runs", "Balls"
+    from batting_05_career_sr_low limit 20""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+5, startcol=5, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,5,row_end+2,8,"Slowest Career Strike Rate",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
 
 #########################################################################################################################
 #########################################################################################################################
 # Batting Milestones
 #########################################################################################################################
 #########################################################################################################################
-sheetname = ''
+sheetname = 'Batting Milestones'
+row_end = 0
+
+##########################
+# Most Hundreds
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select name as "Name", Hundreds as "100s", inn as "Inn", "Percentage 100s"
+    from batting_06_milestones_100 where Hundreds >= 3""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:F1',"Most Hundreds",heading1)
+worksheet.set_row(0, heading1_height)
+
+row_end = stats_table.shape[0] + 2
+
+##########################
+# Most Fifties
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select name as "Name", Fifties as "50s", inn as "Inn", "Percentage 50s"
+    from batting_07_milestones_50 limit 15""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A13:F13',"Most Fifties",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += 4 + stats_table.shape[0]
+
+##########################
+# Most Ducks
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select name as "Name", ducks as "Ducks", inn as "Inn", "Percentage Ducks"
+    from batting_08_milestones_ducks limit 15""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,5,"Most Ducks",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += 4 + stats_table.shape[0]
+
+##########################
+# Most Runs In A Season (in one division)
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Name as "Name", runs AS "Runs", Mat as "Mat", Average as "Average", Year as "Year"
+    , Eleven as "XI", Association as "Association", Grade as "Grade"
+    from batting_09_milestones_runs_season limit 15""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,5,"Most Runs In A Season (in one division)",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
 
 #########################################################################################################################
 #########################################################################################################################
 # Batting High
 #########################################################################################################################
 #########################################################################################################################
-sheetname = ''
+sheetname = 'Batting High'
+row_end = 0
+
+##########################
+# Highest Individual Scores
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Name AS "Name",Score AS "Score",Balls_Faced AS "Balls Faced",Opponent AS "Opponent",Year AS "Year"
+                          ,Round AS "Round",eleven AS "XI",Association AS "Association",Grade AS "Grade"
+    from batting_10_high_score_ind limit 30""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:J1',"Highest Individual Scores",heading1)
+worksheet.set_row(0, heading1_height)
+
+row_end = stats_table.shape[0] + 2
+
+##########################
+# Most 6s in an Innings
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Name AS "Name",_6s AS "6s",score AS "Runs",balls_faced AS "Balls",Opponent AS "Opponent",Year AS "Year"
+                          ,Round AS "Round",eleven AS "XI",Association AS "Association",Grade AS "Grade"
+    from batting_11_high_score_sixes limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Most 6s in an Innings",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
 
 #########################################################################################################################
 #########################################################################################################################
 # Batting By Position
 #########################################################################################################################
 #########################################################################################################################
-sheetname = ''
+sheetname = 'Batting By Position'
+row_end = 0
+
+##########################
+# Highest 1st XI Scores By Batting Position
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select bat_pos AS "Postion",
+maxofscore AS "Score",
+Balls_Faced AS "Balls Faced",
+batter AS "Batter",
+Opponent AS "Opponent",
+Year AS "Year",
+Round AS "Round",
+Association AS "Association",
+Grade AS "Grade"
+    from batting_12_score_by_posn_1stXI""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:I1',"Highest 1st XI Scores By Batting Position",heading1)
+worksheet.set_row(0, heading1_height)
+
+row_end = stats_table.shape[0] + 2
+
+##########################
+# Highest 2nd XI Scores By Batting Position
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select bat_pos AS "Postion",
+maxofscore AS "Score",
+Balls_Faced AS "Balls Faced",
+batter AS "Batter",
+Opponent AS "Opponent",
+Year AS "Year",
+Round AS "Round",
+Association AS "Association",
+Grade AS "Grade"
+    from batting_13_score_by_posn_2ndXI""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest 2nd XI Scores By Batting Position",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += stats_table.shape[0] + 4
+
+
+##########################
+# Highest 3rd XI Scores By Batting Position
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select bat_pos AS "Postion",
+maxofscore AS "Score",
+Balls_Faced AS "Balls Faced",
+batter AS "Batter",
+Opponent AS "Opponent",
+Year AS "Year",
+Round AS "Round",
+Association AS "Association",
+Grade AS "Grade"
+    from batting_14_score_by_posn_3rdXI""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest 3rd XI Scores By Batting Position",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
 
 #########################################################################################################################
 #########################################################################################################################
 # Batting Fast Slow
 #########################################################################################################################
 #########################################################################################################################
-sheetname = ''
+sheetname = 'Batting Fast Slow'
+row_end = 0
+
+##########################
+# Longest Innings
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Name AS "Name",' ' AS " ",balls_faced AS "Balls",score AS "Runs",Opponent AS "Opponent",
+    Year AS "Year",Round AS "Round",eleven AS "XI",Association AS "Association",Grade AS "Grade"
+    from batting_15_fast_slow_longest limit 15""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:J1',"Longest Innings",heading1)
+worksheet.set_row(0, heading1_height)
+
+row_end = stats_table.shape[0] + 2
+
+##########################
+# Fastest Innings
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Name AS "Name",strike_rate AS "S/R",Runs AS "Runs",balls_faced AS "Balls",Opponent AS "Opponent",
+    Year AS "Year",Round AS "Round",eleven AS "XI",Association AS "Association",Grade AS "Grade"
+    from batting_16_fast_slow_fastest limit 15""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Fastest Innings (min 30 runs)",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += stats_table.shape[0] + 4
+
+
+##########################
+# Slowest Innings
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Name AS "Name",strike_rate AS "S/R",Runs AS "Runs",balls_faced AS "Balls",Opponent AS "Opponent",
+    Year AS "Year",Round AS "Round",eleven AS "XI",Association AS "Association",Grade AS "Grade"
+    from batting_17_fast_slow_slowest limit 15""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Slowest Innings (min 60 balls)",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
 
 #########################################################################################################################
 #########################################################################################################################

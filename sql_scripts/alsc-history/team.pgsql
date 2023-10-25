@@ -320,11 +320,12 @@ ORDER BY Count(Matches.Captain) DESC
     , Sum((CASE WHEN upper(matches.result)='L1' then 1 else 0 end));
 
 
+--DROP VIEW team_15_ind_youngest;
 CREATE OR REPLACE VIEW team_15_ind_youngest AS
 SELECT z_all_player_dates."Name"
-    , AGE(z_all_player_dates.debut,z_all_player_dates.dob) AS "Age on Debut"
+    , AGE(z_all_player_dates.debut,z_all_player_dates.dob)::VARCHAR AS "Age on Debut"
     , z_all_player_dates."First Season"
-    , AGE(z_all_player_dates."Final Game",z_all_player_dates.dob) AS "Age on Final Game"
+    , AGE(z_all_player_dates."Final Game",z_all_player_dates.dob)::VARCHAR AS "Age on Final Game"
 FROM z_all_player_dates
 GROUP BY z_all_player_dates."Name", AGE(z_all_player_dates.debut,z_all_player_dates.dob), "First Season", "Final Game", z_all_player_dates.dob
 HAVING   AGE(z_all_player_dates.debut,z_all_player_dates.dob) Is Not Null
