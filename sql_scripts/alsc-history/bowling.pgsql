@@ -1,11 +1,12 @@
 
-
+drop view bowling_01_summary_ind;
 CREATE OR REPLACE VIEW bowling_01_summary_ind AS
 SELECT z_bcsa.Name, z_bcsa.Mat, z_bcsa.O, z_bcsa.Balls, z_bcsa.Mdns, z_bcsa."Total Runs", z_bcsa."Total Wickets", z_bcsa.Average, z_bcsa."Strike Rate", z_bcsa.RPO, z_bcsa.ABD, z_bcsa._4s, z_bcsa._6s, z_bcsa.Figures, z_bcsa."5WI", z_bcsa."Expensive Over", z_bcsa.Catches, 
 z_bcsa.Stumpings, z_bcsa.PlayerID
 FROM z_bcsa
 WHERE (((z_bcsa.Balls)>0)) OR (((z_bcsa.Dismissals)>0))
 GROUP BY z_bcsa.Name, z_bcsa.Mat, z_bcsa.O, z_bcsa.Balls, z_bcsa.Mdns, z_bcsa."Total Runs", z_bcsa."Total Wickets", z_bcsa.Average, z_bcsa."Strike Rate", z_bcsa.RPO, z_bcsa.ABD, z_bcsa._4s, z_bcsa._6s, z_bcsa.Figures, z_bcsa."5WI", z_bcsa."Expensive Over", z_bcsa.Catches, z_bcsa.Stumpings, z_bcsa.PlayerID
+ORDER BY Name
 ;
 
 
