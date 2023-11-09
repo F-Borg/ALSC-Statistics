@@ -320,12 +320,14 @@ ORDER BY w DESC, runs;
 -- GROUP BY z_Bowling_Figures_All.Figures, z_Bowling_Figures_All.PlayerID, z_Bowling_Figures_All.w, z_Bowling_Figures_All.runs, z_Bowling_Figures_All.InningsID, z_Bowling_Figures_All.TBD
 -- ORDER BY z_Bowling_Figures_All.w DESC , z_Bowling_Figures_All.runs;
 
+--drop view z_Bowling_Career_5WI cascade;
 create or replace view z_Bowling_Career_5WI AS
 SELECT 
     Sum((CASE WHEN z_Bowling_Figures_All.w>4 then 1 else 0 end)) AS "5WI"
     , players.player_name AS Name
     , batting_01_summary_ind.Mat
     , z_Bowling_Figures_All.PlayerID
+    , 6*Sum(z_Bowling_Figures_All.Ov1) + Sum(z_Bowling_Figures_All.extra_balls) as balls
 FROM batting_01_summary_ind 
 INNER JOIN (Players INNER JOIN z_Bowling_Figures_All ON Players.PlayerID = z_Bowling_Figures_All.PlayerID) ON batting_01_summary_ind.PlayerID = Players.PlayerID
 GROUP BY players.player_name, batting_01_summary_ind.Mat, z_Bowling_Figures_All.PlayerID

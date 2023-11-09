@@ -74,6 +74,7 @@ SELECT
     , Name
     , Mat
 from z_Bowling_Career_5WI
+where balls > 119
 order by "5WI" DESC
 ;
 
@@ -96,7 +97,7 @@ INNER JOIN players
 ON players.playerid = z_Bowling_Figures_All.playerid
 group by player_name, z_Bowling_Figures_All.playerid, Seasons.Year, Seasons.Grade, Seasons.Eleven, Seasons.Association
 having sum(z_Bowling_Figures_All.w) > 0
-order by Wickets DESC
+order by Wickets DESC, av
 ;
 
 
@@ -125,25 +126,38 @@ FROM Seasons INNER JOIN (Matches INNER JOIN (Players INNER JOIN ((Wickets INNER 
 WHERE (((Wickets.Hat_Trick)=1))
 ORDER BY Innings.inningsid DESC;
 
-
+--drop view bowling_11_p3_10WM;
 CREATE OR REPLACE VIEW bowling_11_p3_10WM AS
-SELECT players.player_Name AS Name
-    , Sum(z_Bowling_Figures_All.w) ||'/'|| Sum(z_Bowling_Figures_All.runs) AS Figures
+SELECT players.player_Name AS "Name"
+    , aa.wickets as "Wickets", aa.Figures as "Figures"
     , Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association
 FROM Seasons 
 INNER JOIN Matches
 ON Seasons.SeasonID=Matches.SeasonID
-INNER JOIN Innings
-ON Matches.MatchID=Innings.MatchID
-INNER JOIN z_Bowling_Figures_All
-ON z_Bowling_Figures_All.inningsid = Innings.inningsid
+INNER JOIN (
+    
+    select 
+        playerid, MatchID, sum(w) as wickets, max(figs1) ||' & '|| max(figs2) as figures, max(runs1)+max(runs2) as runs
+    from (
+        select 
+            playerid, MatchID, w
+            , case when row_number() over (partition by playerid, MatchID order by inningsid) = 1 then figures end as figs1
+            , case when row_number() over (partition by playerid, MatchID order by inningsid) = 2 then figures end as figs2
+            , case when row_number() over (partition by playerid, MatchID order by inningsid) = 1 then runs end as runs1
+            , case when row_number() over (partition by playerid, MatchID order by inningsid) = 2 then runs end as runs2
+        from z_Bowling_Figures_All
+    ) a
+    group by playerid, MatchID
+    having sum(w) >= 10
+) aa
+ON aa.MatchID = Matches.MatchID
 INNER JOIN players
-ON players.playerid = z_Bowling_Figures_All.playerid
-GROUP BY players.player_Name, Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association, Innings.MatchID, z_Bowling_Figures_All.PlayerID        
-ORDER BY Sum(z_Bowling_Figures_All.w) DESC , Sum(z_Bowling_Figures_All.runs);
+ON players.playerid = aa.playerid
+--GROUP BY players.player_Name, Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association
+ORDER BY aa.wickets DESC , aa.runs;
 
 
-
+--drop view bowling_12_p3_match_econ;
 CREATE OR REPLACE VIEW bowling_12_p3_match_econ AS
 SELECT players.player_name AS Player
     , z_Bowling_Figures_All.Ov AS Overs

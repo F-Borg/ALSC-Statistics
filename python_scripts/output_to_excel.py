@@ -700,6 +700,18 @@ row_end += stats_table.shape[0] + 4
 
 
 
+########################                          ######################                          #######################
+########################                          ######################                          #######################
+########################                          ######################                          #######################
+########################                          ######################                          #######################
+########################                          ######################                          #######################
+########################                          ######################                          #######################
+########################                          ######################                          #######################
+########################                          ######################                          #######################
+########################                          ######################                          #######################
+########################                          ######################                          #######################
+
+
 #########################################################################################################################
 #########################################################################################################################
 # Player Bowling Summary
@@ -727,24 +739,169 @@ for ii in range(num_pages):
     worksheet.set_row(0, heading1_height)
 
 
+#########################################################################################################################
+#########################################################################################################################
+# Bowling (1)
+#########################################################################################################################
+#########################################################################################################################
+sheetname = 'Bowling (1)'
+row_end = 0
+
+##########################
+# Most Career Wickets
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Total Wickets" as "Wickets", Name as "Name", mat as "Matches", Average as "Average"
+    from bowling_02_p1_wickets limit 20""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:I1',"Most Career Wickets",heading1)
+worksheet.set_row(0, heading1_height)
+
+row_end = stats_table.shape[0] + 2
+
+##########################
+# Lowest Bowling Average (min 15 wickets)
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Average as "Average", Name as "Name", mat as "Matches", "Total Wickets" as "Wickets"
+    from bowling_03_p1_ave limit 15""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Lowest Bowling Average (min 15 wickets)",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += stats_table.shape[0] + 4
+
+##########################
+# Lowest Bowling Strike Rate (balls per wicket,  min 15 wickets)
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Strike Rate", Name as "Name", mat as "Matches", "Total Wickets" as "Wickets"
+    from bowling_04_p1_sr limit 15""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Lowest Bowling Strike Rate (balls per wicket,  min 15 wickets)",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += stats_table.shape[0] + 4
+
 
 #########################################################################################################################
 #########################################################################################################################
-# Bowling 1
+# Bowling (2)
 #########################################################################################################################
 #########################################################################################################################
+sheetname = 'Bowling (2)'
+row_end = 0
+
+##########################
+# Most Economical Bowlers (min 20 Overs)
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select RPO as "Econ", Name as "Name", O as "Overs"
+    from bowling_05_p2_career_econ_low limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:H1',"Most Economical Bowlers (min 20 Overs)",heading1)
+worksheet.set_row(0, heading1_height)
+
+row_end = stats_table.shape[0] + 2
+
+##########################
+# Most Expensive Bowlers (min 20 Overs)
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select RPO as "Econ", Name as "Name", O as "Overs"
+    from bowling_06_p2_career_econ_high limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,7,"Most Expensive Bowlers (min 20 Overs)",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += stats_table.shape[0] + 4
+
+##########################
+# Most Five Wicket Innings
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "5WI", Name as "Name", mat as "Matches"
+    from bowling_07_p2_5WI where "5WI" > 5""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,7,"Most Five Wicket Innings",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += stats_table.shape[0] + 4
+
+##########################
+# Most Wickets In A Season
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Wickets as "Wickets", player_name as "Name", av as "Average", mat as "Matches"
+    , Year AS "Year", eleven AS "XI", Association AS "Association", Grade AS "Grade"
+    from bowling_08_p2_season_wickets where wickets >=30""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,7,"Most Wickets In A Season",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += stats_table.shape[0] + 4
+
 
 #########################################################################################################################
 #########################################################################################################################
-# Bowling 2
+# Bowling (3)
 #########################################################################################################################
 #########################################################################################################################
+sheetname = 'Bowling (3)'
+row_end = 0
 
-#########################################################################################################################
-#########################################################################################################################
-# Bowling 3
-#########################################################################################################################
-#########################################################################################################################
+##########################
+# Best Bowling Performances
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select player as "Name", overs as "Overs", figures as "Figures", Opponent as "Opponent"
+                          , Year AS "Year", round as "Round", eleven AS "XI", Association AS "Association", Grade AS "Grade"
+    from bowling_09_p3_best_figs limit 20""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:I1',"Best Bowling Performances",heading1)
+worksheet.set_row(0, heading1_height)
+
+row_end = stats_table.shape[0] + 2
+
+##########################
+# Hat Tricks
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select player_name as "Name", '' as " ", '' as "  ", Opponent as "Opponent"
+                          , Year AS "Year", round as "Round", eleven AS "XI", Association AS "Association", Grade AS "Grade"
+    from bowling_10_p3_hat_trick""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Hat Tricks",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += stats_table.shape[0] + 4
+
+##########################
+# 10 Wicket Matches
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Wickets", "Figures", Opponent as "Opponent"
+                          , Year AS "Year", round as "Round", eleven AS "XI", Association AS "Association", Grade AS "Grade"
+    from bowling_11_p3_10WM""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,8,"10 Wicket Matches",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += stats_table.shape[0] + 4
+
+##########################
+# Most Economical Bowling (min 10 overs)
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Player as "Name", Overs as "Overs", figures as "Figures", Opponent as "Opponent"
+                          , Year AS "Year", round as "Round", eleven AS "XI", Association AS "Association", Grade AS "Grade"
+    from bowling_12_p3_match_econ limit 12""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Most Economical Bowling (min 10 overs)",heading1)
+worksheet.set_row(row_end+2, heading1_height)
+
+row_end += stats_table.shape[0] + 4
+
 
 #########################################################################################################################
 #########################################################################################################################
