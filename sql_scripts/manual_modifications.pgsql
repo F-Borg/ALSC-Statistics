@@ -75,6 +75,11 @@ update players
 set name_fl = firstname||' '||surname
 ;
 
+update players 
+set name_fl = 'Joshua Waldhuter'
+where playerid = 265
+;
+
 -- wrong date for match - update
 update matches 
 set date1 = '2021-11-20'

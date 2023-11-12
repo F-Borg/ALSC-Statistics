@@ -1,6 +1,7 @@
 import python_scripts.scrape_scorecard as ss
 import python_scripts.wrangle_match_data as wd
 import python_scripts.utility as util
+import os
 
 
 # reload when required
@@ -10,10 +11,9 @@ importlib.reload(wd)
 importlib.reload(util)
 
 # Issues:
-# FOW is currently missing from website
-
-
 # need manual input for season ID, match ID, innings ID at this stage
+# venue - get everything after the "/"
+
 
 # fetch match url
 # url = get_url(season,grade,rnd)
@@ -34,11 +34,10 @@ if len(missing_ids) > 0:
 
 
 # open for validation/modification
-# os.system('code -r ./data/22-23/ISC Teamwear LO Division 1')
+# os.system('code -r "./data/22-23/ISC Teamwear LO Division 1"')
 
 # wrangle data and export
-wd.wrangle_match_data(match_info, write_to_postgres = False)
+if False:
+    wd.wrangle_match_data(match_info, write_to_postgres = True)
 
 
-
-    
