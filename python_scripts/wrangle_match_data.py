@@ -16,7 +16,7 @@ def get_how_out(how_out_str):
         return 'caught'
     elif re.search('^b:',how_out_str):
         return 'bowled'
-    elif re.search('did not bat',how_out_str):
+    elif re.search('did not bat',how_out_str) or how_out_str=='-':
         return 'DNB'
     elif re.search('not out',how_out_str):
         return 'Not Out'
@@ -99,7 +99,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
         print(this_match)
 
     for i in range(1,match_info['num_innings']+1):
-        # i=1
+        # i=2
         if 'Adelaide Lutheran' in match_info['innings_list'][i-1]:
             #########################################################################################################################
             # Batting, Innings
@@ -135,9 +135,11 @@ def wrangle_match_data(match_info, write_to_postgres = False):
                 batting.loc[batting['batter']==fow[jj][2], 'not_out_batter_name'] = not_out_batter
 
             # not out batters - calc final score
-            batting.loc[batting['batting_position']==batter_pos_1, 'wicket']         = len(fow)+1
-            batting.loc[batting['batting_position']==batter_pos_1, 'fow']            = sum(batting['score'].astype('int')) + sum(match_info['extras'][i-1].values())
-            batting.loc[batting['batting_position']==batter_pos_1, 'not_out_batter_name'] = batting.loc[batting['batting_position']==batter_pos_2, 'batter'][0]
+            if max(batter_pos_1,batter_pos_2) <= 11:
+                batting.loc[batting['batting_position']==batter_pos_1, 'wicket']         = len(fow)+1
+                batting.loc[batting['batting_position']==batter_pos_1, 'fow']            = sum(batting['score'].astype('int')) + sum(match_info['extras'][i-1].values())
+                # !!! issue here with last batter - batter_pos_2 = 12
+                batting.loc[batting['batting_position']==batter_pos_1, 'not_out_batter_name'] = batting.loc[batting['batting_position']==batter_pos_2, 'batter'][0] 
 
 
             batting2 = batting.merge(players1, on="name_fl", how="left").merge(players2, on="not_out_batter_name", how="left")
