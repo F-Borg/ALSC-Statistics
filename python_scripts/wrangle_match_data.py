@@ -24,7 +24,7 @@ def get_how_out(how_out_str):
         return 'LBW'
     elif re.search('run out',how_out_str):
         return 'Run Out'
-    elif re.search('stumped',how_out_str):
+    elif re.search('(stumped|st:)',how_out_str):
         return 'Stumped'
     elif re.search('absent out',how_out_str):
         return 'Absent Out'
@@ -52,7 +52,7 @@ def how_out_assist(how_out_str):
         if '?' in how_out_str:
             return None
         else:
-            return re.sub('(?:c|stumped|run out|c\&b): (\S+)\s(\S+).*','\\1 \\2',how_out_str)
+            return re.sub('(?:c|stumped|st|run out|c\&b): (\S+)\s(\S+).*','\\1 \\2',how_out_str)
     else:
         return None
 
@@ -99,7 +99,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
         print(this_match)
 
     for i in range(1,match_info['num_innings']+1):
-        # i=2
+        # i=1
         if 'Adelaide Lutheran' in match_info['innings_list'][i-1]:
             #########################################################################################################################
             # Batting, Innings
@@ -135,7 +135,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
                 batting.loc[batting['batter']==fow[jj][2], 'not_out_batter_name'] = not_out_batter
 
             # not out batters - calc final score
-            if max(batter_pos_1,batter_pos_2) <= 11:
+            if max(batter_pos_1,batter_pos_2) <= 11 and batting.loc[batting['batting_position']==max(batter_pos_1,batter_pos_2), 'how_out'][0] != 'DNB':
                 batting.loc[batting['batting_position']==batter_pos_1, 'wicket']         = len(fow)+1
                 batting.loc[batting['batting_position']==batter_pos_1, 'fow']            = sum(batting['score'].astype('int')) + sum(match_info['extras'][i-1].values())
                 # !!! issue here with last batter - batter_pos_2 = 12
@@ -176,7 +176,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             bowling = pd.read_table(f'{match_dir}/innings_{i}_bowling.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
             bowling = bowling.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             bowling.columns = bowling.columns.str.strip()
-            bowling = bowling.applymap(lambda x: x.replace('-','0'))
+            bowling = bowling.applymap(lambda x: x.replace('-','0') if isinstance(x, str) else x).fillna(0)
 
             bowling['inningsid'] = inningsid + (i-1)
             bowling['name_fl'] = bowling['bowler']

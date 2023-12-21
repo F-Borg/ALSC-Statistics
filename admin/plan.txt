@@ -1,8 +1,9 @@
 ###############################################################################
 # Current Issues
 ############################################################################### 
-	does not handle draws or outrights
+	does not handle draws or outrights - manually update result
 	no way to auto indicate wicketkeeper
+	not prevented from entering same match twice
 	
 
 
@@ -55,10 +56,14 @@ Open source software:
 ###############################################################################
 	- equivalent data to original
 	- output to excel as in original version and format
+		- history
+		- yearbook
 	- manually format and put into Word
 	- convert to pdf and print for release
    
-	- validate against ms access method?
+	- validate against ms access method? - 2021-22
+		DONE - history
+		- yearbook
 
 
 ###############################################################################
