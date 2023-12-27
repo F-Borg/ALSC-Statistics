@@ -9,7 +9,7 @@ select
 from batting_01_summary_ind
 left join z_bocsa
 on batting_01_summary_ind.playerid = z_bocsa.playerid
-where batting_01_summary_ind."Last Season" in ('2021/22')
+where batting_01_summary_ind."Last Season" in ('2022/23')
 and (
     mod(batting_01_summary_ind.mat,50) > 44
     or mod(total::int,500) > 399
@@ -17,5 +17,7 @@ and (
 )
 order by "Games Played", Runs, wickets, playerid
 ;
+
+
 
 

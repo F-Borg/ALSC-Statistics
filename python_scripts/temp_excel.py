@@ -2,16 +2,24 @@ from sqlalchemy import create_engine
 from sqlalchemy import select
 from sqlalchemy import text
 import pandas as pd
-from math import ceil
+import re
+from math import ceil, floor
+import python_scripts.text_formats as tf
 
 engine = create_engine('postgresql+psycopg2://postgres:postgres1!@localhost/dev')
 pgconn = engine.connect()
+
+import importlib
+importlib.reload(tf)
 
 
 ############################
 # User input               
 ############################
 _season_ = '2021/22' # e.g. _season_ = '2021/22'
+seasonid_1stxi = 73
+seasonid_2ndxi = 74
+seasonid_3rdxi = 75
 
 ############################
 # Create Excel doc.
@@ -24,80 +32,61 @@ wb = writer.book
 ##########################
 # Text Formats
 ##########################
-heading1 = wb.add_format({'size':20,'bold':True,'underline':True})
-bold14centre = wb.add_format({'size':14,'bold':True,'align':'centre'})
-heading1_height = 35
-centre = wb.add_format({'align':'centre'})
+# heading1 = wb.add_format({'size':20,'bold':True,'underline':True})
+# bold14centre = wb.add_format({'size':14,'bold':True,'align':'centre'})
+# heading1_height = 35
+# centre = wb.add_format({'align':'centre'})
+fmt = tf.add_text_formats(wb)
 
 
+#########################################################################################################################
+#########################################################################################################################
+# 1st XI
+#########################################################################################################################
+#########################################################################################################################
+xi = '1st XI'
+seasonid = 76
+num_rounds = 13
 
-#########################################################################################################################
-#########################################################################################################################
-# Fielding
-#########################################################################################################################
-#########################################################################################################################
-sheetname = 'Fielding'
+
+##########################
+# Batting Summary
+##########################
+sheetname = f'{xi} Batting'
+
 row_end = 0
+worksheet = wb.add_worksheet(sheetname)
+worksheet.merge_range('A1:E1',f"{xi} Batting Summary - {_season_}",fmt['heading1'])
+worksheet.set_row(0, fmt['heading1_height'])
 
-##########################
-# Most Career Fielding Dismissals
-##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catches","Stumpings","Matches"
-    from fielding_01_p1_career_dismissals limit 15""")
+stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_02_batting_summary
+where seasonid = {seasonid}""").iloc[:,2:18]
+
+stats_table = stats_table.applymap(lambda x: None if x==-9 else x)
+
+
+smry = ['Team Totals',num_rounds,sum(stats_table['Innings']),sum(stats_table['Not Outs']),
+        sum(stats_table['Fours']),sum(stats_table['Sixes']),sum(stats_table['Ducks']),
+        sum(stats_table['Fifties']),sum(stats_table['Hundreds']),max(stats_table['Highest Score'].apply(lambda x: x.replace('*',''))),
+        sum(stats_table['Total Runs']),
+        sum(stats_table['Total Runs'])/(sum(stats_table['Innings'])-sum(stats_table['Not Outs'])), # Average
+        sum(stats_table['Balls Faced']), # BF
+        sum(stats_table['Balls Faced'])/(sum(stats_table['Innings'])-sum(stats_table['Not Outs'])), # BF / dismissal
+        100*sum(stats_table['Total Runs'])/sum(stats_table['Balls Faced']), # Strike rate
+        100*(4*sum(stats_table['Fours'])+6*sum(stats_table['Sixes']))/sum(stats_table['Balls Faced'])] # pct runs in boundaries
+
+i = len(stats_table)
+stats_table.loc[i] = smry
+
+# formatting
+worksheet.set_column('A:P',None,fmt['arial8'])
+worksheet.set_column('A:B',None,fmt['arial8bold'])
+worksheet.set_column('K:K',None,fmt['arial8bold'])
+worksheet.set_column('L:L',None,fmt['arial8boldnum1dec'])
+worksheet.set_column('N:P',None,fmt['arial8num1dec'])
+
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
-worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:J1',"Most Career Fielding Dismissals",heading1)
-worksheet.set_row(0, heading1_height)
-
-row_end = stats_table.shape[0] + 2
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Note: details of who took each catch is not complete")
-row_end += 2
-
-##########################
-# Most Dismissals In a Season
-##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catches","Stumpings","Season"
-    from fielding_02_p1_season_dismissals where "Dismissals" >= 17""")
-stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
-worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Most Dismissals In a Season",heading1)
-worksheet.set_row(row_end+2, heading1_height)
-
-row_end += stats_table.shape[0] + 4
-
-##########################
-# Most Dismissals In An Innings
-##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catches","Stumpings" 
-                          , Year AS "Year", Opponent as "Opponent", round as "Round", eleven AS "XI", Association AS "Association", Grade AS "Grade"
-    from fielding_03_p1_innings_dismissals where "Dismissals" >= 5 """)
-stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
-worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Most Dismissals In An Innings",heading1)
-worksheet.set_row(row_end+2, heading1_height)
-
-row_end += stats_table.shape[0] + 4
-
-##########################
-# Most Career Caught & Bowled Dismissal Combinations
-##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select "Dismissals", "Fielder", '' as " ", "Bowler"
-    from fielding_04_p1_ct_b_combos where "Dismissals" >= 10 """)
-stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
-worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,3,"Most Career Caught & Bowled Dismissal Combinations",heading1)
-worksheet.set_row(row_end+2, heading1_height)
-
-
-# merged cells:
-worksheet.merge_range(row_end+4,1,row_end+4,2,"Fielder",centre)
-worksheet.merge_range(row_end+4,3,row_end+4,4,"Bowler",centre)
-for ii in range(stats_table.shape[0]):
-    worksheet.merge_range(row_end+ii+5,1,row_end+ii+5,2,stats_table['Fielder'][ii],centre)
-    worksheet.merge_range(row_end+ii+5,3,row_end+ii+5,4,stats_table['Bowler'][ii],centre)
-
-
-
-
 
 writer.close()
+
+

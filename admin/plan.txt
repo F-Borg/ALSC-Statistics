@@ -55,6 +55,7 @@ Open source software:
 #             1.0 - stats book
 ###############################################################################
 	- equivalent data to original
+		- reworked ABD so that each opener has value 1 (1st wicket), #3 has value 2 (2nd wicket) etc.
 	- output to excel as in original version and format
 		- history
 		- yearbook

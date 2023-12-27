@@ -79,3 +79,12 @@ where matches.seasonid in (76,77,78)
 and innings.extras = 0
 ;
 -- exclude wides and no balls for bowling innings
+
+
+
+
+select * from matches where seasonid = 78 and round = '4'
+select * from innings where matchid = 809
+
+
+

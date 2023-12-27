@@ -290,7 +290,7 @@ SELECT Count(wickets.playerid) ||'/'|| (CASE WHEN lower(Seasons.nbw_status)='tru
 , Bowling.PlayerID
 , Bowling.InningsID
 , Count(Wickets.playerID) AS w
-, Sum(Wickets.batting_position) AS TBD
+, Sum(CASE WHEN Wickets.batting_position > 1 then Wickets.batting_position-1 else 1 END) AS TBD
 , (CASE WHEN lower(Seasons.nbw_status)='true' THEN bowling.no_balls+bowling.wides+bowling.runs_off_bat ELSE bowling.runs_off_bat END) AS runs
 , Bowling.Overs AS Ov1
 , Bowling.Extra_Balls
