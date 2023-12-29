@@ -36,10 +36,112 @@ importlib.reload(tf)
 # wb = writer.book
 
 
+#########################################################################################################################
+#########################################################################################################################
+# Milestones
+#########################################################################################################################
+#########################################################################################################################
+
+def yb_milestones(_season_, writer, wb, pgconn):
+    fmt = tf.add_text_formats(wb)
+    sheetname = 'Milestones'
+    row_end = 0
+    worksheet = wb.add_worksheet(sheetname)
+    worksheet.merge_range('A1:E1',f"Milestones - {_season_}",fmt['heading1'])
+    worksheet.set_row(0, fmt['heading1_height'])
+
+    stats_table = pd.read_sql(con=pgconn, sql=f"""
+    SELECT
+        "Name",
+        ("Total Matches" - mod("Total Matches"::int,50))::varchar || ' Matches' as "Milestone",
+        "Season Matches",
+        "Total Matches",
+        playerid
+    FROM (
+        SELECT 
+            name_fl as "Name",
+            playerid,
+            sum(case when "Year" = '{_season_}' then "Matches" else 0 end) as "Season Matches", 
+            sum(case when "Year" <= '{_season_}' then "Matches" else 0 end) as "Total Matches"
+        FROM yb_02_batting_summary
+        group by playerid, name_fl
+        having sum(case when "Year" = '{_season_}' then "Matches" else 0 end) > 0
+        ) a
+    WHERE mod("Total Matches"::int,50) < "Season Matches"
+    ORDER BY "Total Matches" DESC
+    """)
+
+    stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
+    row_end += 3 + len(stats_table)
+
+    stats_table = pd.read_sql(con=pgconn, sql=f"""
+    SELECT
+        "Name",
+        ("Total Runs" - mod("Total Runs"::int,500))::varchar || ' Runs' as "Milestone",
+        "Season Runs",
+        "Total Runs",
+        playerid
+    FROM (
+        SELECT 
+            name_fl as "Name",
+            playerid,
+            sum(case when "Year" = '{_season_}' then "Total Runs" else 0 end) as "Season Runs", 
+            sum(case when "Year" <= '{_season_}' then "Total Runs" else 0 end) as "Total Runs"
+        FROM yb_02_batting_summary
+        group by playerid, name_fl
+        having sum(case when "Year" = '{_season_}' then "Total Runs" else 0 end) > 0
+        ) a
+    WHERE mod("Total Runs"::int,500) < "Season Runs"
+    ORDER BY "Total Runs" DESC
+    """)
+
+    stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end + 2, index=False)
+    row_end += 2 + len(stats_table)
+
+
+    stats_table = pd.read_sql(con=pgconn, sql=f"""
+    SELECT
+        "Name",
+        ("Total Wickets" - mod("Total Wickets"::int,50))::varchar || ' Wickets' as "Milestone",
+        "Season Wickets",
+        "Total Wickets",
+        playerid
+    FROM (
+        SELECT 
+            Players.name_fl AS "Name",
+            Players.playerid,
+            sum(case when Seasons.Year = '{_season_}' then z_Bowling_Figures_All.w else 0 end) as "Season Wickets", 
+            sum(case when Seasons.Year <= '{_season_}' then z_Bowling_Figures_All.w else 0 end) as "Total Wickets"
+        FROM Seasons
+        INNER JOIN Matches 
+        ON Seasons.SeasonID = Matches.SeasonID 
+        INNER JOIN Innings 
+        ON Matches.MatchID = Innings.MatchID
+        INNER JOIN Bowling 
+        ON Innings.InningsID = Bowling.InningsID 
+
+        INNER JOIN Players 
+        ON Players.PlayerID = Bowling.PlayerID 
+
+        INNER JOIN z_Bowling_Figures_All 
+        ON z_Bowling_Figures_All.PlayerID = Bowling.PlayerID
+        AND z_Bowling_Figures_All.InningsID = Bowling.InningsID
+
+        group by Players.playerid, Players.name_fl
+        having sum(case when Seasons.Year = '{_season_}' then z_Bowling_Figures_All.w else 0 end) > 0
+        ) a
+    WHERE mod("Total Wickets"::int,50) < "Season Wickets"
+    ORDER BY "Total Wickets" DESC
+    """)
+
+    stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end + 2, index=False)
+
+
+
 
 #########################################################################################################################
 #########################################################################################################################
-# 1st XI
+# XI Summary
 #########################################################################################################################
 #########################################################################################################################
 
@@ -119,7 +221,7 @@ def yb_summary(_season_, seasonid, xi, writer, wb, pgconn):
     worksheet.set_row(0, fmt['heading1_height'])
 
     stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_02_batting_summary
-    where seasonid = {seasonid}""").iloc[:,2:18]
+    where seasonid = {seasonid}""").iloc[:,4:20]
 
     stats_table = stats_table.applymap(lambda x: None if x==-9 else x)
 
@@ -233,5 +335,78 @@ def yb_summary(_season_, seasonid, xi, writer, wb, pgconn):
     worksheet.set_column('A:A',None,fmt['arial9bold'])
 
 
-# writer.close()
+#########################################################################################################################
+#########################################################################################################################
+# Individual Batting and Bowling Summaries
+#########################################################################################################################
+#########################################################################################################################
 
+def yb_ind_bat(_season_, writer, wb, pgconn):
+    sheetname = 'Ind Batting'
+    fmt = tf.add_text_formats(wb)
+    row_end = 0
+    worksheet = wb.add_worksheet(sheetname)
+    worksheet.merge_range('A1:E1',f"Individual Batting - {_season_}",fmt['heading1'])
+    worksheet.set_row(0, fmt['heading1_height'])
+
+    stats_table = pd.read_sql(con=pgconn, sql=f"""
+    SELECT
+        "Name",
+        "XI",
+        "Rd",
+        "Opponent",
+        "Runs",
+        "Balls",
+        "4s",
+        "6s",
+        "Pos"
+    FROM zz_temp_yb_batting
+    """)
+
+    players = stats_table['Name'].drop_duplicates()
+    headings = pd.DataFrame(stats_table.iloc[:,1:9].columns, columns=['aaa']).T
+
+    for player in players:
+        worksheet.merge_range(row_end+2,0,row_end+2,7,player,fmt['arial10boldcentre'])
+        t1 = stats_table.loc[stats_table['Name']==player].iloc[:,1:9]
+        headings.to_excel(writer, sheet_name=sheetname, startrow = row_end+3, index=False, header=False)
+        t1.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False, header=False)
+        worksheet.set_row(row_end+3,None,fmt['arial8bold'])
+        row_end += 3 + len(t1)
+
+    worksheet.set_column('A:H',None,fmt['arial8'])
+
+
+def yb_ind_bowl(_season_, writer, wb, pgconn):
+    sheetname = 'Ind Bowling'
+    fmt = tf.add_text_formats(wb)
+    row_end = 0
+    worksheet = wb.add_worksheet(sheetname)
+    worksheet.merge_range('A1:G1',f"Individual Bowling - {_season_}",fmt['heading1'])
+    worksheet.set_row(0, fmt['heading1_height'])
+
+    stats_table = pd.read_sql(con=pgconn, sql=f"""
+    SELECT
+        "Name",
+        "XI",
+        "Rd",
+        "Opponent",
+        "O",
+        "M",
+        "R",
+        "W"
+    FROM zz_temp_yb_bowling
+    """)
+
+    players = stats_table['Name'].drop_duplicates()
+    headings = pd.DataFrame(stats_table.iloc[:,1:8].columns, columns=['aaa']).T
+
+    for player in players:
+        worksheet.merge_range(row_end+2,0,row_end+2,6,player,fmt['arial10boldcentre'])
+        t1 = stats_table.loc[stats_table['Name']==player].iloc[:,1:8]
+        headings.to_excel(writer, sheet_name=sheetname, startrow = row_end+3, index=False, header=False)
+        t1.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False, header=False)
+        worksheet.set_row(row_end+3,None,fmt['arial8bold'])
+        row_end += 3 + len(t1)
+
+    worksheet.set_column('A:G',None,fmt['arial8'])

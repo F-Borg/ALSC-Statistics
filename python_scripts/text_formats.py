@@ -10,6 +10,7 @@ def add_text_formats(wb):
     fmt['arial8num1dec']    = wb.add_format({'size':8,'font':'Arial','num_format':'#,##0.0'})
     fmt['arial9']           = wb.add_format({'size':9,'font':'Arial'})
     fmt['arial9bold']       = wb.add_format({'size':9,'font':'Arial','bold':True})
+    fmt['arial10boldcentre']= wb.add_format({'size':10,'font':'Arial','bold':True,'align':'centre'})
     # fmt['arial95']          = wb.add_format({'size':9.5,'font':'Arial'})
     # fmt['arial95bold']      = wb.add_format({'size':9.5,'font':'Arial','bold':True})
     fmt['arial9BIU']        = wb.add_format({'size':9.5,'font':'Arial','bold':True,'italic':True,'underline':True})

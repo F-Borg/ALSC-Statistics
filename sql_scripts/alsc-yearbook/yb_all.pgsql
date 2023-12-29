@@ -51,10 +51,13 @@ ON Players.PlayerID = Batting.PlayerID
 ORDER BY Seasons.seasonid, Matches.Date1, Batting.Score DESC , z_Bowling_Figures_All.w DESC;
 
 
+--DROP VIEW yb_02_batting_summary;
 CREATE OR REPLACE VIEW yb_02_batting_summary AS
 SELECT 
     Batting.PlayerID
+    , players.name_fl
     , Matches.seasonid
+    , Seasons.Year as "Year"
     , players.player_name AS "Name"
     , Sum(CASE WHEN innings.inningsno=1 Or innings.inningsno=2 then 1 else 0 end) AS "Matches"
     , Count(Batting.Batting_Position) AS "Innings"
@@ -87,7 +90,7 @@ INNER JOIN z_batmax_season
 ON Seasons.SeasonID = z_batmax_season.SeasonID
 AND z_batmax_season.PlayerID = Players.PlayerID
 
-GROUP BY Batting.PlayerID, players.player_name, z_batmax_season.HS, Seasons.Year, Seasons.Eleven, Matches.SeasonID
+GROUP BY Batting.PlayerID, players.player_name, z_batmax_season.HS, Seasons.Year, Seasons.Eleven, Matches.SeasonID, players.name_fl
 ORDER BY Sum(Batting.Score) DESC, "Average" DESC
 ;
 
@@ -125,7 +128,7 @@ GROUP BY z_bat_partnerships.Wicket, z_bat_partnerships.p, players.player_name, p
 ORDER BY z_bat_partnerships.Wicket, Seasons.SeasonID;
 
 
-
+--DROP VIEW yb_04_bowling_summary;
 CREATE OR REPLACE VIEW yb_04_bowling_summary AS
 SELECT 
     Players.player_name AS "Name"
@@ -148,6 +151,8 @@ SELECT
     , CASE WHEN Sum(z_Bowling_Figures_All.w) > 0 then Sum(z_Bowling_Figures_All.tbd)/Sum(z_Bowling_Figures_All.w) ELSE -9 END AS "ABD"
     , Seasons.SeasonID
     , Bowling.PlayerID
+    , Seasons.Year as "Year"
+    , players.name_fl
 FROM Seasons
 INNER JOIN Matches 
 ON Seasons.SeasonID = Matches.SeasonID 
@@ -172,7 +177,7 @@ ON Seasons.SeasonID = z_player_season_matches.SeasonID
 AND Players.PlayerID = z_player_season_matches.PlayerID
 
 --where Matches.SeasonID=73
-GROUP BY Bowling.PlayerID, Players.player_name, z_bbf_season.Figures, z_player_season_matches.Mat, Seasons.Year, Seasons.Eleven, Seasons.SeasonID
+GROUP BY Bowling.PlayerID, Players.player_name, z_bbf_season.Figures, z_player_season_matches.Mat, Seasons.Year, Seasons.Eleven, Seasons.SeasonID, players.name_fl
 ORDER BY "Wickets" DESC, "Runs";
 
 
@@ -213,35 +218,36 @@ ORDER BY "Catches" DESC, "Stumpings" DESC, "Run Outs" DESC, z_player_season_matc
 --drop table zz_temp_yb_batting;
 CREATE TABLE zz_temp_yb_batting AS
 SELECT 
-    players.player_name AS Name
+    players.player_name AS "Name"
     , Matches.Date1
-    , Seasons.Eleven
-    , Matches.Round
-    , Matches.Opponent
-    , batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then '*' else '' end) AS Score
-    , Batting.Balls_Faced as "Balls Faced", Batting._4s, Batting._6s, Batting.Batting_Position
+    , Seasons.Eleven AS "XI"
+    , Matches.Round AS "Rd"
+    , Matches.Opponent as "Opponent"
+    , batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then '*' else '' end) AS "Runs"
+    , Batting.Balls_Faced::int as "Balls"
+    , Batting._4s::int as "4s"
+    , Batting._6s::int as "6s"
+    , Batting.Batting_Position::int as "Pos"
 FROM Seasons INNER JOIN (Matches INNER JOIN (Innings INNER JOIN (Players INNER JOIN Batting ON Players.PlayerID = Batting.PlayerID) ON Innings.InningsID = Batting.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
 WHERE Seasons.SeasonID in (76,77,78)
---GROUP BY players.surname ||', '|| players.firstname, Seasons.Eleven, Matches.Round, Matches.Opponent, batting.score & (CASE WHEN batting.how_out="not out" Or batting.how_out="retired hurt" Or batting.how_out="forced retirement","*",""), Batting.Balls Faced, Batting.4s, Batting.6s, Batting.Batting Position, Seasons.Grade, Seasons.Year, Seasons.Grade, Matches.Date1, Matches.MatchID, Innings.InningsNO, Matches.Round, Batting.Score, Players.PlayerID 
-and Batting.Balls_Faced Is Not Null
-ORDER BY players.player_name, Matches.Date1, Matches.MatchID, Innings.InningsNO, Matches.Round
+and Batting.how_out != 'DNB'
+ORDER BY players.player_name, Matches.Date1, Innings.InningsNO
 ;
 
 --drop table zz_temp_yb_bowling;
 CREATE TABLE zz_temp_yb_bowling AS
 SELECT 
-    players.player_name AS Name
+    players.player_name AS "Name"
     , Matches.Date1 --temp
-    , Seasons.Eleven
-    , Matches.Round
-    , Matches.Opponent
-    , z_z_Bowling_Figures_All_All.Ov AS Overs
-    , z_z_Bowling_Figures_All_All.Maidens
-    , z_z_Bowling_Figures_All_All.runs AS Runs
-    , z_z_Bowling_Figures_All_All.w AS Wickets
+    , Seasons.Eleven AS "XI"
+    , Matches.Round AS "Rd"
+    , Matches.Opponent as "Opponent"
+    , z_Bowling_Figures_All.Ov AS "O"
+    , z_Bowling_Figures_All.Maidens AS "M"
+    , z_Bowling_Figures_All.runs AS "R"
+    , z_Bowling_Figures_All.w AS "W"
     , Innings.InningsNO
-FROM Seasons INNER JOIN (Matches INNER JOIN ((Players INNER JOIN z_z_Bowling_Figures_All_All ON Players.PlayerID = z_z_Bowling_Figures_All_All.PlayerID) INNER JOIN Innings ON z_z_Bowling_Figures_All_All.InningsID = Innings.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
---GROUP BY players.surname ||', '|| players.firstname, Seasons.Eleven, Matches.Round, Matches.Opponent, z_z_Bowling_Figures_All_All.Ov, z_z_Bowling_Figures_All_All.Maidens, z_z_Bowling_Figures_All_All.runs, z_z_Bowling_Figures_All_All.w, Innings.InningsNO, Matches.Date1, Matches.Date1, Seasons.Year, Seasons.Grade, Seasons.Eleven, z_z_Bowling_Figures_All_All.w, z_z_Bowling_Figures_All_All.runs, Players.PlayerID, Seasons.SeasonID, Matches.MatchID
+FROM Seasons INNER JOIN (Matches INNER JOIN ((Players INNER JOIN z_Bowling_Figures_All ON Players.PlayerID = z_Bowling_Figures_All.PlayerID) INNER JOIN Innings ON z_Bowling_Figures_All.InningsID = Innings.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
 WHERE Seasons.SeasonID in (76,77,78)
 ORDER BY players.player_name, Matches.Date1, Innings.InningsNO;
 

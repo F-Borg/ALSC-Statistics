@@ -41,52 +41,46 @@ fmt = tf.add_text_formats(wb)
 
 #########################################################################################################################
 #########################################################################################################################
-# 1st XI
+# Bowl
 #########################################################################################################################
 #########################################################################################################################
-xi = '1st XI'
-seasonid = 76
-num_rounds = 13
+_season_ = '2022/23'
+sheetname = 'Ind Bowling'
 
-
-##########################
-# Batting Summary
-##########################
-sheetname = f'{xi} Batting'
 
 row_end = 0
 worksheet = wb.add_worksheet(sheetname)
-worksheet.merge_range('A1:E1',f"{xi} Batting Summary - {_season_}",fmt['heading1'])
+worksheet.merge_range('A1:G1',f"Individual Bowling - {_season_}",fmt['heading1'])
 worksheet.set_row(0, fmt['heading1_height'])
 
-stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_02_batting_summary
-where seasonid = {seasonid}""").iloc[:,2:18]
+stats_table = pd.read_sql(con=pgconn, sql=f"""
+SELECT
+    "Name",
+    "XI",
+    "Rd",
+    "Opponent",
+    "O",
+    "M",
+    "R",
+    "W"
+FROM zz_temp_yb_bowling
+""")
 
-stats_table = stats_table.applymap(lambda x: None if x==-9 else x)
 
+players = stats_table['Name'].drop_duplicates()
+headings = pd.DataFrame(stats_table.iloc[:,1:8].columns, columns=['aaa']).T
 
-smry = ['Team Totals',num_rounds,sum(stats_table['Innings']),sum(stats_table['Not Outs']),
-        sum(stats_table['Fours']),sum(stats_table['Sixes']),sum(stats_table['Ducks']),
-        sum(stats_table['Fifties']),sum(stats_table['Hundreds']),max(stats_table['Highest Score'].apply(lambda x: x.replace('*',''))),
-        sum(stats_table['Total Runs']),
-        sum(stats_table['Total Runs'])/(sum(stats_table['Innings'])-sum(stats_table['Not Outs'])), # Average
-        sum(stats_table['Balls Faced']), # BF
-        sum(stats_table['Balls Faced'])/(sum(stats_table['Innings'])-sum(stats_table['Not Outs'])), # BF / dismissal
-        100*sum(stats_table['Total Runs'])/sum(stats_table['Balls Faced']), # Strike rate
-        100*(4*sum(stats_table['Fours'])+6*sum(stats_table['Sixes']))/sum(stats_table['Balls Faced'])] # pct runs in boundaries
+for player in players:
+    worksheet.merge_range(row_end+2,0,row_end+2,6,player,fmt['arial10boldcentre'])
+    t1 = stats_table.loc[stats_table['Name']==player].iloc[:,1:8]
+    headings.to_excel(writer, sheet_name=sheetname, startrow = row_end+3, index=False, header=False)
+    t1.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False, header=False)
+    worksheet.set_row(row_end+3,None,fmt['arial8bold'])
+    row_end += 3 + len(t1)
 
-i = len(stats_table)
-stats_table.loc[i] = smry
-
-# formatting
-worksheet.set_column('A:P',None,fmt['arial8'])
-worksheet.set_column('A:B',None,fmt['arial8bold'])
-worksheet.set_column('K:K',None,fmt['arial8bold'])
-worksheet.set_column('L:L',None,fmt['arial8boldnum1dec'])
-worksheet.set_column('N:P',None,fmt['arial8num1dec'])
-
-stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
+worksheet.set_column('A:G',None,fmt['arial8'])
 
 writer.close()
+
 
 
