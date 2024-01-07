@@ -1,0 +1,23 @@
+#################################
+#################################
+# To Do
+#################################
+#################################
+
+
+#################################
+# Formatting for output_to_excel.py
+
+decimal places
+    - Matches Against
+    - Most Matches as Captain
+
+    
+bold 1st col
+    - Matches Against
+
+
+#################################
+# Updates to data
+Youngest players
+

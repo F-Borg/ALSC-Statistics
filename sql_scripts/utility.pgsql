@@ -83,8 +83,25 @@ and innings.extras = 0
 
 
 
-select * from matches where seasonid = 78 and round = '4'
-select * from innings where matchid = 809
+select * from matches where seasonid = 78 and round = '4';
+select * from innings where matchid = 809;
 
+
+select * from seasons;
+select * from matches where seasonid = 77 and round = '13';
+select * from innings where matchid = 804;
+select * from batting where inningsid = 1795;
+
+update batting set
+    balls_faced = 66
+    , batting_position = 5
+where inningsid = 1795 and playerid = 457
+;
+
+update batting set
+    balls_faced = 30
+    , batting_position = 6
+where inningsid = 1795 and playerid = 440
+;
 
 

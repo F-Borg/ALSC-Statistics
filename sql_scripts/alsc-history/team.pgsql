@@ -33,22 +33,23 @@ ORDER BY Seasons.Year;
 /****************************************************************************************************
 * Team Matches Against
 ****************************************************************************************************/
-
+--DROP VIEW team_04_matches_against_all;
 CREATE OR REPLACE VIEW team_04_matches_against_all AS
 SELECT 
-    matches.Opponent
+    --matches.Opponent
+    regexp_replace(matches.Opponent,' (II|III|IV|V|VI)$','',1,1,'c') AS "Opponent"
     , Count(matches.matchid) AS Played
-    , Sum(case when upper(matches.result)='w2' then 1 else 0 end) AS WO
+    , Sum(case when upper(matches.result)='W2' then 1 else 0 end) AS WO
     , Sum(case when upper(matches.result)='W1' then 1 else 0 end) AS W1
-    , Sum(case when upper(matches.result)=' D' then 1 else 0 end) AS D
+    , Sum(case when upper(matches.result) in ('D','T') then 1 else 0 end) AS D
     , Sum(case when upper(matches.result)='L1' then 1 else 0 end) AS L1
     , Sum(case when upper(matches.result)='L2' then 1 else 0 end) AS LO
-    , (0.00+(Sum(case when upper(matches.result) in ('W1','w2') then 1 else 0 end)))/Count(matches.matchid) AS "Win %"
+    , (0.00+(Sum(case when upper(matches.result) in ('W1','W2') then 1 else 0 end)))/Count(matches.matchid) AS "Win %"
 FROM seasons 
 INNER JOIN matches 
 ON seasons.seasonID = matches.seasonID
 WHERE (((seasons.year)<>'1994/95'))
-GROUP BY matches.Opponent
+GROUP BY "Opponent"
 ORDER BY Count(matches.matchid) DESC , W1 DESC;
 
 

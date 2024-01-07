@@ -387,7 +387,7 @@ SELECT
     , CASE WHEN Sum(z_Bowling_Figures_All.w)=0 THEN -9 ELSE Sum(z_Bowling_Figures_All.runs)/Sum(z_Bowling_Figures_All.w) END AS Average
     , CASE WHEN Sum(z_Bowling_Figures_All.w)=0 THEN -9 ELSE (Sum(overs)*6+Sum(bowling.extra_balls))/Sum(z_Bowling_Figures_All.w) END AS "Strike Rate"
     , 6*(Sum(z_Bowling_Figures_All.runs))/(Sum(overs)*6+Sum(bowling.extra_balls)) AS RPO
-    , Sum(z_Bowling_Figures_All.tbd)/Sum(z_Bowling_Figures_All.w) AS ABD
+    , CASE WHEN Sum(z_Bowling_Figures_All.w) > 0 then Sum(z_Bowling_Figures_All.tbd)/Sum(z_Bowling_Figures_All.w) ELSE -9 END AS ABD
     , Sum(Bowling._4s_against) AS _4s
     , Sum(Bowling._6s_against) AS _6s
     , z_bbf.Figures

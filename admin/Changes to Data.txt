@@ -1,0 +1,6 @@
+Changes to data:
+
+22/23:
+    - reworked ABD so that each opener has value 1 (1st wicket), #3 has value 2 (2nd wicket) etc.
+    - Record By Opponent now ignores XI (e.g. Coromandel)
+

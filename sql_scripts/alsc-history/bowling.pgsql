@@ -1,11 +1,20 @@
 
 drop view bowling_01_summary_ind;
 CREATE OR REPLACE VIEW bowling_01_summary_ind AS
-SELECT z_bcsa.Name, z_bcsa.Mat, z_bcsa.O, z_bcsa.Balls, z_bcsa.Mdns, z_bcsa."Total Runs", z_bcsa."Total Wickets", z_bcsa.Average, z_bcsa."Strike Rate", z_bcsa.RPO, z_bcsa.ABD, z_bcsa._4s, z_bcsa._6s, z_bcsa.Figures, z_bcsa."5WI", z_bcsa."Expensive Over", z_bcsa.Catches, 
+SELECT 
+    z_bcsa.Name
+    , z_bcsa.Mat
+    , z_bcsa.O
+    , z_bcsa.Balls
+    , z_bcsa.Mdns
+    , z_bcsa."Total Runs"
+    , z_bcsa."Total Wickets"
+    , z_bcsa.Average
+    , z_bcsa."Strike Rate", z_bcsa.RPO, z_bcsa.ABD, z_bcsa._4s, z_bcsa._6s, z_bcsa.Figures, z_bcsa."5WI", z_bcsa."Expensive Over", z_bcsa.Catches, 
 z_bcsa.Stumpings, z_bcsa.PlayerID
 FROM z_bcsa
-WHERE (((z_bcsa.Balls)>0)) OR (((z_bcsa.Dismissals)>0))
-GROUP BY z_bcsa.Name, z_bcsa.Mat, z_bcsa.O, z_bcsa.Balls, z_bcsa.Mdns, z_bcsa."Total Runs", z_bcsa."Total Wickets", z_bcsa.Average, z_bcsa."Strike Rate", z_bcsa.RPO, z_bcsa.ABD, z_bcsa._4s, z_bcsa._6s, z_bcsa.Figures, z_bcsa."5WI", z_bcsa."Expensive Over", z_bcsa.Catches, z_bcsa.Stumpings, z_bcsa.PlayerID
+WHERE z_bcsa.Balls>0
+--GROUP BY z_bcsa.Name, z_bcsa.Mat, z_bcsa.O, z_bcsa.Balls, z_bcsa.Mdns, z_bcsa."Total Runs", z_bcsa."Total Wickets", z_bcsa.Average, z_bcsa."Strike Rate", z_bcsa.RPO, z_bcsa.ABD, z_bcsa._4s, z_bcsa._6s, z_bcsa.Figures, z_bcsa."5WI", z_bcsa."Expensive Over", z_bcsa.Catches, z_bcsa.Stumpings, z_bcsa.PlayerID
 ORDER BY Name
 ;
 
@@ -242,7 +251,7 @@ ORDER BY (Sum(bowling.wides)+Sum(bowling.no_balls))/(Sum(overs)*6+Sum(bowling.ex
 
 CREATE OR REPLACE VIEW bowling_17_dismissals_ct AS
 SELECT
-    100.0*Sum(CASE WHEN lower(wickets.how_out)='caught' then 1 else 0 end)/z_bocsa."Total Wickets" as Percentage
+    1.0*Sum(CASE WHEN lower(wickets.how_out)='caught' then 1 else 0 end)/z_bocsa."Total Wickets" as Percentage
     , z_bocsa.Name
     , z_bocsa."Total Wickets" AS Wickets
     , Sum(CASE WHEN lower(wickets.how_out)='caught' then 1 else 0 end) AS "Caught W"
@@ -254,7 +263,7 @@ ORDER BY Percentage DESC, z_bocsa."Total Wickets" Desc;
 
 CREATE OR REPLACE VIEW bowling_18_dismissals_b AS
 SELECT
-    100.0*Sum(CASE WHEN lower(wickets.how_out)='bowled' then 1 else 0 end)/z_bocsa."Total Wickets" as Percentage
+    1.0*Sum(CASE WHEN lower(wickets.how_out)='bowled' then 1 else 0 end)/z_bocsa."Total Wickets" as Percentage
     , z_bocsa.Name
     , z_bocsa."Total Wickets" AS Wickets
     , Sum(CASE WHEN lower(wickets.how_out)='bowled' then 1 else 0 end) AS "Bowled W"
@@ -266,7 +275,7 @@ ORDER BY Percentage DESC, z_bocsa."Total Wickets" Desc;
 
 CREATE OR REPLACE VIEW bowling_19_dismissals_lbw AS
 SELECT
-    100.0*Sum(CASE WHEN lower(wickets.how_out)='lbw' then 1 else 0 end)/z_bocsa."Total Wickets" as Percentage
+    1.0*Sum(CASE WHEN lower(wickets.how_out)='lbw' then 1 else 0 end)/z_bocsa."Total Wickets" as Percentage
     , z_bocsa.Name
     , z_bocsa."Total Wickets" AS Wickets
     , Sum(CASE WHEN lower(wickets.how_out)='lbw' then 1 else 0 end) AS "LBW W"

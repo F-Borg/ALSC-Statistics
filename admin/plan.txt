@@ -54,35 +54,19 @@ Open source software:
 ###############################################################################
 #             1.0 - stats book
 ###############################################################################
-	- equivalent data to original
-		- reworked ABD so that each opener has value 1 (1st wicket), #3 has value 2 (2nd wicket) etc.
-	- output to excel as in original version and format
+	DONE - equivalent data to original 
+
+	DONE - output to excel as in original version and format
 		- history
 		- yearbook
-	- manually format and put into Word
-	- convert to pdf and print for release
+	DONE - manually format and put into Word
+	DONE - convert to pdf and print for release
    
-	- validate against ms access method? - 2021-22
+	DONE - validate against ms access method? - 2021-22
 		DONE - history
-		- yearbook
+		DONE - yearbook
 
 
-###############################################################################
-#             features for 1.0:
-###############################################################################
-	- automatically identify next match to process
-		get list of Adelaide Lutheran match ids from playhq - or links to scorecards
-		list matches that haven't been processed
-		option to prioritise date or grade for next match
-
-	- click-through process (or similar) to validate and fill in missing data for a given match
-   
-	- validation helper functions:
-		- highlight:
-			missing data
-			duplicate records
-		- check order of missing records
-	
 	
 ###############################################################################
 #             future features (no particular order)
@@ -103,3 +87,17 @@ Open source software:
 	electronic version of stats book - don't have to fit things on A4 pages, can distribute via email or put on website
 	junior cricket
 	handover document
+
+
+	automatically identify next match to process
+		get list of Adelaide Lutheran match ids from playhq - or links to scorecards
+		list matches that haven't been processed
+		option to prioritise date or grade for next match
+
+	click-through process (or similar) to validate and fill in missing data for a given match
+   
+	validation helper functions:
+		- highlight:
+			missing data
+			duplicate records
+		- check order of missing records

@@ -346,7 +346,7 @@ def yb_ind_bat(_season_, writer, wb, pgconn):
     fmt = tf.add_text_formats(wb)
     row_end = 0
     worksheet = wb.add_worksheet(sheetname)
-    worksheet.merge_range('A1:E1',f"Individual Batting - {_season_}",fmt['heading1'])
+    worksheet.merge_range('A1:H1',f"Individual Batting - {_season_}",fmt['heading1'])
     worksheet.set_row(0, fmt['heading1_height'])
 
     stats_table = pd.read_sql(con=pgconn, sql=f"""
@@ -367,14 +367,14 @@ def yb_ind_bat(_season_, writer, wb, pgconn):
     headings = pd.DataFrame(stats_table.iloc[:,1:9].columns, columns=['aaa']).T
 
     for player in players:
-        worksheet.merge_range(row_end+2,0,row_end+2,7,player,fmt['arial10boldcentre'])
+        worksheet.merge_range(row_end+2,0,row_end+2,7,player,fmt['calibri10boldcentre'])
         t1 = stats_table.loc[stats_table['Name']==player].iloc[:,1:9]
         headings.to_excel(writer, sheet_name=sheetname, startrow = row_end+3, index=False, header=False)
         t1.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False, header=False)
-        worksheet.set_row(row_end+3,None,fmt['arial8bold'])
+        worksheet.set_row(row_end+3,None,fmt['calibri8boldbottomborder'])
         row_end += 3 + len(t1)
 
-    worksheet.set_column('A:H',None,fmt['arial8'])
+    worksheet.set_column('A:H',None,fmt['calibri8'])
 
 
 def yb_ind_bowl(_season_, writer, wb, pgconn):
@@ -402,11 +402,11 @@ def yb_ind_bowl(_season_, writer, wb, pgconn):
     headings = pd.DataFrame(stats_table.iloc[:,1:8].columns, columns=['aaa']).T
 
     for player in players:
-        worksheet.merge_range(row_end+2,0,row_end+2,6,player,fmt['arial10boldcentre'])
+        worksheet.merge_range(row_end+2,0,row_end+2,6,player,fmt['calibri10boldcentre'])
         t1 = stats_table.loc[stats_table['Name']==player].iloc[:,1:8]
         headings.to_excel(writer, sheet_name=sheetname, startrow = row_end+3, index=False, header=False)
         t1.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False, header=False)
-        worksheet.set_row(row_end+3,None,fmt['arial8bold'])
+        worksheet.set_row(row_end+3,None,fmt['calibri8boldbottomborder'])
         row_end += 3 + len(t1)
 
-    worksheet.set_column('A:G',None,fmt['arial8'])
+    worksheet.set_column('A:G',None,fmt['calibri8'])

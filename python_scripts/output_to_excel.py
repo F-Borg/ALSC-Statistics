@@ -1,9 +1,9 @@
 #### Notes:
 """
-missing:
+To Do:
     check for equal last and extend tables as appropriate - see opposition lowest team scores as exammple
-    multiple formats in same cell - see write_rich_string
-    capitalise column names
+    multiple formats in same cell - see write_rich_string - not important because generally not copying headers from excel into word
+    capitalise column names - not important because generally not copying headers from excel into word
 """
 
 #########################################################################################################################
@@ -16,6 +16,10 @@ from sqlalchemy import select
 from sqlalchemy import text
 from math import ceil
 import pandas as pd
+import python_scripts.text_formats as tf
+
+import importlib
+importlib.reload(tf)
 
 engine = create_engine('postgresql+psycopg2://postgres:postgres1!@localhost/dev')
 pgconn = engine.connect()
@@ -24,7 +28,7 @@ pgconn = engine.connect()
 ############################
 # User input               
 ############################
-_season_ = '2021/22' # e.g. _season_ = '2021/22'
+_season_ = '2022/23' # e.g. _season_ = '2021/22'
 
 
 ############################
@@ -42,6 +46,8 @@ heading1 = wb.add_format({'size':20,'bold':True,'underline':True})
 bold14centre = wb.add_format({'size':14,'bold':True,'align':'centre'})
 heading1_height = 35
 centre = wb.add_format({'align':'centre'})
+
+fmt = tf.add_text_formats(wb)
 
 
 #########################################################################################################################
@@ -284,7 +290,7 @@ worksheet.merge_range('I1:L1',"Youngest Known Players",heading1)
 # Most Matches as Captain
 ##########################
 stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Matches", "WO", "W1", "D", "T", "L1", "LO", "Win Pct", "Premierships"
-    from team_14_ind_most_matches_capt limit 10""")
+    from team_14_ind_most_matches_capt limit 25""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
 worksheet.merge_range(row_end+2,0,row_end+2,10,"Most Matches as Captain",heading1)
@@ -313,8 +319,16 @@ for ii in range(num_pages):
     stats_table = stats_table_tmp.loc[70*ii:(70*(ii+1)-1)]
     stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
     worksheet = writer.sheets[sheetname]
-    worksheet.merge_range('A1:R1',"ALCC Player Batting Career Summary",heading1)
-    worksheet.set_row(0, heading1_height)
+    worksheet.merge_range('A1:R1',"ALCC Player Batting Career Summary",fmt['heading1'])
+    worksheet.set_row(0, fmt['heading1_height'])
+    worksheet.set_column('A:A',None,fmt['arial7bold'])
+    worksheet.set_column('B:C',None,fmt['arial7'])
+    worksheet.set_column('D:D',None,fmt['arial7bold'])
+    worksheet.set_column('E:L',None,fmt['arial7'])
+    worksheet.set_column('M:M',None,fmt['arial7bold'])
+    worksheet.set_column('N:N',None,fmt['arial7boldnum1dec'])
+    worksheet.set_column('O:O',None,fmt['arial7'])
+    worksheet.set_column('P:R',None,fmt['arial7num1dec'])
 
 
 #########################################################################################################################
@@ -338,7 +352,7 @@ worksheet.set_row(0, heading1_height)
 ##########################
 # Highest Career Average
 ##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select "Runs", "Name", "Inn", "Average"
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Average", "Name", "Runs", "Inn"
     from batting_03_career_ave limit 25""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 3, startcol=5, index=False)
 worksheet = writer.sheets[sheetname]
@@ -366,6 +380,12 @@ stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+5, startco
 worksheet = writer.sheets[sheetname]
 worksheet.merge_range(row_end+2,5,row_end+2,8,"Slowest Career Strike Rate",heading1)
 worksheet.set_row(row_end+2, heading1_height)
+
+
+worksheet.set_column('A:A',None,fmt['arial9boldnum1dec'])
+worksheet.set_column('F:F',None,fmt['arial9boldnum1dec'])
+worksheet.set_column('B:E',None,fmt['arial9'])
+worksheet.set_column('G:I',None,fmt['arial9'])
 
 
 #########################################################################################################################
@@ -424,6 +444,11 @@ worksheet.merge_range(row_end+2,0,row_end+2,5,"Most Runs In A Season (in one div
 worksheet.set_row(row_end+2, heading1_height)
 
 
+worksheet.set_column('A:C',None,fmt['arial9'])
+worksheet.set_column('D:D',None,fmt['arial9num1dec'])
+worksheet.set_column('E:H',None,fmt['arial9'])
+
+
 #########################################################################################################################
 #########################################################################################################################
 # Batting High
@@ -455,6 +480,8 @@ stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=F
 worksheet = writer.sheets[sheetname]
 worksheet.merge_range(row_end+2,0,row_end+2,9,"Most 6s in an Innings",heading1)
 worksheet.set_row(row_end+2, heading1_height)
+
+worksheet.set_column('A:J',None,fmt['arial8'])
 
 
 #########################################################################################################################
@@ -525,6 +552,9 @@ worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest 3rd XI Scores By Batting 
 worksheet.set_row(row_end+2, heading1_height)
 
 
+worksheet.set_column('A:I',None,fmt['arial9'])
+
+
 #########################################################################################################################
 #########################################################################################################################
 # Batting Fast Slow
@@ -570,6 +600,9 @@ stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=F
 worksheet = writer.sheets[sheetname]
 worksheet.merge_range(row_end+2,0,row_end+2,9,"Slowest Innings (min 60 balls)",heading1)
 worksheet.set_row(row_end+2, heading1_height)
+
+worksheet.set_column('A:J',None,fmt['arial9'])
+worksheet.set_column('B:B',None,fmt['arial9num1dec'])
 
 
 #########################################################################################################################
@@ -637,6 +670,10 @@ worksheet.merge_range(row_end+2,5,row_end+2,8,"Most Times Stumped",heading1)
 worksheet.set_row(row_end+2, heading1_height)
 
 
+worksheet.set_column('B:B',None,fmt['arial10pct1dec'])
+worksheet.set_column('C:G',None,fmt['arial10'])
+
+
 #########################################################################################################################
 #########################################################################################################################
 # Batting Partnerships
@@ -650,7 +687,7 @@ row_end = 0
 ##########################
 stats_table = pd.read_sql(con=pgconn, sql=f"""select Runs AS "Runs",Wicket AS "Wicket","Player 1","Player 2",Opponent AS "Opponent"
                           ,Year AS "Year",Round AS "Round",eleven AS "XI",Association AS "Association",Grade AS "Grade"
-    from batting_23_partnerships_highest limit 20""")
+    from batting_23_partnerships_highest limit 25""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
 worksheet.merge_range('A1:J1',"Highest Partnerships",heading1)
@@ -661,7 +698,7 @@ row_end = stats_table.shape[0] + 2
 ##########################
 # 1st XI Wicket Partnership Records
 ##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select Runs AS "Runs",Wicket AS "Wicket","Player 1","Player 2",Opponent AS "Opponent"
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Wicket AS "Wicket",Runs AS "Runs","Player 1","Player 2",Opponent AS "Opponent"
                           ,Year AS "Year",Round AS "Round",Association AS "Association",Grade AS "Grade"
     from batting_24_partnerships_wicket_1stXI""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
@@ -674,7 +711,7 @@ row_end += stats_table.shape[0] + 4
 ##########################
 # 2nd XI Wicket Partnership Records
 ##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select Runs AS "Runs",Wicket AS "Wicket","Player 1","Player 2",Opponent AS "Opponent"
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Wicket AS "Wicket"Runs AS "Runs",,"Player 1","Player 2",Opponent AS "Opponent"
                           ,Year AS "Year",Round AS "Round",Association AS "Association",Grade AS "Grade"
     from batting_25_partnerships_wicket_2ndXI""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
@@ -687,7 +724,7 @@ row_end += stats_table.shape[0] + 4
 ##########################
 # 3rd XI Wicket Partnership Records
 ##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select Runs AS "Runs",Wicket AS "Wicket","Player 1","Player 2",Opponent AS "Opponent"
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Wicket AS "Wicket",Runs AS "Runs","Player 1","Player 2",Opponent AS "Opponent"
                           ,Year AS "Year",Round AS "Round",Association AS "Association",Grade AS "Grade"
     from batting_26_partnerships_wicket_3rdXI""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
@@ -696,6 +733,9 @@ worksheet.merge_range(row_end+2,0,row_end+2,9,"3rd XI Wicket Partnership Records
 worksheet.set_row(row_end+2, heading1_height)
 
 row_end += stats_table.shape[0] + 4
+
+
+worksheet.set_column('A:J',None,fmt['arial8'])
 
 
 
@@ -736,7 +776,13 @@ for ii in range(num_pages):
     stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
     worksheet = writer.sheets[sheetname]
     worksheet.merge_range('A1:R1',"ALCC Player Bowling and Fielding Summary",heading1)
-    worksheet.set_row(0, heading1_height)
+    worksheet.set_row(0, fmt['heading1_height'])
+    worksheet.set_column('A:A',None,fmt['arial7bold'])
+    worksheet.set_column('B:F',None,fmt['arial7'])
+    worksheet.set_column('G:G',None,fmt['arial7bold'])
+    worksheet.set_column('H:H',None,fmt['arial7boldnum1dec'])
+    worksheet.set_column('I:K',None,fmt['arial7num1dec'])
+    worksheet.set_column('L:R',None,fmt['arial7'])
 
 
 #########################################################################################################################
@@ -782,6 +828,9 @@ worksheet.merge_range(row_end+2,0,row_end+2,8,"Lowest Bowling Strike Rate (balls
 worksheet.set_row(row_end+2, heading1_height)
 
 row_end += stats_table.shape[0] + 4
+
+
+worksheet.set_column('A:I',None,fmt['arial10'])
 
 
 #########################################################################################################################
@@ -840,6 +889,9 @@ worksheet.merge_range(row_end+2,0,row_end+2,7,"Most Wickets In A Season",heading
 worksheet.set_row(row_end+2, heading1_height)
 
 row_end += stats_table.shape[0] + 4
+
+
+worksheet.set_column('A:H',None,fmt['arial10'])
 
 
 #########################################################################################################################
@@ -901,6 +953,9 @@ worksheet.merge_range(row_end+2,0,row_end+2,8,"Most Economical Bowling (min 10 o
 worksheet.set_row(row_end+2, heading1_height)
 
 row_end += stats_table.shape[0] + 4
+
+
+worksheet.set_column('A:I',None,fmt['arial10'])
 
 
 #########################################################################################################################
@@ -984,6 +1039,9 @@ for ii in range(stats_table.shape[0]):
 row_end += stats_table.shape[0] + 4
 
 
+worksheet.set_column('A:J',None,fmt['arial9'])
+
+
 #########################################################################################################################
 #########################################################################################################################
 # Bowling Wickets
@@ -1055,6 +1113,9 @@ for ii in range(stats_table.shape[0]):
     worksheet.merge_range(row_end+ii+5,6,row_end+ii+5,7,stats_table['Name'][ii],centre)
 
 
+worksheet.set_column('A:I',None,fmt['arial10'])
+
+
 #########################################################################################################################
 #########################################################################################################################
 # Fielding
@@ -1120,6 +1181,8 @@ for ii in range(stats_table.shape[0]):
     worksheet.merge_range(row_end+ii+5,1,row_end+ii+5,2,stats_table['Fielder'][ii],centre)
     worksheet.merge_range(row_end+ii+5,3,row_end+ii+5,4,stats_table['Bowler'][ii],centre)
 
+
+worksheet.set_column('A:J',None,fmt['arial9'])
 
 
 ##########################

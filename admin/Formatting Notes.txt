@@ -1,0 +1,33 @@
+Formatting Notes
+
+Season Summary:
+after pasting table, highlight all rows below heading and go Table Tools -> Layout -> Height and set so it fits
+
+Batting Summary:
+adjust number of rows in Word table to match Excel
+copy all rows below heading from Excel to paste
+
+Ind Batting/Bowling:
+copy from excel, right-click -> paste with source formatting into Word
+highlight table
+    Layout -> columns -> more columns -> 2 cols, (1cm spacing also for batting)
+    Table Tools -> Layout -> Cell Margins -> 0.15cm L & R - Batting only
+    Table Tools -> Layout -> Height 0.4cm (could also do 0.3)
+    Table Tools -> Layout -> AutoFit -> AutoFit Contents
+then go through and add rows so player stats don't go over more than one col
+
+Most Matches
+    Need to paste individual cols because of merged cells
+
+Player Batting Summary:
+Table Tools -> Layout -> Cell Margins -> 0.15cm L & R
+
+
+Increase Decimal:   ALT + H + 0
+Decrease Decimal:   ALT + H + 9
+Percentage:         Control + Shift + %
+
+Replace all -9.0 with blank
+
+Save cover page and statistical history as separate pdfs and merge them at:
+https://www.adobe.com/au/acrobat/online/merge-pdf.html
