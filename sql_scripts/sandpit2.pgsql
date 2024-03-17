@@ -135,3 +135,7 @@ select distinct how_out from batting
 select * from innings 
 
 select * from matches
+
+select * from seasons
+
+select * from yb_02_batting_summary where seasonid = 76
