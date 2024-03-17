@@ -60,7 +60,7 @@ SELECT
     , Seasons.Year as "Year"
     , players.player_name AS "Name"
     , Sum(CASE WHEN innings.inningsno=1 Or innings.inningsno=2 then 1 else 0 end) AS "Matches"
-    , Count(Batting.Batting_Position) AS "Innings"
+    , Sum(CASE WHEN lower(coalesce(Batting.how_out,'0')) in ('DNB','0','absent out') then 0 else 1 end) AS "Innings"
     , Sum(case when lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end) AS "Not Outs"
     , Sum(Batting._4s) AS "Fours"
     , Sum(Batting._6s) AS "Sixes"

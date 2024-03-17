@@ -5,9 +5,9 @@ SELECT
     , z_all_player_dates."First Season" AS Debut
     , z_all_player_dates."Last Season"
     , Sum(CASE WHEN innings.inningsno=1 Or innings.inningsno=2 then 1 else 0 end) AS Mat
-    , Count(Batting.Batting_Position) AS Inn
+    , Sum(CASE WHEN lower(coalesce(Batting.how_out,'0')) in ('DNB','0','absent out') then 0 else 1 end) AS Inn
     , Sum(CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then 1 else 0 end) AS "NO"
-    , Sum(CASE WHEN lower(batting.how_out)<>'not out' And batting.score=0 then 1 else 0 end) AS Ducks
+    , Sum(CASE WHEN lower(batting.how_out) not in ('dnb','0','absent out','not out','forced retirement','retired hurt','retired') And batting.score=0 then 1 else 0 end) AS Ducks
     , Sum(Batting._4s) AS Fours
     , Sum(Batting._6s) AS Sixes
     , Sum(CASE WHEN batting.score Between 50 And 99 then 1 else 0 end) AS Fifties

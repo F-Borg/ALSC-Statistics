@@ -80,7 +80,7 @@ Open source software:
 	Recreate scorecard for a game
 	additional web scraping
 		- if there is access to ball-by-ball, then 4's and 6's against and high over
-		- date & venue
+		DONE - date & venue
 	Power BI integration
 		- web version for all to access
 		- store copy of datasets online
