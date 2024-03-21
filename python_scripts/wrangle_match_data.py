@@ -78,7 +78,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
     #########################################################################################################################
     # Season, Match - numerical order does not matter
     #########################################################################################################################
-    season = pd.read_sql(con=pgconn, sql=f"select * from seasons where playhq_season='{match_info['grade']}'")
+    season = pd.read_sql(con=pgconn, sql=f"select * from seasons where playhq_season='{match_info['grade']}' and year='20'||replace('{match_info['season']}','-','/')")
 
     matchid   = pd.read_sql(con=pgconn, sql=f"select max(matchid)   as n from matches")['n'][0]+1
     inningsid = pd.read_sql(con=pgconn, sql=f"select max(inningsid) as n from innings")['n'][0]+1

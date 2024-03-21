@@ -124,18 +124,45 @@ update batting
 set how_out = 'Caught'
 where how_out = 'caught'
 ;
+update matches
+set seasonid = 79 
+where matchid in (813,814,815,816,817,818)
+
+
+
+update wickets
+set hat_trick = 1
+where inningsid = 1827 and batting_position = 10
+
+
 
 
 select * from players order by playerid
 
-select * from batting where playerid = 381;
+select * from batting -- where playerid = 381;
+order by inningsid
 
 select distinct how_out from batting
 
-select * from innings 
+select * from wickets where inningsid = 1813
 
-select * from matches
+select * from innings where inningsid = 1814
+
+select * from innings      where matchid = 813
+
+select * from matches      --where matchid = 813
+order by date1 desc
 
 select * from seasons
 
+select * from wickets where hat_trick > 0
+
 select * from yb_02_batting_summary where seasonid = 76
+
+
+
+
+select * from seasons where playhq_season='Section 6 Blackwood Sound Cup' and year='20'||replace('23-24','-','/')
+
+
+

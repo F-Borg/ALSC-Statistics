@@ -1,13 +1,13 @@
 -- Add new player
 select * from players order by playerid desc
 
---insert into players values (475,'Patel, Kashap','Kashap','Patel',NULL,'Kashap Patel');
+--insert into players values (477,'Keller, Ryan','Ryan','Keller',NULL,'Ryan Keller');
 
 -- Add new season
 select * from seasons
--- insert into seasons values (
---     78, '2022/23', 'ASCA', 'S09', '3rd', 408, 0, 9, 'true', 'Section 9 Hopkins McGowran Cup'
--- )
+insert into seasons values (
+    79, '2023/24', 'ASCA', 'S06', '1st', 269, 0, 0, 'true', 'Section 6 Blackwood Sound Cup'
+)
 
 -- Update player name
 update players set 
@@ -26,7 +26,7 @@ where playerid = 138
 
 select * from players where playerid = 435
 ;
-select * from players where surname = 'Patel'
+select * from players where surname = 'McInnes'
 ;
 select * from players where firstname = 'Divyesh'
 ;
