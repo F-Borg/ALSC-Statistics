@@ -44,14 +44,14 @@ pgconn = engine.connect()
 ############################
 # User input               
 ############################
-_season_ = '2022/23' # e.g. _season_ = '2021/22'
-seasonid_1stxi = 76
-seasonid_2ndxi = 77
-seasonid_3rdxi = 78
+_season_ = '2023/24' # e.g. _season_ = '2021/22'
+seasonid_1stxi = 79
+seasonid_2ndxi = 80
+# seasonid_3rdxi = 78
 
 xi_1 = '1st XI'
 xi_2 = '2nd XI'
-xi_3 = '3rd XI'
+# xi_3 = '3rd XI'
 
 ############################
 # Create Excel doc.
@@ -83,7 +83,7 @@ yb.yb_milestones(_season_, writer, wb, pgconn)
 #########################################################################################################################
 yb.yb_summary(_season_, seasonid_1stxi, xi_1, writer, wb, pgconn)
 yb.yb_summary(_season_, seasonid_2ndxi, xi_2, writer, wb, pgconn)
-yb.yb_summary(_season_, seasonid_3rdxi, xi_3, writer, wb, pgconn)
+# yb.yb_summary(_season_, seasonid_3rdxi, xi_3, writer, wb, pgconn)
 
 
 #########################################################################################################################

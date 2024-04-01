@@ -62,9 +62,9 @@ def scrape_scorecard(url, overwrite_md=False):
 
     if 'Round' in re.split(', ',text1)[1]:
         mi_round = re.split(', Round ',text1)[1]
-    elif 'Finals Round 1' in re.split(', ',text1)[1]: 
+    elif 'Semi Finals' in re.split(', ',text1)[1]: 
         mi_round = 'SF'
-    elif 'Finals Round 2' in re.split(', ',text1)[1]: 
+    elif 'Grand Final' in re.split(', ',text1)[1]: 
         mi_round = 'GF'
     else:
         tmp = re.split(', ',text1)[1]
@@ -147,7 +147,9 @@ def scrape_scorecard(url, overwrite_md=False):
         # -3 because column names, extras, and total are all divs
         num_players = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a}]/div[1]/div[2]/div/*'))-3
         # check > 0 overs bowled
-        if re.sub('\(([\d\.]+) Overs\)','\\1',scorecard[num_players+2].xpath('span[3]/text()')[0]) == '0':
+        if re.sub('\(([\d\.]+) Overs\)','\\1',scorecard[num_players+2].xpath('span[3]/text()')[0]) == '0' \
+            and 'Adelaide Lutheran' not in dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a-1}]/button[{ii}]/text()')[0] \
+            and ii not in (1,2):
             print(f'innings {ii} not played..')
             num_innings_played-=1 
             innings.append('')
@@ -301,7 +303,7 @@ def scrape_scorecard(url, overwrite_md=False):
     if match_info['captain'] == 'ERROR': print('Missing Captain')
     for ii in range(len(match_info['extras'])):
         if match_info['extras'][ii] == {'wd': 0, 'nb': 0, 'lb': 0, 'b': 0, 'p': 0}:
-            print(f'Missing extras for innings {ii}')
+            print(f'Missing extras for innings {ii+1}')
 
 
     match_info_df = pd.DataFrame.from_dict(match_info,orient='index').to_markdown()

@@ -1,12 +1,12 @@
 -- Add new player
-select * from players order by playerid desc
+select * from players order by playerid desc;
 
---insert into players values (477,'Keller, Ryan','Ryan','Keller',NULL,'Ryan Keller');
+--insert into players values (485,'Pradhan, Nabin','Nabin','Pradhan',NULL,'Nabin Pradhan');
 
 -- Add new season
-select * from seasons
+select * from seasons;
 insert into seasons values (
-    79, '2023/24', 'ASCA', 'S06', '1st', 269, 0, 0, 'true', 'Section 6 Blackwood Sound Cup'
+    79, '2023/24', 'ASCA', 'S09', '2nd', 435, 0, 0, 'true', 'Section 9 Hopkins McGowran Cup'
 )
 
 -- Update player name
@@ -22,15 +22,17 @@ update players set
 where playerid = 138
 ;
 
+update seasons set posn = 1 where seasonid = 79
 
+select * from seasons where seasonid = 80
 
 select * from players where playerid = 435
 ;
-select * from players where surname = 'McInnes'
+select * from players where surname = 'Wills'
 ;
-select * from players where firstname = 'Divyesh'
+select * from players where firstname = 'Jasraj'
 ;
-select * from seasons
+select * from matches
 ;
 -- drop view z_All_Player_Dates cascade
 
@@ -48,17 +50,15 @@ select * from batting where playerid = 269 and score=0
 select * from innings where  inningsid = 1478
 select * from matches where matchid = 651
 
+select * from wickets;
+
 select distinct result from matches
 
 select * from 
 (select seasonid, round, count(*) as c from matches group by seasonid, round) a
 where c>1
 
---delete from matches where matchid = 813
--- delete from innings where inningsid in (1813, 1814);
--- delete from batting where inningsid in (1813, 1814);
--- delete from bowling where inningsid in (1813, 1814);
--- delete from wickets where inningsid in (1813, 1814);
+
 
 
 select * from innings where matchid in (812,813)
@@ -104,4 +104,15 @@ update batting set
 where inningsid = 1795 and playerid = 440
 ;
 
+update batting set
+batting_position = 2
+where inningsid = 1862
+and playerid = 265
+;
 
+select * from wickets where hat_trick = 1;
+
+update wickets set
+hat_trick = 1
+where inningsid = 1861 and batting_position = 10
+;

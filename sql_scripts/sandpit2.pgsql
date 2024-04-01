@@ -166,3 +166,6 @@ select * from seasons where playhq_season='Section 6 Blackwood Sound Cup' and ye
 
 
 
+
+select * from yb_02_batting_summary
+    where seasonid = 80

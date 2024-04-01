@@ -12,15 +12,15 @@ pgconn = engine.connect()
 def get_how_out(how_out_str):
     if re.search('c\&b:',how_out_str):
         return 'c & b'
-    elif re.search('^c:',how_out_str):
+    elif re.search('^c:',how_out_str) or how_out_str=='caught':
         return 'caught'
-    elif re.search('^b:',how_out_str):
+    elif re.search('^b:',how_out_str) or how_out_str=='bowled':
         return 'bowled'
     elif re.search('did not bat',how_out_str) or how_out_str=='-':
         return 'DNB'
     elif re.search('not out',how_out_str):
         return 'Not Out'
-    elif re.search('^lbw:',how_out_str):
+    elif re.search('^lbw:',how_out_str) or how_out_str=='lbw':
         return 'LBW'
     elif re.search('run out',how_out_str):
         return 'Run Out'
@@ -41,20 +41,36 @@ def get_how_out(how_out_str):
 #     return re.sub('(\S)(\S+)\s?(\S)?(\S+)? (\S+)$','\\5, \\1\\3',name)
 
 def how_out_bowler(how_out_str):
-    if get_how_out(how_out_str) in ['caught','bowled','LBW','Stumped','c & b','Hit Wicket']:
+    if get_how_out(how_out_str) in ['caught','bowled','LBW','Stumped','c & b','Hit Wicket'] and how_out_str not in ('caught','bowled','lbw','stumped','c&b','hit wicket'):
         # return re.sub('.*?(?:lbw|b): (\S)(\S+)\s?(\S)?(\S+)? (\S+)$','\\5, \\1\\3',how_out_str)
         return re.sub('.*?(?:lbw|b): (.*)','\\1',how_out_str) # return name as-is
     else:
         return ''
-
+    
 def how_out_assist(how_out_str):
     if get_how_out(how_out_str) in ['caught','Stumped','c & b','Run Out']:
         if '?' in how_out_str:
             return None
+        elif ':' not in re.sub('(?:c|stumped|st|run out|c\&b): (\S+)\s(\S+)\s(\S+).*','\\1 \\2 \\3',how_out_str):
+            return re.sub('(?:c|stumped|st|run out|c\&b): (\S+)\s(\S+)\s(\S+).*','\\1 \\2 \\3',how_out_str)
         else:
             return re.sub('(?:c|stumped|st|run out|c\&b): (\S+)\s(\S+).*','\\1 \\2',how_out_str)
     else:
         return None
+
+if False:
+    how_out_str = 'c: Sidhaarth Bamarani Thangaswamy b: Jim Wills'
+    how_out_str = 'c: Franco Raponi b: Jim Wills'
+    how_out_str = 'run out: Sidhaarth Bamarani Thangaswamy'
+    how_out_str = 'run out: Franco Raponi'
+    get_how_out(how_out_str)
+    how_out_bowler(how_out_str)
+    how_out_assist(how_out_str)
+    if ':' not in re.sub('(?:c|stumped|st|run out|c\&b): (\S+)\s(\S+)\s(\S+).*','\\1 \\2 \\3',how_out_str):
+        re.sub('(?:c|stumped|st|run out|c\&b): (\S+)\s(\S+)\s(\S+).*','\\1 \\2 \\3',how_out_str)
+    else:
+        re.sub('(?:c|stumped|st|run out|c\&b): (\S+)\s(\S+).*','\\1 \\2',how_out_str)
+
 
 def split_fow(s):
     # s='1-0 Daniel Grosser'
@@ -118,29 +134,30 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             batting['name_fl'] = batting['batter']
 
             # FOW
-            fow = [split_fow(s) for s in match_info['fow_list'][i-1][0].split(', ')]
-            batter_pos_1 = 1
-            batter_pos_2 = 2
-            for jj in range(0,len(fow)):
-                # jj=3
-                # if batter 1 is out, then batter 2 is the not out batter, and update batter 1 to the next batter
-                if batting.loc[batting['batting_position']==batter_pos_1, 'batter'][0] == fow[jj][2]:
-                    not_out_batter = batting.loc[batting['batting_position']==batter_pos_2, 'batter'][0]
-                    batter_pos_1 = max(batter_pos_1,batter_pos_2)+1
-                else:
-                    not_out_batter = batting.loc[batting['batting_position']==batter_pos_1, 'batter'][0]
-                    batter_pos_2 = max(batter_pos_1,batter_pos_2)+1
-                batting.loc[batting['batter']==fow[jj][2], 'wicket']         = fow[jj][0]
-                batting.loc[batting['batter']==fow[jj][2], 'fow']            = fow[jj][1]
-                batting.loc[batting['batter']==fow[jj][2], 'not_out_batter_name'] = not_out_batter
-
-            # not out batters - calc final score
-            if max(batter_pos_1,batter_pos_2) <= 11 and batting.loc[batting['batting_position']==max(batter_pos_1,batter_pos_2), 'how_out'][0] != 'DNB':
-                batting.loc[batting['batting_position']==batter_pos_1, 'wicket']         = len(fow)+1
-                batting.loc[batting['batting_position']==batter_pos_1, 'fow']            = sum(batting['score'].astype('int')) + sum(match_info['extras'][i-1].values())
-                # !!! issue here with last batter - batter_pos_2 = 12
-                batting.loc[batting['batting_position']==batter_pos_1, 'not_out_batter_name'] = batting.loc[batting['batting_position']==batter_pos_2, 'batter'][0] 
-
+            if len(match_info['fow_list'][i-1]) > 0:
+                fow = [split_fow(s) for s in match_info['fow_list'][i-1][0].split(', ')]
+                batter_pos_1 = 1
+                batter_pos_2 = 2
+                for jj in range(0,len(fow)):
+                    # jj=3
+                    # if batter 1 is out, then batter 2 is the not out batter, and update batter 1 to the next batter
+                    if batting.loc[batting['batting_position']==batter_pos_1, 'batter'][0] == fow[jj][2]:
+                        not_out_batter = batting.loc[batting['batting_position']==batter_pos_2, 'batter'][0]
+                        batter_pos_1 = max(batter_pos_1,batter_pos_2)+1
+                    else:
+                        not_out_batter = batting.loc[batting['batting_position']==batter_pos_1, 'batter'][0]
+                        batter_pos_2 = max(batter_pos_1,batter_pos_2)+1
+                    batting.loc[batting['batter']==fow[jj][2], 'wicket']         = fow[jj][0]
+                    batting.loc[batting['batter']==fow[jj][2], 'fow']            = fow[jj][1]
+                    batting.loc[batting['batter']==fow[jj][2], 'not_out_batter_name'] = not_out_batter
+                # not out batters - calc final score
+                if max(batter_pos_1,batter_pos_2) <= 11 and batting.loc[batting['batting_position']==max(batter_pos_1,batter_pos_2), 'how_out'][0] != 'DNB':
+                    batting.loc[batting['batting_position']==batter_pos_1, 'wicket']         = len(fow)+1
+                    batting.loc[batting['batting_position']==batter_pos_1, 'fow']            = sum(batting['score'].astype('int')) + sum(match_info['extras'][i-1].values())
+                    # !!! issue here with last batter - batter_pos_2 = 12
+                    batting.loc[batting['batting_position']==batter_pos_1, 'not_out_batter_name'] = batting.loc[batting['batting_position']==batter_pos_2, 'batter'][0] 
+            else:
+                print('Missing FOW')
 
             batting2 = batting.merge(players1, on="name_fl", how="left").merge(players2, on="not_out_batter_name", how="left")
 

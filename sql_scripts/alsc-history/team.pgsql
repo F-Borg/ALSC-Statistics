@@ -333,6 +333,37 @@ HAVING   AGE(z_all_player_dates.debut,z_all_player_dates.dob) Is Not Null
 ORDER BY AGE(z_all_player_dates.debut,z_all_player_dates.dob);
 
 
+CREATE OR REPLACE VIEW team_16_ind_most_matches_together AS
+select 
+    p1.player_name as "Player 1"
+    , p2.player_name as "Player 2"
+    , aa.matches
+from (
+    select 
+        player1
+        , player2
+        , count(*) as matches
+    from (
+        select distinct  
+            b1.playerid as player1
+            , b2.playerid as player2
+            , innings.matchid 
+        from batting as b1
+        inner join batting as b2 
+        on b1.inningsid = b2.inningsid 
+        and b1.playerid < b2.playerid
+        inner join innings
+        on b1.inningsid = innings.inningsid
+        --where b1.inningsid < 10 --test
+    ) a
+    group by player1, player2
+) aa
+inner join players as p1
+on aa.Player1 = p1.playerid
+inner join players as p2
+on aa.Player2 = p2.playerid
+order by matches desc
+;
 
 -- select * from players
 

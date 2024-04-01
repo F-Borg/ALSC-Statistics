@@ -28,7 +28,7 @@ pgconn = engine.connect()
 ############################
 # User input               
 ############################
-_season_ = '2022/23' # e.g. _season_ = '2021/22'
+_season_ = '2023/24' # e.g. _season_ = '2021/22'
 
 
 ############################
@@ -711,7 +711,7 @@ row_end += stats_table.shape[0] + 4
 ##########################
 # 2nd XI Wicket Partnership Records
 ##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select Wicket AS "Wicket"Runs AS "Runs",,"Player 1","Player 2",Opponent AS "Opponent"
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Wicket AS "Wicket",Runs AS "Runs","Player 1","Player 2",Opponent AS "Opponent"
                           ,Year AS "Year",Round AS "Round",Association AS "Association",Grade AS "Grade"
     from batting_25_partnerships_wicket_2ndXI""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
