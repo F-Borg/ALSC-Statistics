@@ -1,7 +1,9 @@
 Formatting Notes
 
 Season Summary:
+Need to manually add any extra innings played
 after pasting table, highlight all rows below heading and go Table Tools -> Layout -> Height and set so it fits
+Layout -> AutoFit -> AutoFit Contents to fix width
 
 Batting Summary:
 adjust number of rows in Word table to match Excel
@@ -16,7 +18,7 @@ highlight table
     Table Tools -> Layout -> AutoFit -> AutoFit Contents
 then go through and add rows so player stats don't go over more than one col
 
-Most Matches
+Most Games:
     Need to paste individual cols because of merged cells
 
 Player Batting Summary:

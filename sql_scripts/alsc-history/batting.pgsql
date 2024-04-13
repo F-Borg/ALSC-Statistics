@@ -14,11 +14,11 @@ SELECT
     , Sum(CASE WHEN batting.score>99 then 1 else 0 end) AS Hundreds
     , z_batmax.HS
     , Sum(Batting.Score) AS Total
-    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then 1 else 0 end)=0 then -9 
-        else Sum(Batting.Score)/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then 1 else 0 end)) end AS "Average"
+    , (CASE WHEN Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end))=0 then -9 
+        else Sum(Batting.Score)/(Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end))) end) AS "Average"
     , Sum(batting.balls_faced) AS BF
-    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then 1 else 0 end)=0 then -9
-        else Sum(Batting.balls_faced)/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then 1 else 0 end)) end AS "Average BF"
+    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end)=0 then -9
+        else Sum(Batting.balls_faced)/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end)) end AS "Average BF"
     , case when Sum(batting.balls_faced)>0 then 100*Sum(batting.score)/Sum(batting.balls_faced) else null end AS "Runs/100 Balls"
     , 100*(Sum(batting._4s)*4+Sum(batting._6s)*6)/(CASE WHEN Sum(batting.score)=0 then 1 else Sum(batting.score) end) AS "Pct Runs in Boundaries"
     , Players.playerid
@@ -103,8 +103,8 @@ SELECT
     players.player_name AS Name
     , coalesce(Sum(Batting.Score),0) AS Runs
     , z_player_season_matches.Mat
-    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then 1 else 0 end)=0
-        THEN -9 ELSE Sum(Batting.Score)::float/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then 1 else 0 end)) END AS Average
+    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end)=0
+        THEN -9 ELSE Sum(Batting.Score)::float/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end)) END AS Average
     , Seasons.Year
     , Seasons.Eleven
     , Seasons.Association
@@ -261,7 +261,7 @@ INNER JOIN Batting
 ON Innings.InningsID = Batting.InningsID
 INNER JOIN Players 
 ON Players.PlayerID = Batting.PlayerID
-where Batting.balls_faced > 0
+where Batting.balls_faced > 100
 ORDER BY Batting.balls_faced DESC , Batting.Score DESC;
 
 

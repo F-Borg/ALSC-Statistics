@@ -80,7 +80,7 @@ appendrow = pd.DataFrame([['Overall',
 team_01_season_summary_1stxi = pd.concat([team_01_season_summary_1stxi,appendrow])
 team_01_season_summary_1stxi.to_excel(writer, sheet_name=sheetname, startrow = 4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:L1',"Adelaide Lutheran Cricket Club Season Summary",heading1)
+worksheet.merge_range('A1:L1',"Adelaide Lutheran Cricket Club Season Summary",fmt['heading1'])
 worksheet.set_row(0,35) # set row height
 worksheet.write(2,0,"1st XI",bold14centre)
 worksheet.set_row(0,23)
@@ -144,7 +144,11 @@ sheetname = 'Matches Against'
 team_04_matches_against_all = pd.read_sql(con=pgconn, sql=f"select * from team_04_matches_against_all")
 team_04_matches_against_all.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:H1',"Record By Opponent",heading1)
+worksheet.merge_range('A1:H1',"Record By Opponent",fmt['heading1'])
+worksheet.set_column('A:A',None,fmt['arial10boldcentre'])
+worksheet.set_column('B:G',None,fmt['arial10'])
+worksheet.set_column('H:H',None,fmt['arial10pct1dec'])
+
 
 
 #########################################################################################################################
@@ -160,14 +164,14 @@ sheetname = 'Team Scores'
 stats_table = pd.read_sql(con=pgconn, sql=f"select Score, Opponent, Year, Round, eleven as XI, Association, Grade from team_05_scores_highest limit 10")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:I1',"ALCC Highest Team Scores",heading1)
+worksheet.merge_range('A1:I1',"ALCC Highest Team Scores",fmt['heading1'])
 
 row_end = stats_table.shape[0] + 2
 
 ##########################
 # Low team score
 ##########################
-worksheet.merge_range(row_end+2,0,row_end+2,7,"ALCC Lowest Team Scores",heading1)
+worksheet.merge_range(row_end+2,0,row_end+2,7,"ALCC Lowest Team Scores",fmt['heading1'])
 stats_table = pd.read_sql(con=pgconn, sql=f"select Score, Opponent, Year, Round, eleven as XI, Association, Grade from team_06_scores_lowest limit 10")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 
@@ -176,7 +180,7 @@ row_end += stats_table.shape[0] + 4
 ##########################
 # Opp High team score
 ##########################
-worksheet.merge_range(row_end+2,0,row_end+2,7,"Opposition Highest Team Scores",heading1)
+worksheet.merge_range(row_end+2,0,row_end+2,7,"Opposition Highest Team Scores",fmt['heading1'])
 stats_table = pd.read_sql(con=pgconn, sql=f"select Score, Opponent, Year, Round, eleven as XI, Association, Grade from team_07_scores_opp_highest limit 10")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 
@@ -185,9 +189,11 @@ row_end += stats_table.shape[0] + 4
 ##########################
 # Opp Low team score
 ##########################
-worksheet.merge_range(row_end+2,0,row_end+2,7,"Opposition Lowest Team Scores",heading1)
+worksheet.merge_range(row_end+2,0,row_end+2,7,"Opposition Lowest Team Scores",fmt['heading1'])
 stats_table = pd.read_sql(con=pgconn, sql=f"select Score, Opponent, Year, Round, eleven as XI, Association, Grade from team_08_scores_opp_lowest limit 10")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+
+worksheet.set_column('A:G',None,fmt['arial9centre'])
 
 
 #########################################################################################################################
@@ -205,8 +211,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Run Rate",	"Overs",	"Score
     from team_09_misc_fast where "Grade" <> 'T20' limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:I1',"ALCC Fastest Team Innings",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:I1',"ALCC Fastest Team Innings",fmt['heading1'])
+worksheet.set_row(0, fmt['heading1_height'])
 
 
 row_end += stats_table.shape[0] + 2
@@ -218,8 +224,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Run Rate",	"Overs",	"Score
     from team_10_misc_slow where "Grade" <> 'T20' limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"ALCC Slowest team innings",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"ALCC Slowest team innings",fmt['heading1'])
+worksheet.set_row(row_end+2, fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -230,8 +236,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Margin",	"For",	"Against",
     from team_11_misc_margin where "Grade" <> 'T20' limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"Greatest Winning Margins",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Greatest Winning Margins",fmt['heading1'])
+worksheet.set_row(row_end+2, fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -242,10 +248,14 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Score",	"Opponent",	"Year"
     from team_12_misc_ties""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, startcol=2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,2,row_end+2,8,"Tied Matches",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,2,row_end+2,8,"Tied Matches",fmt['heading1'])
+worksheet.set_row(row_end+2, fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
+
+worksheet.set_column('A:C',None,fmt['arial10centre'])
+worksheet.set_column('D:D',None,fmt['arial10'])
+worksheet.set_column('E:I',None,fmt['arial10centre'])
 
 
 #########################################################################################################################
@@ -264,8 +274,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Name as "Name", mat as "Mat
     from team_13_ind_most_matches limit 20""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 3, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:G1',"Most Matches",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:G1',"Most Matches",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 # merged cells:
 worksheet.merge_range('C4:D4',"Debut")
@@ -283,7 +293,7 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Age on Debut", "Fi
     from team_15_ind_youngest limit 20""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 3, startcol = 8, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('I1:L1',"Youngest Known Players",heading1)
+worksheet.merge_range('I1:L1',"Youngest Known Players",fmt['heading1'])
 
 
 ##########################
@@ -293,10 +303,11 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Matches", "WO", "W
     from team_14_ind_most_matches_capt limit 25""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,10,"Most Matches as Captain",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,10,"Most Matches as Captain",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
-row_end += stats_table.shape[0] + 4
+
+worksheet.set_column('A:L',None,fmt['arial8'])
 
 
 #########################################################################################################################
@@ -346,8 +357,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Runs", "Name", "Inn", "Ave
     from batting_02_career_runs limit 25""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 3, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:D1',"Most Career Runs",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:D1',"Most Career Runs",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 ##########################
 # Highest Career Average
@@ -356,8 +367,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Average", "Name", "Runs", 
     from batting_03_career_ave limit 25""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 3, startcol=5, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('F1:I1',"Highest Career Average",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('F1:I1',"Highest Career Average",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 3
 
@@ -368,8 +379,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Runs/100 Balls", "Name", "
     from batting_04_career_sr_high limit 20""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+5, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,3,"Fastest Career Strike Rate",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,3,"Fastest Career Strike Rate",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 ##########################
 # Slowest Career Strike Rate
@@ -378,8 +389,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Runs/100 Balls", "Name", "
     from batting_05_career_sr_low limit 20""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+5, startcol=5, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,5,row_end+2,8,"Slowest Career Strike Rate",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,5,row_end+2,8,"Slowest Career Strike Rate",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 
 worksheet.set_column('A:A',None,fmt['arial9boldnum1dec'])
@@ -403,8 +414,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select name as "Name", Hundreds as
     from batting_06_milestones_100 where Hundreds >= 3""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:F1',"Most Hundreds",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:F1',"Most Hundreds",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 2
 
@@ -415,8 +426,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select name as "Name", Fifties as 
     from batting_07_milestones_50 limit 15""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A13:F13',"Most Fifties",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range('A13:F13',"Most Fifties",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += 4 + stats_table.shape[0]
 
@@ -427,8 +438,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select name as "Name", ducks as "D
     from batting_08_milestones_ducks limit 15""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,5,"Most Ducks",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,5,"Most Ducks",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += 4 + stats_table.shape[0]
 
@@ -440,8 +451,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Name as "Name", runs AS "Ru
     from batting_09_milestones_runs_season limit 15""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,5,"Most Runs In A Season (in one division)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,5,"Most Runs In A Season (in one division)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 
 worksheet.set_column('A:C',None,fmt['arial9'])
@@ -465,8 +476,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Name AS "Name",Score AS "Sc
     from batting_10_high_score_ind limit 30""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:J1',"Highest Individual Scores",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:J1',"Highest Individual Scores",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 2
 
@@ -478,8 +489,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Name AS "Name",_6s AS "6s",
     from batting_11_high_score_sixes limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Most 6s in an Innings",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Most 6s in an Innings",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 worksheet.set_column('A:J',None,fmt['arial8'])
 
@@ -507,8 +518,8 @@ Grade AS "Grade"
     from batting_12_score_by_posn_1stXI""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:I1',"Highest 1st XI Scores By Batting Position",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:I1',"Highest 1st XI Scores By Batting Position",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 2
 
@@ -527,8 +538,8 @@ Grade AS "Grade"
     from batting_13_score_by_posn_2ndXI""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest 2nd XI Scores By Batting Position",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest 2nd XI Scores By Batting Position",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -548,8 +559,8 @@ Grade AS "Grade"
     from batting_14_score_by_posn_3rdXI""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest 3rd XI Scores By Batting Position",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest 3rd XI Scores By Batting Position",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 
 worksheet.set_column('A:I',None,fmt['arial9'])
@@ -571,8 +582,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Name AS "Name",' ' AS " ",b
     from batting_15_fast_slow_longest limit 15""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:J1',"Longest Innings",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:J1',"Longest Innings",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 2
 
@@ -584,8 +595,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Name AS "Name",strike_rate 
     from batting_16_fast_slow_fastest limit 15""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Fastest Innings (min 30 runs)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Fastest Innings (min 30 runs)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -598,8 +609,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Name AS "Name",strike_rate 
     from batting_17_fast_slow_slowest limit 15""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Slowest Innings (min 60 balls)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Slowest Innings (min 60 balls)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 worksheet.set_column('A:J',None,fmt['arial9'])
 worksheet.set_column('B:B',None,fmt['arial9num1dec'])
@@ -620,8 +631,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Percentage AS "Percentage",
     from batting_18_dismissals_ct limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, startcol=1, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:I1',"Highest Percentage of Dismissals Caught (min 10 dismissals)",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:I1',"Highest Percentage of Dismissals Caught (min 10 dismissals)",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 2
 
@@ -632,8 +643,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Percentage AS "Percentage",
     from batting_19_dismissals_b limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, startcol=1, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest Percentage of Dismissals Bowled (min 10 dismissals)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest Percentage of Dismissals Bowled (min 10 dismissals)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -644,8 +655,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Percentage AS "Percentage",
     from batting_20_dismissals_lbw limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, startcol=1, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest Percentage of Dismissals LBW (min 10 dismissals)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest Percentage of Dismissals LBW (min 10 dismissals)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -656,8 +667,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Dismissals AS "Dismissals",
     from batting_21_dismissals_no_lbw limit 5""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, startcol=1, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,4,"Most Dismissals without an LBW",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,4,"Most Dismissals without an LBW",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 ##########################
 # Most Times Stumped
@@ -666,8 +677,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Stumpings AS "Stumpings",Na
     from batting_22_dismissals_st limit 5""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, startcol=5, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,5,row_end+2,8,"Most Times Stumped",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,5,row_end+2,8,"Most Times Stumped",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 
 worksheet.set_column('B:B',None,fmt['arial10pct1dec'])
@@ -690,8 +701,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Runs AS "Runs",Wicket AS "W
     from batting_23_partnerships_highest limit 25""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:J1',"Highest Partnerships",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:J1',"Highest Partnerships",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 2
 
@@ -703,8 +714,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Wicket AS "Wicket",Runs AS 
     from batting_24_partnerships_wicket_1stXI""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"1st XI Wicket Partnership Records",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,9,"1st XI Wicket Partnership Records",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -716,8 +727,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Wicket AS "Wicket",Runs AS 
     from batting_25_partnerships_wicket_2ndXI""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"2nd XI Wicket Partnership Records",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,9,"2nd XI Wicket Partnership Records",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -729,8 +740,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Wicket AS "Wicket",Runs AS 
     from batting_26_partnerships_wicket_3rdXI""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"3rd XI Wicket Partnership Records",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,9,"3rd XI Wicket Partnership Records",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -775,7 +786,7 @@ for ii in range(num_pages):
     stats_table = stats_table_tmp.loc[70*ii:(70*(ii+1)-1)]
     stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
     worksheet = writer.sheets[sheetname]
-    worksheet.merge_range('A1:R1',"ALCC Player Bowling and Fielding Summary",heading1)
+    worksheet.merge_range('A1:R1',"ALCC Player Bowling and Fielding Summary",fmt['heading1'])
     worksheet.set_row(0, fmt['heading1_height'])
     worksheet.set_column('A:A',None,fmt['arial7bold'])
     worksheet.set_column('B:F',None,fmt['arial7'])
@@ -800,8 +811,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Total Wickets" as "Wickets
     from bowling_02_p1_wickets limit 20""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:I1',"Most Career Wickets",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:I1',"Most Career Wickets",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 2
 
@@ -812,8 +823,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Average as "Average", Name 
     from bowling_03_p1_ave limit 15""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"Lowest Bowling Average (min 15 wickets)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Lowest Bowling Average (min 15 wickets)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -824,8 +835,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Strike Rate", Name as "Nam
     from bowling_04_p1_sr limit 15""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"Lowest Bowling Strike Rate (balls per wicket,  min 15 wickets)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Lowest Bowling Strike Rate (balls per wicket,  min 15 wickets)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -848,8 +859,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select RPO as "Econ", Name as "Nam
     from bowling_05_p2_career_econ_low limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:H1',"Most Economical Bowlers (min 20 Overs)",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:H1',"Most Economical Bowlers (min 20 Overs)",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 2
 
@@ -860,8 +871,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select RPO as "Econ", Name as "Nam
     from bowling_06_p2_career_econ_high limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,7,"Most Expensive Bowlers (min 20 Overs)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,7,"Most Expensive Bowlers (min 20 Overs)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -872,8 +883,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "5WI", Name as "Name", mat 
     from bowling_07_p2_5WI where "5WI" > 5""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,7,"Most Five Wicket Innings",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,7,"Most Five Wicket Innings",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -885,8 +896,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Wickets as "Wickets", playe
     from bowling_08_p2_season_wickets where wickets >=30""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,7,"Most Wickets In A Season",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,7,"Most Wickets In A Season",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -910,8 +921,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select player as "Name", overs as 
     from bowling_09_p3_best_figs limit 20""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:I1',"Best Bowling Performances",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:I1',"Best Bowling Performances",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 2
 
@@ -923,8 +934,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select player_name as "Name", '' a
     from bowling_10_p3_hat_trick""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"Hat Tricks",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Hat Tricks",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -936,8 +947,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Wickets", "Figures
     from bowling_11_p3_10WM""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"10 Wicket Matches",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"10 Wicket Matches",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -949,8 +960,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Player as "Name", Overs as 
     from bowling_12_p3_match_econ limit 12""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"Most Economical Bowling (min 10 overs)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Most Economical Bowling (min 10 overs)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -974,8 +985,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select player as "Name", overs as 
     from bowling_13_p4_match_runs limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:J1',"Most Runs Conceded In An Innings",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:J1',"Most Runs Conceded In An Innings",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 # merged cells:
 worksheet.merge_range('D3:E3',"Opponent",centre)
@@ -992,8 +1003,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select Player as "Name", Overs as 
     from bowling_14_p4_match_econ_high order by econ desc limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Most Expensive Bowling (min 5 overs)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Most Expensive Bowling (min 5 overs)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -1005,8 +1016,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select name as "Name", highover as
     from bowling_15_p4_expensive_over where highover > 23""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Most Expensive Overs",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Most Expensive Overs",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 # merged cells:
 worksheet.merge_range(row_end+4,1,row_end+4,2,"Runs",centre)
@@ -1025,8 +1036,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select name as "Name", extras as "
     from bowling_16_p4_extras_high limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Highest Rate of No Balls / Wides",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Highest Rate of No Balls / Wides",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 # merged cells:
 worksheet.merge_range(row_end+4,1,row_end+4,2,"Extras",centre)
@@ -1057,8 +1068,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select percentage as "Percentage",
     from bowling_17_dismissals_ct limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:I1',"Highest Percentage of Wickets Caught (min 10 wickets)",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:I1',"Highest Percentage of Wickets Caught (min 10 wickets)",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 
 row_end = stats_table.shape[0] + 2
@@ -1070,8 +1081,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select percentage as "Percentage",
     from bowling_18_dismissals_b limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest Percentage of Wickets Bowled (min 10 wickets)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest Percentage of Wickets Bowled (min 10 wickets)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -1082,8 +1093,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select percentage as "Percentage",
     from bowling_19_dismissals_lbw limit 10""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest Percentage of Wickets LBW (min 10 wickets)",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,8,"Highest Percentage of Wickets LBW (min 10 wickets)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -1094,8 +1105,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select wickets as "Wickets", name 
     from bowling_20_dismissals_no_lbw limit 8""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,3,"Most Wickets without a LBW",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,3,"Most Wickets without a LBW",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 ##########################
 # Most Stumpings
@@ -1104,8 +1115,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select stumpings as "Stumpings", n
     from bowling_21_dismissals_st where stumpings >=6""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, startcol=5, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,5,row_end+2,8,"Most Stumpings",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,5,row_end+2,8,"Most Stumpings",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 # merged cells:
 worksheet.merge_range(row_end+4,6,row_end+4,7,"Name",centre)
@@ -1131,8 +1142,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catch
     from fielding_01_p1_career_dismissals limit 15""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range('A1:J1',"Most Career Fielding Dismissals",heading1)
-worksheet.set_row(0, heading1_height)
+worksheet.merge_range('A1:J1',"Most Career Fielding Dismissals",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 2
 worksheet.merge_range(row_end+2,0,row_end+2,9,"Note: details of who took each catch is not complete")
@@ -1145,8 +1156,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catch
     from fielding_02_p1_season_dismissals where "Dismissals" >= 17""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Most Dismissals In a Season",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Most Dismissals In a Season",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -1158,8 +1169,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catch
     from fielding_03_p1_innings_dismissals where "Dismissals" >= 5 """)
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Most Dismissals In An Innings",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Most Dismissals In An Innings",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 row_end += stats_table.shape[0] + 4
 
@@ -1170,8 +1181,8 @@ stats_table = pd.read_sql(con=pgconn, sql=f"""select "Dismissals", "Fielder", ''
     from fielding_04_p1_ct_b_combos where "Dismissals" >= 10 """)
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,3,"Most Career Caught & Bowled Dismissal Combinations",heading1)
-worksheet.set_row(row_end+2, heading1_height)
+worksheet.merge_range(row_end+2,0,row_end+2,3,"Most Career Caught & Bowled Dismissal Combinations",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 
 # merged cells:

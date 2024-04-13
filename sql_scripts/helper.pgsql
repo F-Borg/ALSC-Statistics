@@ -23,7 +23,7 @@ GROUP BY players.surname ||', '|| players.firstname, Players.dob, Players.Player
 create or replace view z_wickin AS
 SELECT
     innings.inningsid
-    , sum(case when upper(how_out) not in ('NOT OUT','RETIRED HURT') then 1 else 0 end) as num_wickets
+    , sum(case when upper(how_out) not in ('NOT OUT','RETIRED HURT','ERROR','0','DNB') then 1 else 0 end) as num_wickets
 FROM Innings 
 INNER JOIN Wickets 
 ON Innings.InningsID = Wickets.InningsID

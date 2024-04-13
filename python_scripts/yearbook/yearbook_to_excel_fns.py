@@ -12,8 +12,8 @@ import re
 from math import floor
 import python_scripts.text_formats as tf
 
-import importlib
-importlib.reload(tf)
+# import importlib
+# importlib.reload(tf)
 
 # engine = create_engine('postgresql+psycopg2://postgres:postgres1!@localhost/dev')
 # pgconn = engine.connect()
@@ -147,8 +147,8 @@ def yb_milestones(_season_, writer, wb, pgconn):
 
 def yb_summary(_season_, seasonid, xi, writer, wb, pgconn):
     # xi = '1st XI'
-    # seasonid = 70
-    # _season_ = '2020/21'
+    # seasonid = 79
+    # _season_ = '2023/24'
     fmt = tf.add_text_formats(wb)
 
     ##########################
@@ -171,7 +171,7 @@ def yb_summary(_season_, seasonid, xi, writer, wb, pgconn):
 
     # Loop through rounds
     for round in stats_table['round'].drop_duplicates():
-        # round = '2'
+        # round = '4'
         t1 = stats_table.loc[stats_table['round']==round]
         ground = f"at {t1['ground'].iloc[0]}"
         result = t1['result'].iloc[0]

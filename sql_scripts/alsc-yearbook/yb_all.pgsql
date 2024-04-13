@@ -69,8 +69,8 @@ SELECT
     , Sum((CASE WHEN batting.score>99 then 1 else 0 end)) AS "Hundreds"
     , z_batmax_season.hs as "Highest Score"
     , Sum(Batting.Score) AS "Total Runs"
-    , (CASE WHEN Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end))=0 then -9 
-        else Sum(Batting.Score)/(Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end))) end) AS "Average"
+    , (CASE WHEN Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('dnb','0','not out','retired hurt','forced retirement') then 1 else 0 end))=0 then -9 
+        else Sum(Batting.Score)/(Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('dnb','0','not out','retired hurt','forced retirement') then 1 else 0 end))) end) AS "Average"
     , Sum(batting.balls_faced) AS "Balls Faced"
     , (CASE WHEN Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end))=0 then -9 
         else Sum(Batting.balls_faced)/(Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end))) end) AS "Average Balls Faced/Dismissal"
@@ -229,7 +229,7 @@ SELECT
     , Batting._6s::int as "6s"
     , Batting.Batting_Position::int as "Pos"
 FROM Seasons INNER JOIN (Matches INNER JOIN (Innings INNER JOIN (Players INNER JOIN Batting ON Players.PlayerID = Batting.PlayerID) ON Innings.InningsID = Batting.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
-WHERE Seasons.SeasonID in (76,77,78)
+WHERE Seasons.SeasonID in (79,80)
 and Batting.how_out != 'DNB'
 ORDER BY players.player_name, Matches.Date1, Innings.InningsNO
 ;
@@ -248,7 +248,7 @@ SELECT
     , z_Bowling_Figures_All.w AS "W"
     , Innings.InningsNO
 FROM Seasons INNER JOIN (Matches INNER JOIN ((Players INNER JOIN z_Bowling_Figures_All ON Players.PlayerID = z_Bowling_Figures_All.PlayerID) INNER JOIN Innings ON z_Bowling_Figures_All.InningsID = Innings.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
-WHERE Seasons.SeasonID in (76,77,78)
+WHERE Seasons.SeasonID in (79,80)
 ORDER BY players.player_name, Matches.Date1, Innings.InningsNO;
 
 

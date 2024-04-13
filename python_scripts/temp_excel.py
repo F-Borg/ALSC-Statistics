@@ -34,7 +34,7 @@ wb = writer.book
 ##########################
 # heading1 = wb.add_format({'size':20,'bold':True,'underline':True})
 # bold14centre = wb.add_format({'size':14,'bold':True,'align':'centre'})
-# heading1_height = 35
+# fmt['heading1_height'] = 35
 # centre = wb.add_format({'align':'centre'})
 fmt = tf.add_text_formats(wb)
 
@@ -42,35 +42,59 @@ fmt = tf.add_text_formats(wb)
 
 #########################################################################################################################
 #########################################################################################################################
-# Player Batting Summary
+# 
 #########################################################################################################################
 #########################################################################################################################
+sheetname = 'Team Ind'
 row_end = 0
 
-player_count = pd.read_sql(con=pgconn, sql=f"""select count(*) from batting_01_summary_ind where mat>0""")['count'][0]
-num_pages = ceil(player_count/70)
+##########################
+# Most Matches
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select Name as "Name", mat as "Matches", debut as "Debut"
+                          , CASE WHEN "Last Season" = '{_season_}' THEN '-' ELSE "Last Season" END AS "Last Season"
+    from team_13_ind_most_matches limit 20""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 3, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:G1',"Most Matches",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
 
-stats_table_tmp = pd.read_sql(con=pgconn, sql=f"""select name as "Name", debut as "Debut", "Last Season", mat as "Matches", inn as "Innings", "NO" as "Not Outs", ducks as "Ducks"
-                          , fours as "Fours", Sixes as "Sixes", Fifties as "Fifties", hundreds as "Hundreds", hs as "Highest Score", total as "Total Runs", "Average", bf as "Balls Faced"
-                          , "Average BF" as "Average Balls Faced/Dismissal", "Runs/100 Balls" as "Strike Rate", "Pct Runs in Boundaries"  
-    from batting_01_summary_ind where mat>0""")
+# merged cells:
+worksheet.merge_range('C4:D4',"Debut")
+worksheet.merge_range('E4:G4',"Last Season")
+for ii in range(stats_table.shape[0]):
+    worksheet.merge_range(ii+4,2,ii+4,3,stats_table['Debut'][ii],centre)
+    worksheet.merge_range(ii+4,4,ii+4,6,stats_table['Last Season'][ii],centre)
 
-for ii in range(num_pages):
-    sheetname = f'Player Batting Summary ({ii+1})'
-    stats_table = stats_table_tmp.loc[70*ii:(70*(ii+1)-1)]
-    stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
-    worksheet = writer.sheets[sheetname]
-    worksheet.merge_range('A1:R1',"ALCC Player Batting Career Summary",fmt['heading1'])
-    worksheet.set_row(0, fmt['heading1_height'])
-    worksheet.set_column('A:A',None,fmt['arial7bold'])
-    worksheet.set_column('B:C',None,fmt['arial7'])
-    worksheet.set_column('D:D',None,fmt['arial7bold'])
-    worksheet.set_column('E:L',None,fmt['arial7'])
-    worksheet.set_column('M:M',None,fmt['arial7bold'])
-    worksheet.set_column('N:N',None,fmt['arial7boldnum1dec'])
-    worksheet.set_column('O:O',None,fmt['arial7'])
-    worksheet.set_column('P:R',None,fmt['arial7num1dec'])
-    
+row_end += stats_table.shape[0] + 2
+
+##########################
+# Youngest Known Players
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Age on Debut", "First Season", "Age on Final Game"
+    from team_15_ind_youngest limit 20""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 3, startcol = 8, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('I1:L1',"Youngest Known Players",fmt['heading1'])
+
+
+##########################
+# Most Matches as Captain
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Matches", "WO", "W1", "D", "T", "L1", "LO", "Win Pct", "Premierships"
+    from team_14_ind_most_matches_capt limit 25""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,10,"Most Matches as Captain",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
+
+
+worksheet.set_column('A:L',None,fmt['arial8'])
+
+
+
+
+
 
 
 writer.close()

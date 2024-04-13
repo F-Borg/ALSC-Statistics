@@ -45,10 +45,12 @@ select * from players order by playerid desc
 
 
 
-select * from batting where playerid = 269 and score=0
+select * from batting where playerid = 112
+where lower(how_out) = 'absent out'
 
-select * from innings where  inningsid = 1478
-select * from matches where matchid = 651
+
+select * from innings where  inningsid = 1583
+select * from matches where matchid = 701
 
 select * from wickets;
 
@@ -58,6 +60,7 @@ select * from
 (select seasonid, round, count(*) as c from matches group by seasonid, round) a
 where c>1
 
+select * from players where name_fl = 'Geoff Brereton'
 
 
 
@@ -116,3 +119,23 @@ update wickets set
 hat_trick = 1
 where inningsid = 1861 and batting_position = 10
 ;
+
+
+
+
+
+select * from yb_02_batting_summary
+    where seasonid = 79
+
+select * from players where firstname = 'Sidhaarth'
+
+update players
+set player_name = 'Thangaswamy, Sidhaarth'
+, surname = 'Thangaswamy'
+where playerid = 456
+
+
+select * from batting where playerid = 265
+order by how_out
+
+select * from z_bat_ind_dismissal_types where name like 'Waldhuter, Josh%'

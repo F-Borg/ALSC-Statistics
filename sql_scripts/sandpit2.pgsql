@@ -166,6 +166,63 @@ select * from seasons where playhq_season='Section 6 Blackwood Sound Cup' and ye
 
 
 
+-- update batting
+-- set batting_position = NULL
+--     , bowler_name = NULL
+--     , score = NULL
+--     , _4s = NULL
+--     , _6s = NULL
+--     , balls_faced = NULL
+-- where how_out = 'DNB'
 
-select * from yb_02_batting_summary
-    where seasonid = 80
+update batting
+set how_out = 'DNB'
+where how_out = '0'
+and inningsid = 1695
+and batting_position in (12,13)
+
+select * from batting 
+where how_out = 'Absent Out'
+
+where playerid = 386
+order by score
+
+select * from innings where inningsid = 1695
+select * from matches where matchid = 756
+select * from seasons where seasonid = 74
+
+
+SELECT 
+    players.Surname ||', '|| players.firstname AS Name
+    , Sum(CASE WHEN innings.inningsno=1 Or innings.inningsno=2 then 1 else 0 end) AS Mat
+    , Sum(CASE WHEN lower(coalesce(Batting.how_out,'0')) in ('dnb','0','absent out') then 0 else 1 end) AS Inn
+    , Sum(CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then 1 else 0 end) AS "NO"
+    , Sum(CASE WHEN lower(batting.how_out) not in ('dnb','0','absent out','not out','forced retirement','retired hurt','retired') And batting.score=0 then 1 else 0 end) AS Ducks
+    , Sum(Batting.Score) AS Total
+    , Count(Batting.Score) AS count_bat_score
+    , (CASE WHEN Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end))=0 then -9 
+        else Sum(Batting.Score)/(Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end))) end) AS "Average"
+    , Sum(batting.balls_faced) AS BF
+    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end)=0 then -9
+        else Sum(Batting.balls_faced)/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end)) end AS "Average BF"
+    , players.playerid
+FROM Players
+LEFT JOIN Batting
+ON Players.playerid = Batting.playerid
+LEFT JOIN Innings 
+ON Innings.InningsID = Batting.InningsID
+LEFT JOIN Matches 
+ON Matches.MatchID = Innings.MatchID
+LEFT JOIN z_all_player_dates 
+ON z_all_player_dates.playerid = Players.playerid
+LEFT JOIN z_batmax 
+ON z_batmax.playerid = Players.playerid
+
+GROUP BY Name
+    , z_all_player_dates."First Season"
+    , z_all_player_dates."Last Season"
+    , z_batmax.HS
+    , Players.playerid
+HAVING (((Players.playerid)<>999))
+ORDER BY Name, Sum(Batting.Score) DESC;
+
