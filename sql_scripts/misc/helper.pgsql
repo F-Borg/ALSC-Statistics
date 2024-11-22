@@ -23,7 +23,7 @@ GROUP BY players.surname ||', '|| players.firstname, Players.dob, Players.Player
 create or replace view z_wickin AS
 SELECT
     innings.inningsid
-    , sum(case when upper(how_out) not in ('NOT OUT','RETIRED HURT','ERROR','0','DNB') then 1 else 0 end) as num_wickets
+    , sum(case when lower(how_out) not in ('not out','retired hurt','retired not out','error','0','dnb') then 1 else 0 end) as num_wickets
 FROM Innings 
 INNER JOIN Wickets 
 ON Innings.InningsID = Wickets.InningsID
@@ -38,7 +38,7 @@ GROUP BY Batting.PlayerID;
 
 create or replace view z_batmax AS
 SELECT z_batmax_A.PlayerID
-    , Max(CASE WHEN Batting.how_out='Not Out' Or Batting.how_out='Retired Hurt' then TO_CHAR(Batting.score,'999')||'*' else TO_CHAR(Batting.score,'999') end) AS HS
+    , Max(CASE WHEN lower(Batting.how_out) in ('not out','retired hurt','retired not out') then TO_CHAR(Batting.score,'999')||'*' else TO_CHAR(Batting.score,'999') end) AS HS
 FROM z_batmax_A 
 INNER JOIN Batting 
 ON z_batmax_A.MaxOfScore = Batting.Score
@@ -52,7 +52,7 @@ GROUP BY Batting.PlayerID, Seasons.SeasonID;
 
 create or replace view z_batmax_season AS
 SELECT z_batmax_season_A.PlayerID
-    , Max(CASE WHEN Batting.how_out='Not Out' Or Batting.how_out='Retired Hurt' then TO_CHAR(Batting.score,'999')||'*' else TO_CHAR(Batting.score,'999') end) AS HS
+    , Max(CASE WHEN lower(Batting.how_out) in ('not out','retired hurt','retired not out') then TO_CHAR(Batting.score,'999')||'*' else TO_CHAR(Batting.score,'999') end) AS HS
     , Seasons.SeasonID
 FROM Matches INNER JOIN (Innings INNER JOIN (Seasons INNER JOIN (Batting INNER JOIN z_batmax_season_A ON (Batting.PlayerID = z_batmax_season_A.PlayerID) AND (Batting.Score = z_batmax_season_A.MaxOfScore)) ON Seasons.SeasonID = z_batmax_season_A.SeasonID) ON Innings.InningsID = Batting.InningsID) ON (Seasons.SeasonID = Matches.SeasonID) AND (Matches.MatchID = Innings.MatchID)
 GROUP BY z_batmax_season_A.PlayerID, Seasons.SeasonID;
@@ -103,7 +103,7 @@ ON Matches.MatchID = i.MatchID
 INNER JOIN (
     SELECT inningsid
         , sum(score) as bat_runs
-        , sum(case when upper(how_out) not in ('DNB','NOT OUT','RETIRED','RETIRED HURT','FORCED RETIREMENT','0') then 1 else 0 end) as num_wickets
+        , sum(case when lower(how_out) not in ('dnb','not out','retired','retired hurt','retired not out','forced retirement','0') then 1 else 0 end) as num_wickets
     FROM batting 
     group by inningsid
 ) b

@@ -59,9 +59,9 @@ ORDER BY Count(matches.matchid) DESC , W1 DESC;
 
 CREATE OR REPLACE VIEW team_05_scores_highest AS
 SELECT 
-    case when Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10 
+    case when Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end)=10 
     then '' 
-    else Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end) || '/' end 
+    else Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end) || '/' end 
     || (Sum(batting.score)+max(innings.extras)) 
     AS Score
     , Matches.Opponent
@@ -81,9 +81,9 @@ ON Matches.MatchID = Innings.MatchID
 INNER JOIN batting 
 ON Innings.InningsID = Batting.InningsID
 GROUP BY Matches.Opponent, Matches.Round, Seasons.Eleven, Seasons.Grade, Innings.InningsNO, Innings.InningsID, Seasons.Year, Seasons.Association, Matches.Ground, Innings.InningsID, Seasons.Year
-HAVING (case when Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10 
+HAVING (case when Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end)=10 
           then ''
-          else Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end) || '/' end 
+          else Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end) || '/' end 
         || Sum(batting.score)+max(innings.extras)) != '0/'
 ORDER BY Sum(batting.Score)+max(Innings.Extras) DESC;
 
@@ -91,9 +91,9 @@ ORDER BY Sum(batting.Score)+max(Innings.Extras) DESC;
 
 CREATE OR REPLACE VIEW team_06_scores_lowest AS
 SELECT 
-    case when Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10 
+    case when Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end)=10 
     then '' 
-    else Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end) || '/' end 
+    else Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end) || '/' end 
     || (Sum(batting.score)+max(innings.extras)) 
     AS Score
     , Matches.Opponent
@@ -113,7 +113,7 @@ ON Matches.MatchID = Innings.MatchID
 INNER JOIN batting 
 ON Innings.InningsID = Batting.InningsID
 GROUP BY Matches.Opponent, Matches.Round, Seasons.Eleven, Seasons.Grade, Innings.InningsNO, Innings.InningsID, Seasons.Year, Seasons.Association, Matches.Ground, Innings.InningsID, Seasons.Year
-HAVING Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10
+HAVING Sum(case when lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end)=10
 ORDER BY Sum(batting.Score)+max(Innings.Extras);
 
 
@@ -182,8 +182,8 @@ ORDER BY Sum(Bowling.no_balls)+Sum(Bowling.Wides)+Sum(Bowling.runs_off_bat)+max(
 CREATE OR REPLACE VIEW team_09_misc_fast AS
 SELECT  6*(Sum(Batting.score)+max(innings.extras))/(6*max(innings.bat_overs) + CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) AS "Run Rate"
     , max(innings.bat_overs) ||'.'|| (CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) AS "Overs"
-    , (CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10 then '' 
-        else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end) ||'/') end) || Sum(Batting.Score)+max(Innings.Extras) AS "Score"
+    , (CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end)=10 then '' 
+        else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end) ||'/') end) || Sum(Batting.Score)+max(Innings.Extras) AS "Score"
     , Matches.opponent as "Opponent"
     , Seasons.Year as "Year"
     , Matches.round as "Round"
@@ -199,8 +199,8 @@ INNER JOIN Batting
 ON Innings.InningsID = Batting.InningsID
 GROUP BY Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association, Matches.Ground, Innings.InningsID
 HAVING (max(innings.bat_overs)>15) AND (
-    (CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10 then '' 
-    else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end) ||'/') || 
+    (CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end)=10 then '' 
+    else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end) ||'/') || 
     Sum(Batting.Score)+max(Innings.Extras) end)!='0/')
 ORDER BY 6*(Sum(Batting.score)+max(innings.extras))/(6*max(innings.bat_overs) + CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) DESC , Sum(Batting.Score)+max(Innings.Extras) DESC;
 
@@ -209,8 +209,8 @@ ORDER BY 6*(Sum(Batting.score)+max(innings.extras))/(6*max(innings.bat_overs) + 
 CREATE OR REPLACE VIEW team_10_misc_slow AS
 SELECT  6*(Sum(Batting.score)+max(innings.extras))/(6*max(innings.bat_overs) + CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) AS "Run Rate"
     , max(innings.bat_overs) ||'.'|| (CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) AS "Overs"
-    , (CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10 then '' 
-        else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end) ||'/') end) || Sum(Batting.Score)+max(Innings.Extras) AS "Score"
+    , (CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end)=10 then '' 
+        else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end) ||'/') end) || Sum(Batting.Score)+max(Innings.Extras) AS "Score"
     , Matches.opponent as "Opponent"
     , Seasons.Year as "Year"
     , Matches.round as "Round"
@@ -226,8 +226,8 @@ INNER JOIN Batting
 ON Innings.InningsID = Batting.InningsID
 GROUP BY Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association, Matches.Ground, Innings.InningsID
 HAVING (max(innings.bat_overs)>15) AND (
-    (CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end)=10 then '' 
-    else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','forced retirement') then 0 else 1 end) ||'/') || 
+    (CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end)=10 then '' 
+    else (Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end) ||'/') || 
     Sum(Batting.Score)+max(Innings.Extras) end)!='0/')
 ORDER BY 6*(Sum(Batting.score)+max(innings.extras))/(6*max(innings.bat_overs) + CASE WHEN max(innings.extra_balls)>0 then max(innings.extra_balls) else 0 end) , Sum(Batting.Score)+max(Innings.Extras);
 
@@ -333,20 +333,23 @@ HAVING   AGE(z_all_player_dates.debut,z_all_player_dates.dob) Is Not Null
 ORDER BY AGE(z_all_player_dates.debut,z_all_player_dates.dob);
 
 
+--drop view team_16_ind_most_matches_together;
 CREATE OR REPLACE VIEW team_16_ind_most_matches_together AS
 select 
-    p1.player_name as "Player 1"
-    , p2.player_name as "Player 2"
+    p1.name_fl as "Player 1"
+    , p2.name_fl as "Player 2"
     , aa.matches
+    , aa.playerid1
+    , aa.playerid2
 from (
     select 
-        player1
-        , player2
+        playerid1
+        , playerid2
         , count(*) as matches
     from (
         select distinct  
-            b1.playerid as player1
-            , b2.playerid as player2
+            b1.playerid as playerid1
+            , b2.playerid as playerid2
             , innings.matchid 
         from batting as b1
         inner join batting as b2 
@@ -356,12 +359,12 @@ from (
         on b1.inningsid = innings.inningsid
         --where b1.inningsid < 10 --test
     ) a
-    group by player1, player2
+    group by playerid1, playerid2
 ) aa
 inner join players as p1
-on aa.Player1 = p1.playerid
+on aa.playerid1 = p1.playerid
 inner join players as p2
-on aa.Player2 = p2.playerid
+on aa.playerid2 = p2.playerid
 order by matches desc
 ;
 

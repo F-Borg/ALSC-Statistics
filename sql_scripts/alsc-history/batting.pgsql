@@ -6,19 +6,19 @@ SELECT
     , z_all_player_dates."Last Season"
     , Sum(CASE WHEN innings.inningsno=1 Or innings.inningsno=2 then 1 else 0 end) AS Mat
     , Sum(CASE WHEN lower(coalesce(Batting.how_out,'0')) in ('dnb','0','absent out') then 0 else 1 end) AS Inn
-    , Sum(CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then 1 else 0 end) AS "NO"
-    , Sum(CASE WHEN lower(batting.how_out) not in ('dnb','0','absent out','not out','forced retirement','retired hurt','retired') And batting.score=0 then 1 else 0 end) AS Ducks
+    , Sum(CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt','retired not out') then 1 else 0 end) AS "NO"
+    , Sum(CASE WHEN lower(batting.how_out) not in ('dnb','0','absent out','not out','forced retirement','retired hurt','retired not out','retired') And batting.score=0 then 1 else 0 end) AS Ducks
     , Sum(Batting._4s) AS Fours
     , Sum(Batting._6s) AS Sixes
     , Sum(CASE WHEN batting.score Between 50 And 99 then 1 else 0 end) AS Fifties
     , Sum(CASE WHEN batting.score>99 then 1 else 0 end) AS Hundreds
     , z_batmax.HS
     , Sum(Batting.Score) AS Total
-    , (CASE WHEN Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end))=0 then -9 
-        else Sum(Batting.Score)/(Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end))) end) AS "Average"
+    , (CASE WHEN Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end))=0 then -9 
+        else Sum(Batting.Score)/(Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end))) end) AS "Average"
     , Sum(batting.balls_faced) AS BF
-    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end)=0 then -9
-        else Sum(Batting.balls_faced)/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end)) end AS "Average BF"
+    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)=0 then -9
+        else Sum(Batting.balls_faced)/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)) end AS "Average BF"
     , case when Sum(batting.balls_faced)>0 then 100*Sum(batting.score)/Sum(batting.balls_faced) else null end AS "Runs/100 Balls"
     , 100*(Sum(batting._4s)*4+Sum(batting._6s)*6)/(CASE WHEN Sum(batting.score)=0 then 1 else Sum(batting.score) end) AS "Pct Runs in Boundaries"
     , Players.playerid
@@ -103,8 +103,8 @@ SELECT
     players.player_name AS Name
     , coalesce(Sum(Batting.Score),0) AS Runs
     , z_player_season_matches.Mat
-    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end)=0
-        THEN -9 ELSE Sum(Batting.Score)::float/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','forced retirement') then 1 else 0 end)) END AS Average
+    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)=0
+        THEN -9 ELSE Sum(Batting.Score)::float/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)) END AS Average
     , Seasons.Year
     , Seasons.Eleven
     , Seasons.Association
@@ -127,7 +127,7 @@ ORDER BY Runs DESC;
 
 CREATE OR REPLACE VIEW batting_10_high_score_ind AS 
 SELECT players.player_name AS Name
-    , batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then '*' else '' end) AS Score
+    , batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt','retired not out') then '*' else '' end) AS Score
     , Batting.balls_faced, Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association
 FROM Seasons 
 INNER JOIN Matches
@@ -139,14 +139,14 @@ ON Innings.InningsID = Batting.InningsID
 INNER JOIN Players 
 ON Players.PlayerID = Batting.PlayerID
 where batting.score > 0
-ORDER BY Batting.Score DESC, (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then 1 else 0 end) desc;
+ORDER BY Batting.Score DESC, (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt','retired not out') then 1 else 0 end) desc;
 
 
 CREATE OR REPLACE VIEW batting_11_high_score_sixes AS 
 SELECT 
     players.player_name AS Name
     , Batting._6s
-    , batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then '*' else '' end) AS Score
+    , batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt','retired not out') then '*' else '' end) AS Score
     , Batting.balls_faced
     , Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association
 FROM Seasons 
@@ -250,7 +250,7 @@ ORDER BY batting_position;
 CREATE OR REPLACE VIEW batting_15_fast_slow_longest AS
 SELECT players.player_name AS Name
 , Batting.balls_faced
-, batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then '*' else '' end) AS Score
+, batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt','retired not out') then '*' else '' end) AS Score
 , Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association
 FROM Seasons 
 INNER JOIN Matches
@@ -269,7 +269,7 @@ CREATE OR REPLACE VIEW batting_16_fast_slow_fastest AS
 SELECT 
     Players.player_name AS Name
     , 100*batting.score::float/batting.balls_faced AS strike_rate
-    , batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then '*' else '' end) AS Runs
+    , batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt','retired not out') then '*' else '' end) AS Runs
     , Batting.balls_faced
     , Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association
 FROM Seasons 
@@ -289,7 +289,7 @@ CREATE OR REPLACE VIEW batting_17_fast_slow_slowest AS
 SELECT 
     Players.player_name AS Name
     , 100*batting.score::float/batting.balls_faced AS strike_rate
-    , batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt') then '*' else '' end) AS Runs
+    , batting.score::varchar || (CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt','retired not out') then '*' else '' end) AS Runs
     , Batting.balls_faced
     , Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association
 FROM Seasons 

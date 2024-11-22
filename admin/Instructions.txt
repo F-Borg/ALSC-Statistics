@@ -1,0 +1,9 @@
+start of season:
+insert new season into seasons table - see sql_scripts/misc/utility.pgsql
+
+
+to add a match to the database:
+follow instructions in python_scripts/main.py
+
+
+

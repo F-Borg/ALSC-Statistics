@@ -77,21 +77,25 @@ WHERE mod("Total Wickets"::int,50) < "Season Wickets"
 
 -- upcoming milestones
 select 
-    batting_01_summary_ind.playerid
-    , batting_01_summary_ind.name
-    , case when mod(batting_01_summary_ind.mat,50) > 35 then 'Games: '||batting_01_summary_ind.mat::varchar end as "Games Played"
-    , case when mod(total::int,500) > 399 then 'Runs: '||total::varchar end as Runs
-    , case when mod("Total Wickets",50) > 39 then 'Wickets: '||"Total Wickets"::varchar end as Wickets
+    --batting_01_summary_ind.playerid
+    --, batting_01_summary_ind.name
+    players.name_fl||': '||
+        (case when mod(batting_01_summary_ind.mat,50) > 44 then batting_01_summary_ind.mat::varchar||' games ' else '' end)||
+        (case when mod(total::int,500) > 349 then total::text||' runs ' else '' end)||
+        (case when mod("Total Wickets",50) > 39 then "Total Wickets"::varchar||' wickets' else '' end) as milestones
+    
 from batting_01_summary_ind
 left join z_bocsa
 on batting_01_summary_ind.playerid = z_bocsa.playerid
-where batting_01_summary_ind."Last Season" in ('2022/23')
+join players
+on batting_01_summary_ind.playerid = players.playerid
+where batting_01_summary_ind."Last Season" in ('2024/25','2023/24')
 and (
-    mod(batting_01_summary_ind.mat,50) > 35
-    or mod(total::int,500) > 399
+    mod(batting_01_summary_ind.mat,50) > 44
+    or mod(total::int,500) > 349
     or mod("Total Wickets",50) > 39
 )
-order by "Games Played", Runs, wickets, playerid
+order by milestones
 ;
 
 

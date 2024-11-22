@@ -1,13 +1,22 @@
 -- Add new player
-select * from players order by playerid desc;
+-- see what number we are up to:
+select * from players where playerid < 900 order by playerid desc;
 
---insert into players values (485,'Pradhan, Nabin','Nabin','Pradhan',NULL,'Nabin Pradhan');
+-- insert new row
+--insert into players values (486,'Mayes, Philip','Philip','Mayes',NULL,'Philip Mayes');
+--insert into players values (487,'Zeeshan, Muhammad','Muhammad','Zeeshan',NULL,'Muhammad Zeeshan');
+--insert into players values (488,'Fitzsimmons, Joshua','Joshua','Fitzsimmons',NULL,'Joshua Fitzsimmons');
+--insert into players values (489,'Ladlow, Jamie','Jamie','Ladlow',NULL,'Jamie Ladlow');
+--insert into players values (490,'Kupke, Tygh','Tygh','Kupke',NULL,'Tygh Kupke');
+--insert into players values (491,'Leckie, Justin','Justin','Leckie',NULL,'Justin Leckie');
+
 
 -- Add new season
 select * from seasons;
 insert into seasons values (
-    79, '2023/24', 'ASCA', 'S09', '2nd', 435, 0, 0, 'true', 'Section 9 Hopkins McGowran Cup'
+    82, '2024/25', 'ASCA', 'S09', '2nd', 435, 0, 0, 'true', 'Section 9 Hopkins McGowran Cup'
 )
+
 
 -- Update player name
 update players set 
@@ -28,9 +37,9 @@ select * from seasons where seasonid = 80
 
 select * from players where playerid = 435
 ;
-select * from players where surname = 'Wills'
+select * from players where surname = 'Leckie'
 ;
-select * from players where firstname = 'Jasraj'
+select * from players where firstname = 'Justin'
 ;
 select * from matches
 ;
@@ -133,6 +142,9 @@ update players
 set player_name = 'Thangaswamy, Sidhaarth'
 , surname = 'Thangaswamy'
 where playerid = 456
+
+
+update players set name_fl = 'Christopher Mann' where playerid = 163;
 
 
 select * from batting where playerid = 265
