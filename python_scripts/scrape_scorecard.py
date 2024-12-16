@@ -36,6 +36,7 @@ def scrape_scorecard(url, overwrite_md=False):
     # default values
     mi_captain = 'ERROR'
     # if toss info is missing then structure is different:
+    #             /html/body/div/section/main/div/div/div[1]/section/section[2]/div[3]/div[1]/span[1]
     if dom.xpath('/html/body/div/section/main/div/div/div[1]/section/section[2]/div[3]/div[1]/span[1]/text()')[0]=='Toss':
         div_a = 4
     else: 
@@ -163,7 +164,10 @@ def scrape_scorecard(url, overwrite_md=False):
                 # initiate row
                 data=[]
                 # name 
-                data.append(scorecard[i].xpath('div/span[1]/text()')[0])
+                if scorecard[i].xpath('div/span[1]/text()') == ['Fill-in ']:
+                    data.append('Fill-in')
+                else:
+                    data.append(scorecard[i].xpath('div/span[1]/text()')[0]+scorecard[i].xpath('div/span[1]/span/text()')[0])
                 # how out
                 if len(scorecard[i].xpath('div/span[2]/span/text()'))>0: 
                     how_out = scorecard[i].xpath('div/span[2]/span/text()')
@@ -237,7 +241,10 @@ def scrape_scorecard(url, overwrite_md=False):
                     for i in range(1,num_bowlers+1):
                         # initiate row
                         data=[]
-                        data.append(bowling_sc[i].xpath('span[1]/text()')[0])
+                        if bowling_sc[i].xpath('span[1]/text()')[0] == 'Fill-in ':
+                            data.append('Fill-in')
+                        else:
+                            data.append(bowling_sc[i].xpath('span[1]/text()')[0]+bowling_sc[i].xpath('span[1]/span/text()')[0])
                         data.append(bowling_sc[i].xpath('span[2]/text()')[0])
                         data.append(bowling_sc[i].xpath('span[3]/text()')[0])
                         data.append(bowling_sc[i].xpath('span[4]/text()')[0])

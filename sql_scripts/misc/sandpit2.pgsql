@@ -96,6 +96,8 @@ order by run_outs desc
 
 
 
+
+
 SELECT Name, ro::float/dismissals AS percentage, dismissals, ro
 FROM z_bat_ind_dismissal_types
 WHERE dismissals > 9

@@ -9,6 +9,7 @@ select * from players where playerid < 900 order by playerid desc;
 --insert into players values (489,'Ladlow, Jamie','Jamie','Ladlow',NULL,'Jamie Ladlow');
 --insert into players values (490,'Kupke, Tygh','Tygh','Kupke',NULL,'Tygh Kupke');
 --insert into players values (491,'Leckie, Justin','Justin','Leckie',NULL,'Justin Leckie');
+--insert into players values (492,'Rawat, Aditya','Aditya','Rawat',NULL,'Aditya Rawat');
 
 
 -- Add new season

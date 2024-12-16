@@ -98,6 +98,21 @@ and (
 order by milestones
 ;
 
-
-
+-- all players this year
+select 
+    --batting_01_summary_ind.playerid
+    --, batting_01_summary_ind.name
+    players.name_fl||': '||
+        batting_01_summary_ind.mat::varchar||' games ' ||
+        total::text||' runs ' ||
+        "Total Wickets"::varchar||' wickets' as stats
+    
+from batting_01_summary_ind
+left join z_bocsa
+on batting_01_summary_ind.playerid = z_bocsa.playerid
+join players
+on batting_01_summary_ind.playerid = players.playerid
+where batting_01_summary_ind."Last Season" in ('2024/25')
+order by stats
+;
 

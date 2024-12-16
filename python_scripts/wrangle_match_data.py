@@ -18,6 +18,8 @@ def get_how_out(how_out_str):
         return 'bowled'
     elif re.search('did not bat',how_out_str) or how_out_str=='-':
         return 'DNB'
+    elif re.search('retired not out',how_out_str):
+        return 'Retired Not Out'
     elif re.search('not out',how_out_str):
         return 'Not Out'
     elif re.search('^lbw:',how_out_str) or how_out_str=='lbw':
@@ -30,8 +32,6 @@ def get_how_out(how_out_str):
         return 'Absent Out'
     elif re.search('retired hurt',how_out_str):
         return 'Retired Hurt'
-    elif re.search('retired not out',how_out_str):
-        return 'Retired Not Out'
     elif re.search('retired',how_out_str):
         return 'Retired'
     elif re.search('hit wicket',how_out_str):
