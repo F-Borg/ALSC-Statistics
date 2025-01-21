@@ -15,7 +15,7 @@ importlib.reload(util)
 
 # fetch match url
 # !!! copy and paste the url for the match into the url variable below
-url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202425/section-9-hopkins-mcgowran-cup/game-centre/d9c3d9ae"
+url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202425/section-5-at-the-toss-of-a-coin-cup/game-centre/bbdd7a29"
 
 # scrape scorecard (saves multiple tables to data/[year]/[grade]/[round]/)
 match_info = ss.scrape_scorecard(url, overwrite_md=False)
@@ -36,7 +36,7 @@ if False:
     match_info['captain'] = 'Jim Wills'
     match_info['captain'] = 'Finley Borgas'
     match_info['captain'] = 'Parth Gohil'
-    match_info['fow_list'] = [['1-41 Jim Wills, 2-80 Marco Fedojuk, 3-97 Muhammad Zeeshan, 4-122 David Fitzsimmons, 5-169 Joshua Waldhuter'], ['1-6 Mohit Kant, 2-33 Navdeep Kaushal, 3-70 Depak Chand Govindaraj, 4-96 Arjun Suresh, 5-114 Balaji Ramesh, 6-118 Ripin Singh, 7-124 Sanjeevi Muralidharan, 8-156 Sai Cherukuri, 9-156 SUDHIR MANJUL, 10-168 Ashokkumar Jagadhaa Ashokkumar Jagadhaa']]
+    match_info['fow_list'] = [[], ['1-6 Yash Sandhu, 2-9 Aditya Rawat, 3-12 Jeremy Borgas, 4-29 Parth Gohil, 5-32 Daniel Grosser, 6-49 Tygh Kupke, 7-99 Tom Adler, 8-131 Philip Mayes, 9-150 Connor Brown']]
     match_info['extras'] = [{'wd': 11, 'nb': 2, 'lb': 0, 'b': 5, 'p': 0}, {'wd': 6, 'nb': 11, 'lb': 0, 'b': 0, 'p': 0}]
     match_info['result'] = 'D'
 
@@ -44,7 +44,7 @@ if False:
 # !!! add any new players - see sql_scripts/misc/utility.pgsql
 util.check_player_ids(match_info)
 
-# !!! Validate
+# !!! Validate:
 # all playerids are there
 # bowling: assists have playerids where applicable
 # batting: FOW looks correct

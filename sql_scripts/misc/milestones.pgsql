@@ -98,6 +98,7 @@ and (
 order by milestones
 ;
 
+
 -- all players this year
 select 
     --batting_01_summary_ind.playerid
@@ -116,3 +117,38 @@ where batting_01_summary_ind."Last Season" in ('2024/25')
 order by stats
 ;
 
+
+-- Ducks
+select name, ducks, inn, round(1.0*ducks/greatest((inn-"NO"),1),2) as ducks_per_dismissal, bf, round(100*ducks/greatest(bf,1)::numeric,2) as ducks_per_100_balls 
+, "Last Season"
+from batting_01_summary_ind
+order by ducks desc, ducks_per_dismissal desc
+;
+
+-- Balls Faced
+select name, bf 
+from batting_01_summary_ind
+order by bf desc
+;
+
+-- nb / w 
+-- select name, extras, nb, w, round(6*rate,2) as extras_per_over
+-- from bowling_16_p4_extras_high
+-- order by extras desc
+
+SELECT players.player_name AS Name
+    , floor((Sum(overs)*6+Sum(bowling.extra_balls))/6)::varchar || 
+        CASE WHEN floor((Sum(overs)*6+Sum(bowling.extra_balls))/6)=(Sum(overs)*6+Sum(bowling.extra_balls))/6 THEN '' 
+            ELSE '.' || Round(6*((Sum(overs)*6+Sum(bowling.extra_balls))/6-floor((Sum(overs)*6+Sum(bowling.extra_balls))/6))) END AS overs
+    
+    , Sum(bowling.wides)+Sum(bowling.no_balls) AS Extras
+    , Sum(Bowling.no_balls) AS NB
+    , Sum(Bowling.Wides) AS W
+    -- , (Sum(bowling.wides)+Sum(bowling.no_balls))/(Sum(overs)*6+Sum(bowling.extra_balls)) AS Rate
+    , round(6*(Sum(bowling.wides)+Sum(bowling.no_balls))/(Sum(overs)*6+Sum(bowling.extra_balls)),2) as extras_per_over
+FROM Seasons INNER JOIN (Matches INNER JOIN (Innings INNER JOIN (Players INNER JOIN Bowling ON Players.PlayerID = Bowling.PlayerID) ON Innings.InningsID = Bowling.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
+WHERE (Seasons.SeasonID)>3
+GROUP BY players.player_name, Bowling.PlayerID
+HAVING (Sum(overs)*6+Sum(bowling.extra_balls))>119
+--ORDER BY extras_per_over DESC;
+ORDER BY Extras DESC;

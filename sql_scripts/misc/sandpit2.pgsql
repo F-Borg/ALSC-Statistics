@@ -94,6 +94,41 @@ order by run_outs desc
 ;
 
 
+-- run outs involved in
+select 
+    p1.player_name as "Name"
+    , b.inn as innings
+    , sum(out_batter+not_out_batter) as run_outs
+    , sum(out_batter) as out_batter
+    , sum(not_out_batter) as not_out_batter
+    , to_char(100*sum(out_batter+not_out_batter)/b.inn, '990D9%') as "r/o per innings"
+from (
+    select  
+        b1.playerid as player1
+        , count(*) as out_batter
+        , 0 as not_out_batter
+    from batting as b1
+    where how_out = 'Run Out'
+    group by player1, not_out_batter
+
+    union all 
+
+    select  
+        b1.not_out_batter as player1
+        , 0 as out_batter
+        , count(*) as not_out_batter
+    from batting as b1
+    where how_out = 'Run Out'
+    group by player1, out_batter
+) aa
+inner join players as p1
+on aa.Player1 = p1.playerid
+inner join batting_01_summary_ind b
+on aa.player1 = b.playerid
+where b."Last Season" = '2024/25'
+group by player_name, b.inn
+order by run_outs desc, out_batter desc, player_name
+;
 
 
 
@@ -104,13 +139,71 @@ WHERE dismissals > 9
 ORDER BY percentage DESC , dismissals DESC;
 
 
-
-
-
-
-select how_out, count(*) from batting
+select how_out, count(*) as num_dismissals from batting
 group by how_out
-order by how_out
+order by num_dismissals desc
+
+-- actual dismissals:
+-- how_out in ('Bowled','Caught','LBW','Run Out','Stumped','c & b','Hit Wicket')
+
+
+select 
+    case when score = 0 then '0'
+         when score < 11 then '1-10'
+         when score < 30 then '11-30'
+         else '30+' end as runs
+    , how_out, count(*) as num_dismissals from batting
+where how_out in ('Bowled','Caught','LBW','Run Out')
+group by runs, how_out
+order by runs, how_out
+
+
+select 
+    case when score = 0 then '0'
+         when score < 11 then '1-10'
+         when score < 30 then '11-30'
+         else '30+' end as runs
+    , count(*) filter (where how_out = 'Bowled') as Bowled 
+    , count(*) filter (where how_out = 'Caught') as Caught 
+    , count(*) filter (where how_out = 'LBW') as LBW 
+    , count(*) filter (where how_out = 'Run Out') as "Run Out"
+
+from batting
+where how_out in ('Bowled','Caught','LBW','Run Out')
+group by runs
+order by runs
+
+
+select score, count(*) as _c 
+from batting where  how_out = 'Bowled'
+group by score 
+order by score 
+
+
+
+-- 'select 
+--     case when score = 0 then ''0''
+--          when score < 11 then ''1-10''
+--          when score < 30 then ''11-30''
+--          else ''30+'' end as runs
+--     , how_out, count(*) as num_dismissals from batting
+-- where how_out in (''Bowled'',''Caught'',''LBW'',''Run Out'')
+-- group by runs, how_out
+-- order by runs, how_out'
+
+
+-- select * from crosstab(
+-- $$select 
+--     case when score = 0 then '0'
+--          when score < 11 then '1-10'
+--          when score < 30 then '11-30'
+--          else '30+' end as runs
+--     , how_out, count(*) as num_dismissals from batting
+-- where how_out in ('Bowled','Caught','LBW','Run Out')
+-- group by runs, how_out
+-- order by runs, how_out$$
+-- )
+-- AS t(how_out numeric, "Bowled" numeric, "Caught" numeric, "LBW" numeric, "Run Out" numeric)
 
 --create table zzz_bk_batting as select * from batting
 
