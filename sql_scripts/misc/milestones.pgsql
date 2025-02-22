@@ -128,8 +128,40 @@ order by ducks desc, ducks_per_dismissal desc
 -- Balls Faced
 select name, bf 
 from batting_01_summary_ind
+where bf is not null
 order by bf desc
 ;
+
+-- Balls Faced without a 6
+select name, bf 
+from batting_01_summary_ind
+where bf is not null
+and sixes = 0
+order by bf desc
+;
+
+-- balls bowled
+select 
+b.name, b.balls, b.mdns 
+from bowling_01_summary_ind b
+join z_all_player_dates z
+on z.playerid = b.playerid
+where balls > 0   
+and z."Last Season" = '2024/25'
+order by balls desc
+;
+
+-- catches
+select 
+b.name, b.catches, b.stumpings 
+from bowling_01_summary_ind b
+join z_all_player_dates z
+on z.playerid = b.playerid
+-- where z."Last Season" = '2024/25'
+order by catches desc
+;
+
+
 
 -- nb / w 
 -- select name, extras, nb, w, round(6*rate,2) as extras_per_over

@@ -15,7 +15,7 @@ importlib.reload(util)
 
 # fetch match url
 # !!! copy and paste the url for the match into the url variable below
-url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202425/section-5-at-the-toss-of-a-coin-cup/game-centre/bbdd7a29"
+url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202425/section-9-hopkins-mcgowran-cup/game-centre/8a178c44"
 
 # scrape scorecard (saves multiple tables to data/[year]/[grade]/[round]/)
 match_info = ss.scrape_scorecard(url, overwrite_md=False)
@@ -39,6 +39,7 @@ if False:
     match_info['fow_list'] = [[], ['1-6 Yash Sandhu, 2-9 Aditya Rawat, 3-12 Jeremy Borgas, 4-29 Parth Gohil, 5-32 Daniel Grosser, 6-49 Tygh Kupke, 7-99 Tom Adler, 8-131 Philip Mayes, 9-150 Connor Brown']]
     match_info['extras'] = [{'wd': 11, 'nb': 2, 'lb': 0, 'b': 5, 'p': 0}, {'wd': 6, 'nb': 11, 'lb': 0, 'b': 0, 'p': 0}]
     match_info['result'] = 'D'
+    match_info['innings_list'] = ['Adelaide Lutheran 1st Innings', 'Sheidow Park III 1st Innings', 'Sheidow Park III 2nd Innings']
 
 # Check for missing/not recognised players
 # !!! add any new players - see sql_scripts/misc/utility.pgsql

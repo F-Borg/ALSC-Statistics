@@ -9,8 +9,8 @@ import lxml
 from pathlib import Path
 import os
 
-# url = "https://www.playhq.com/cricket-australia/org/adelaide-turf-cricket-association/mens-senior-competitions-summer-202223/senior-men-isc-teamwear-lo-division-1/game-centre/bd01fb60"
-# url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202223/section-6-blackwood-sound-cup/game-centre/5c055822"
+# url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202425/section-5-at-the-toss-of-a-coin-cup/game-centre/dcfaf983"
+# url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202425/section-5-at-the-toss-of-a-coin-cup/game-centre/bbdd7a29"
 # three innings game
 # url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202223/section-6-blackwood-sound-cup/game-centre/1d32ce30"
 
@@ -36,8 +36,8 @@ def scrape_scorecard(url, overwrite_md=False):
     # default values
     mi_captain = 'ERROR'
     # if toss info is missing then structure is different:
-    #             /html/body/div/section/main/div/div/div[1]/section/section[2]/div[3]/div[1]/span[1]
-    if dom.xpath('/html/body/div/section/main/div/div/div[1]/section/section[2]/div[3]/div[1]/span[1]/text()')[0]=='Toss':
+    #             /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[1]/span[1]
+    if dom.xpath('/html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[1]/span[1]/text()')[0]=='Toss':
         div_a = 4
     else: 
         div_a = 3
@@ -127,7 +127,7 @@ def scrape_scorecard(url, overwrite_md=False):
     game_dir = f'data/{mi_season}/{mi_grade}/Rnd_{mi_round}'
     Path(game_dir).mkdir(parents=True, exist_ok=True)
 
-    num_innings = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a-1}]/*'))
+    num_innings = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a-1}]/*'))
     num_innings_played = num_innings
     innings = []
     extras = []
@@ -139,32 +139,30 @@ def scrape_scorecard(url, overwrite_md=False):
         # Check if innings played
         ###
         # check if innings was played - path to first batter name in scorecard
-        if len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a}]/div[1]/div[2]/div/div[2]/div/span[1]/text()')) == 0:
+        if len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[1]/div[2]/div/div[2]/div/span[1]/text()')) == 0:
             print(f'innings {ii} not played.')
             num_innings_played-=1 
             break
         # get batting scorecard - ignore strike rate from playhq
-        scorecard=dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a}]/div[1]/div[2]/div/*')
+        scorecard=dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[1]/div[2]/div/*')
         # -3 because column names, extras, and total are all divs
-        num_players = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a}]/div[1]/div[2]/div/*'))-3
+        num_players = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[1]/div[2]/div/*'))-3
         # check > 0 overs bowled
         if re.sub('\(([\d\.]+) Overs\)','\\1',scorecard[num_players+2].xpath('span[3]/text()')[0]) == '0' \
-            and 'Adelaide Lutheran' not in dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a-1}]/button[{ii}]/text()')[0] \
             and ii not in (1,2):
             print(f'innings {ii} not played..')
             num_innings_played-=1 
-            innings.append('')
         else:
             #########################################################################################################################
             # Batting Scorecard
             #########################################################################################################################
-            innings.append(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a-1}]/button[{ii}]/text()')[0])
+            innings.append(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a-1}]/button[{ii}]/text()')[0])
             batting_df = pd.DataFrame(columns=['batter','how_out','score','balls_faced','_4s','_6s'])
             for i in range(1,num_players+1):
                 # initiate row
                 data=[]
                 # name 
-                if scorecard[i].xpath('div/span[1]/text()') == ['Fill-in ']:
+                if scorecard[i].xpath('div/span[1]/text()')[0] in ('Fill-in ','Private player '):
                     data.append('Fill-in')
                 else:
                     data.append(scorecard[i].xpath('div/span[1]/text()')[0]+scorecard[i].xpath('div/span[1]/span/text()')[0])
@@ -195,7 +193,7 @@ def scrape_scorecard(url, overwrite_md=False):
                 batting_df.loc[i-1] = data
 
             # FOW
-            fow.append(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a}]/div[2]/div/span[2]/text()'))
+            fow.append(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[2]/div/span[2]/text()'))
 
             # Extras
             extras.append({'wd' : int(scorecard[num_players+1].xpath('div/span[3]/text()')[0].replace('WD','')),
@@ -223,20 +221,20 @@ def scrape_scorecard(url, overwrite_md=False):
             # only need to do bowling for opposition innings
             if 'Adelaide Lutheran' not in innings[ii-1]:
                 # div is different when FOW is missing:
-                if dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a}]/div[3]/div[2]/div/div[1]/span[1]/text()') == ['Bowlers']:
+                if dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[3]/div[2]/div/div[1]/span[1]/text()') == ['Bowlers']:
                     bowl_div = 3
                 else:
                     bowl_div = 2
                 # only run if our bowling is entered (check first bowler exists)
                 try: 
-                    dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a}]/div[{bowl_div}]/div[2]/div/div[2]/span[1]/text()')[0]
+                    dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div}]/div[2]/div/div[2]/span[1]/text()')[0]
                     bowling_sc_exists=True
                 except:
                     bowling_sc_exists=False
 
                 if  bowling_sc_exists:
-                    num_bowlers = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a}]/div[{bowl_div}]/div[2]/div/*'))-1 # -1 for the heading row
-                    bowling_sc =      dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a}]/div[{bowl_div}]/div[2]/div/*')
+                    num_bowlers = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div}]/div[2]/div/*'))-1 # -1 for the heading row
+                    bowling_sc =      dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div}]/div[2]/div/*')
                     bowling_df = pd.DataFrame(columns=['bowler','overs','maidens','runs','wickets','wides','no_balls','_4s_against','_6s_against','highover','_2nd_high_over'])
                     for i in range(1,num_bowlers+1):
                         # initiate row
@@ -275,7 +273,7 @@ def scrape_scorecard(url, overwrite_md=False):
         # Load Next Innings
         #########################################################################################################################
         if ii < num_innings:
-            next_innings_button = driver.find_element(By.XPATH, f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[3]/div[{div_a-1}]/button[{ii+1}]')
+            next_innings_button = driver.find_element(By.XPATH, f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a-1}]/button[{ii+1}]')
             # scroll to button so it is in view and can be clicked
             driver.execute_script("arguments[0].scrollIntoView(true);", next_innings_button)
             time.sleep(1)
