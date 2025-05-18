@@ -229,7 +229,7 @@ SELECT
     , Batting._6s::int as "6s"
     , Batting.Batting_Position::int as "Pos"
 FROM Seasons INNER JOIN (Matches INNER JOIN (Innings INNER JOIN (Players INNER JOIN Batting ON Players.PlayerID = Batting.PlayerID) ON Innings.InningsID = Batting.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
-WHERE Seasons.SeasonID in (79,80)
+WHERE Seasons.SeasonID in (81,82)
 and Batting.how_out != 'DNB'
 ORDER BY players.player_name, Matches.Date1, Innings.InningsNO
 ;
@@ -248,7 +248,7 @@ SELECT
     , z_Bowling_Figures_All.w AS "W"
     , Innings.InningsNO
 FROM Seasons INNER JOIN (Matches INNER JOIN ((Players INNER JOIN z_Bowling_Figures_All ON Players.PlayerID = z_Bowling_Figures_All.PlayerID) INNER JOIN Innings ON z_Bowling_Figures_All.InningsID = Innings.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
-WHERE Seasons.SeasonID in (79,80)
+WHERE Seasons.SeasonID in (81,82)
 ORDER BY players.player_name, Matches.Date1, Innings.InningsNO;
 
 

@@ -413,5 +413,80 @@ on a.p = max_part.p
 and a.wicket = max_part.wicket
 WHERE a.eleven = '3rd'
 order by a.wicket
+;
 
+
+CREATE OR REPLACE VIEW batting_27_run_out_involvements AS
+select 
+    p1.player_name as "Name"
+    , b.inn as innings
+    , sum(out_batter+not_out_batter) as run_outs
+    , sum(out_batter) as out_batter
+    , sum(not_out_batter) as not_out_batter
+    , to_char(100*sum(out_batter+not_out_batter)/b.inn, '990D9%') as "r/o per innings"
+from (
+    select  
+        b1.playerid as player1
+        , count(*) as out_batter
+        , 0 as not_out_batter
+    from batting as b1
+    where how_out = 'Run Out'
+    group by player1, not_out_batter
+
+    union all 
+
+    select  
+        b1.not_out_batter as player1
+        , 0 as out_batter
+        , count(*) as not_out_batter
+    from batting as b1
+    where how_out = 'Run Out'
+    group by player1, out_batter
+) aa
+inner join players as p1
+on aa.Player1 = p1.playerid
+inner join batting_01_summary_ind b
+on aa.player1 = b.playerid
+group by player_name, b.inn
+order by run_outs desc, out_batter desc, player_name
+;
+
+
+CREATE OR REPLACE VIEW batting_28_finals_runs AS
+SELECT 
+    players.player_name AS Name
+    , Count(Batting.Score) as innings
+    , coalesce(Sum(Batting.Score),0) AS Runs
+    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)=0
+        THEN -9 ELSE Sum(Batting.Score)::float/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)) END AS Average
+FROM Matches
+INNER JOIN Innings 
+ON Matches.MatchID = Innings.MatchID
+INNER JOIN Batting 
+ON Innings.InningsID = Batting.InningsID
+INNER JOIN players
+ON Players.PlayerID = Batting.PlayerID
+where matches.round in ('SF','GF')
+GROUP BY players.player_name
+HAVING coalesce(Sum(Batting.Score),0) > 99
+ORDER BY Runs DESC;
+
+CREATE OR REPLACE VIEW batting_29_finals_ave AS
+SELECT 
+    players.player_name AS Name
+    , Count(Batting.Score) as innings
+    , coalesce(Sum(Batting.Score),0) AS Runs
+    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)=0
+        THEN -9 ELSE Sum(Batting.Score)::float/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)) END AS Average
+FROM Matches
+INNER JOIN Innings 
+ON Matches.MatchID = Innings.MatchID
+INNER JOIN Batting 
+ON Innings.InningsID = Batting.InningsID
+INNER JOIN players
+ON Players.PlayerID = Batting.PlayerID
+where matches.round in ('SF','GF')
+GROUP BY players.player_name
+HAVING coalesce(Sum(Batting.Score),0) > 99
+ORDER BY Average DESC;
 

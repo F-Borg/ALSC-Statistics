@@ -305,4 +305,40 @@ HAVING (Count(Wickets.how_out))>9
 ORDER BY Stumpings DESC, z_bocsa."Total Wickets";
 
 
+CREATE OR REPLACE VIEW bowling_22_finals_wickets AS
+select 
+    sum(bf.w) as "Wickets"
+    , players.player_name as "Name"
+    , count(inningsid) as "Inn"
+    , case when sum(bf.w) > 0 then sum(bf.runs)/sum(bf.w) 
+        else null end as "Ave"
+from z_Bowling_Figures_All as bf
+inner join matches 
+on bf.matchid = matches.matchid
+inner join players 
+on bf.playerid = players.playerid
+where matches.round in ('SF','GF')
+group by players.player_name
+having sum(bf.w) > 9
+order by "Wickets" desc
+;
 
+
+CREATE OR REPLACE VIEW bowling_23_finals_ave AS
+select 
+    case when sum(bf.w) > 0 then sum(bf.runs)/sum(bf.w) 
+        else null end as "Ave"
+    , players.player_name as "Name"
+    , count(inningsid) as "Inn"
+    , sum(bf.w) as "Wickets"
+
+from z_Bowling_Figures_All as bf
+inner join matches 
+on bf.matchid = matches.matchid
+inner join players 
+on bf.playerid = players.playerid
+where matches.round in ('SF','GF')
+group by players.player_name
+having sum(bf.w) > 9
+order by "Ave"
+;

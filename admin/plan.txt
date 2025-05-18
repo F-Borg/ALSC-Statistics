@@ -72,8 +72,8 @@ Open source software:
 #             future features (no particular order)
 ###############################################################################
 	additional calculated stats
-		- e.g. games played together (if this isn't already in 0.3 update)
-		- averages etc. in finals
+		- DONE games played together (if this isn't already in 0.3 update)
+		- DONE averages etc. in finals 
 		- finals played, won
 		- consult others for ideas
 	Individual summary - maybe Power BI, or one-pager
@@ -89,12 +89,7 @@ Open source software:
 	handover document
 
 
-	automatically identify next match to process
-		get list of Adelaide Lutheran match ids from playhq - or links to scorecards
-		list matches that haven't been processed
-		option to prioritise date or grade for next match
-
-	click-through process (or similar) to validate and fill in missing data for a given match
+	improve process to validate and fill in missing data for a given match
    
 	validation helper functions:
 		- highlight:

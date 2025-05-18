@@ -44,9 +44,9 @@ pgconn = engine.connect()
 ############################
 # User input               
 ############################
-_season_ = '2023/24' # e.g. _season_ = '2021/22'
-seasonid_1stxi = 79
-seasonid_2ndxi = 80
+_season_ = '2024/25' # e.g. _season_ = '2021/22'
+seasonid_1stxi = 81
+seasonid_2ndxi = 82
 # seasonid_3rdxi = 78
 
 xi_1 = '1st XI'

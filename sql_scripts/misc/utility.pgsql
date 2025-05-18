@@ -32,13 +32,21 @@ update players set
 where playerid = 138
 ;
 
+update players set 
+    dob = '2008-12-27'
+where playerid = 490
+;
+
+select * from players where surname = 'Kupke';
+
+
 update seasons set posn = 1 where seasonid = 79
 
 select * from seasons where seasonid = 80
 
 select * from players where playerid = 435
 ;
-select * from players where surname = 'Leckie'
+select * from players where surname = 'Jongeneel'
 ;
 select * from players where firstname = 'Justin'
 ;
@@ -48,11 +56,12 @@ select * from matches
 
 select * from players order by playerid desc
 
--- Create new player
--- insert into players values (
---     471, 'Sharma, Ram', 'Ram', 'Sharma', Null, 'Ram Sharma'
--- )
-
+select * from wickets where inningsid in
+(select distinct inningsid from wickets where playerid = 48)
+order by inningsid,batting_position;
+-- insert into wickets values 
+-- --(71,10,'bonus', 'Caught',null,48,0)
+-- (71,11,'bonus', 'Bowled',null,48,0)
 
 
 select * from batting where playerid = 112
@@ -61,21 +70,6 @@ where lower(how_out) = 'absent out'
 
 select * from innings where  inningsid = 1583
 select * from matches where matchid = 701
-
-select * from wickets;
-
-select distinct result from matches
-
-select * from 
-(select seasonid, round, count(*) as c from matches group by seasonid, round) a
-where c>1
-
-select * from players where name_fl = 'Geoff Brereton'
-
-
-
-select * from innings where matchid in (812,813)
-
 
 
 -- check where missing extras
@@ -95,9 +89,6 @@ and innings.extras = 0
 
 
 
-
-select * from matches where seasonid = 78 and round = '4';
-select * from innings where matchid = 809;
 
 
 select * from seasons;
@@ -152,3 +143,9 @@ select * from batting where playerid = 265
 order by how_out
 
 select * from z_bat_ind_dismissal_types where name like 'Waldhuter, Josh%'
+
+
+select * from batting_11_high_score_sixes
+where _6s > 8
+
+select * from team_15_ind_youngest order by "Age on Final Game" desc

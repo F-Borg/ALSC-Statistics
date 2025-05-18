@@ -9,13 +9,15 @@ FROM (
     SELECT 
         name_fl as "Name",
         playerid,
-        sum(case when "Year" = '2022/23' then "Matches" else 0 end) as "Season Matches", 
-        sum(case when "Year" <= '2022/23' then "Matches" else 0 end) as "Total Matches"
+        sum(case when "Year" = '2024/25' then "Matches" else 0 end) as "Season Matches", 
+        sum("Matches") as "Total Matches"
     FROM yb_02_batting_summary
     group by playerid, name_fl
-    having sum(case when "Year" = '2022/23' then "Matches" else 0 end) > 0
+    having sum(case when "Year" = '2024/25' then "Matches" else 0 end) >= 0
     ) a
-WHERE mod("Total Matches"::int,50) < "Season Matches"
+--WHERE mod("Total Matches"::int,50) <= "Season Matches"
+WHERE "Total Matches" - mod("Total Matches"::int,50) >= 0
+and "Season Matches" > 0
 ;
 
 
@@ -30,11 +32,11 @@ FROM (
     SELECT 
         name_fl as "Name",
         playerid,
-        sum(case when "Year" = '2022/23' then "Total Runs" else 0 end) as "Season Runs", 
-        sum(case when "Year" <= '2022/23' then "Total Runs" else 0 end) as "Total Runs"
+        sum(case when "Year" = '2024/25' then "Total Runs" else 0 end) as "Season Runs", 
+        sum(case when "Year" <= '2024/25' then "Total Runs" else 0 end) as "Total Runs"
     FROM yb_02_batting_summary
     group by playerid, name_fl
-    having sum(case when "Year" = '2022/23' then "Total Runs" else 0 end) > 0
+    having sum(case when "Year" = '2024/25' then "Total Runs" else 0 end) > 0
     ) a
 WHERE mod("Total Runs"::int,500) < "Season Runs"
 ;
@@ -126,7 +128,7 @@ order by ducks desc, ducks_per_dismissal desc
 ;
 
 -- Balls Faced
-select name, bf 
+select name, bf, "Average BF", "Runs/100 Balls"
 from batting_01_summary_ind
 where bf is not null
 order by bf desc
@@ -147,7 +149,7 @@ from bowling_01_summary_ind b
 join z_all_player_dates z
 on z.playerid = b.playerid
 where balls > 0   
-and z."Last Season" = '2024/25'
+--and z."Last Season" = '2024/25'
 order by balls desc
 ;
 
@@ -184,3 +186,7 @@ GROUP BY players.player_name, Bowling.PlayerID
 HAVING (Sum(overs)*6+Sum(bowling.extra_balls))>119
 --ORDER BY extras_per_over DESC;
 ORDER BY Extras DESC;
+
+
+
+select * from bowling_09_p3_best_figs

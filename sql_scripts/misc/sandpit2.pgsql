@@ -1,4 +1,6 @@
 
+select * from team_16_ind_most_matches_together
+
 CREATE OR REPLACE VIEW team_16_ind_most_matches_together AS
 select 
     p1.player_name as "Player 1"
@@ -125,7 +127,7 @@ inner join players as p1
 on aa.Player1 = p1.playerid
 inner join batting_01_summary_ind b
 on aa.player1 = b.playerid
-where b."Last Season" = '2024/25'
+--where b."Last Season" = '2024/25'
 group by player_name, b.inn
 order by run_outs desc, out_batter desc, player_name
 ;
@@ -320,4 +322,53 @@ GROUP BY Name
     , Players.playerid
 HAVING (((Players.playerid)<>999))
 ORDER BY Name, Sum(Batting.Score) DESC;
+
+
+
+
+
+select 
+    round(sum(case when wickets.batting_position in (1,2,3,4) then 1 else 0 end) / z_bocsa."Total Wickets",3) as "Top 4 Pct"
+    , z_bocsa.name
+    , z_bocsa."Total Wickets"
+    , sum(case when wickets.batting_position in (1,2,3,4) then 1 else 0 end) as "Top 4 wickets"
+from wickets
+inner join z_bocsa 
+on wickets.playerid = z_bocsa.playerid
+where z_bocsa."Total Wickets" > 14
+group by z_bocsa.name, z_bocsa."Total Wickets"
+order by "Top 4 Pct" desc
+;
+
+select 
+    round(sum(case when wickets.batting_position in (8,9,10,11) then 1 else 0 end) / z_bocsa."Total Wickets",3) as "Bottom 4 Pct"
+    , z_bocsa.name
+    , z_bocsa."Total Wickets"
+    , sum(case when wickets.batting_position in (8,9,10,11) then 1 else 0 end) as "Bottom 4 wickets"
+from wickets
+inner join z_bocsa 
+on wickets.playerid = z_bocsa.playerid
+where z_bocsa."Total Wickets" > 14
+
+group by z_bocsa.name, z_bocsa."Total Wickets"
+order by "Bottom 4 Pct" desc
+;
+
+select 
+    z_bocsa.name
+    , z_bocsa."Total Wickets"
+    , sum(case when wickets.batting_position in (1,2,3,4) then 1 else 0 end) as top_4
+    , sum(case when wickets.batting_position in (1,2,3,4) then 1 else 0 end) / z_bocsa."Total Wickets" as top_4_pct
+    , sum(case when wickets.batting_position in (8,9,10,11) then 1 else 0 end) as bottom_4
+    , sum(case when wickets.batting_position in (8,9,10,11) then 1 else 0 end) / z_bocsa."Total Wickets" as bottom_4_pct
+    , sum(case when wickets.batting_position in (11) then 1 else 0 end) as no_11
+from wickets
+inner join z_bocsa 
+on wickets.playerid = z_bocsa.playerid
+where z_bocsa."Total Wickets" > 14
+
+group by z_bocsa.name, z_bocsa."Total Wickets"
+order by top_4_pct desc
+--order by bottom_4_pct desc
+order by no_11 desc
 
