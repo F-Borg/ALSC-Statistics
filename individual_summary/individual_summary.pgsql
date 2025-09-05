@@ -1,4 +1,4 @@
-
+-- Mostly just a sandpit now - python file is the main one
 
 select * from players order by playerid desc;
 
@@ -138,6 +138,26 @@ runs made with others
 select *
 from batting_01_summary_ind
 where playerid = 269
+;
+
+
+select 
+matches.date1
+--, batting.* 
+, batting.score
+, seasons.year
+, row_number() over (order by matches.date1, innings.inningsno) as inn_order
+from batting
+join innings
+on batting.inningsid = innings.inningsid
+join matches
+ON Matches.MatchID = Innings.MatchID
+join seasons
+on seasons.seasonid = matches.seasonid
+where batting.playerid = 269
+and how_out not in ('DNB','Absent Out')
+order by inn_order
+;
 
 
 

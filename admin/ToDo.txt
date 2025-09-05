@@ -12,3 +12,12 @@ oldest known players
 #################################
 # Updates to data
 DONE -- Youngest players
+
+
+#################################
+# Individual Summmary
+
+html template
+multiple tables into template
+
+

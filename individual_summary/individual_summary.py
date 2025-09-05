@@ -87,7 +87,6 @@ first_game = pd.read_sql(con=pgconn, sql=f"""select year, round, eleven, opponen
 where a.tmp = 1""")
 
 
-# Define a dictionary containing Students data
 data = {'Games Played': career_span['mat'][0],
         'Debut': career_span['debut'][0],
         'Last Season': career_span['Last Season'][0],
@@ -143,7 +142,7 @@ from (
     --get last game
     select
     batting.inningsid, matches.date1
-    , row_number() over (partition by batting.playerid order by matches.date1) as tmp
+    , row_number() over (partition by batting.playerid order by matches.date1 desc) as tmp
     FROM Matches
     INNER JOIN Innings 
     ON Matches.MatchID = Innings.MatchID
@@ -178,14 +177,17 @@ worksheet.merge_range('A1:I1',f"{firstname} {surname}",fmt['heading1'])
 # ave
 # best year
 # runs made with others
+# by posn - inn, runs, ave
 
 # -- Bowl
 # wickets
 # ave
 # best year
+# best bowling
 
 # -- Field
 # catches
+# catches off bowlers
 
 
 
