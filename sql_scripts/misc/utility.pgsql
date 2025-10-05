@@ -4,27 +4,35 @@ select * from players where playerid < 900 order by playerid desc;
 
 -- insert new row
 --insert into players values (486,'Mayes, Philip','Philip','Mayes',NULL,'Philip Mayes');
---insert into players values (487,'Zeeshan, Muhammad','Muhammad','Zeeshan',NULL,'Muhammad Zeeshan');
---insert into players values (488,'Fitzsimmons, Joshua','Joshua','Fitzsimmons',NULL,'Joshua Fitzsimmons');
---insert into players values (489,'Ladlow, Jamie','Jamie','Ladlow',NULL,'Jamie Ladlow');
---insert into players values (490,'Kupke, Tygh','Tygh','Kupke',NULL,'Tygh Kupke');
---insert into players values (491,'Leckie, Justin','Justin','Leckie',NULL,'Justin Leckie');
---insert into players values (492,'Rawat, Aditya','Aditya','Rawat',NULL,'Aditya Rawat');
+--insert into players values (496,'Astley-Dixon, Javier','Javier','Astley-Dixon',NULL,'Javier Astley-Dixon');
+
+
+
+select * from players order by playerid desc;
+
+select * from batting_j;
+
+
 
 
 -- Add new season
 select * from seasons;
 insert into seasons values (
     82, '2024/25', 'ASCA', 'S09', '2nd', 435, 0, 0, 'true', 'Section 9 Hopkins McGowran Cup'
+);
+insert into seasons_j values (
+    1, '2019/20', 'WSJCA', 'Under 10', '1st', 0, 0, 0, 'true', 'WSJCA Under 10 Pool A'
 )
+
 
 
 -- Update player name
 update players set 
-    player_name = 'Panchal, Sunil'
-    , name_fl = 'Sunil Panchal'
-    , firstname = 'Sunil'
-where playerid = 414
+    player_name = 'PlayerX, Unknown'
+    , name_fl = 'Unknown PlayerX'
+    , firstname = 'Unknown'
+    , surname = 'PlayerX'
+where playerid = -99
 ;
 
 update players set 
@@ -149,3 +157,17 @@ select * from batting_11_high_score_sixes
 where _6s > 8
 
 select * from team_15_ind_youngest order by "Age on Final Game" desc
+
+
+
+
+create table fielding_j (
+    inningsid int,
+    playerid int,
+    catches int,
+    run_outs int,
+    stumpings int
+);
+
+
+

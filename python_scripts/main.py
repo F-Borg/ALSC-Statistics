@@ -1,11 +1,12 @@
 import python_scripts.scrape_scorecard as ss
+import python_scripts.scrape_scorecard_playcricket as ssp
 import python_scripts.wrangle_match_data as wd
 import python_scripts.utility as util
-import os
 
 # reload when required after updates to code
 import importlib
 importlib.reload(ss)
+importlib.reload(ssp)
 importlib.reload(wd)
 importlib.reload(util)
 
@@ -17,10 +18,11 @@ importlib.reload(util)
 
 # fetch match url
 # !!! copy and paste the url for the match into the url variable below
-url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202425/section-9-hopkins-mcgowran-cup/game-centre/c2e5a30d"
+url = "https://play.cricket.com.au/match/ae78a44c-3e67-49bd-b2e7-963bd29cac0b/adelaide-junior-bulldogs-fulham-red-wsjca-under-10-pool-a?tab=scorecard"
 
 # scrape scorecard (saves multiple tables to data/[year]/[grade]/[round]/)
-match_info = ss.scrape_scorecard(url, overwrite_md=False)
+# match_info = ss.scrape_scorecard(url, overwrite_md=False)
+match_info = ssp.scrape_scorecard_playcricket(url, overwrite_md=False)
 
 # !!! check data/[yy-yy]/[grade]/[round]/ 
 # add any missing info:
@@ -37,15 +39,25 @@ if False:
     match_info['wicketkeeper'] = 'Brett MacTavish'
     match_info['captain'] = 'Jim Wills'
     match_info['captain'] = 'Finley Borgas'
-    match_info['captain'] = 'Parth Gohil'
     match_info['fow_list'] = [['1-22 Jim Wills, 2-89 David Fitzsimmons, 3-89 Peter Taylor, 4-109 Brett MacTavish, 5-121 Christopher Mann, 6-157 Joshua Fitzsimmons, 7-164 Joshua Waldhuter, 8-164 Matthew Bell, 9-164 Jamie Ladlow, 10-167 Michael Vardaro'], ['1-67 Kym Woodward, 2-84 Jess Keon, 3-107 Matthew Duncan, 4-124 James Limberis, 5-142 Jesse Pannenburg, 6-145 Stefanos Daskalos, 7-151 Andrew Jones']]
     match_info['extras'] = [{'wd': 11, 'nb': 2, 'lb': 0, 'b': 5, 'p': 0}, {'wd': 6, 'nb': 11, 'lb': 0, 'b': 0, 'p': 0}]
     match_info['result'] = 'D'
-    match_info['innings_list'] = ['Adelaide Lutheran 1st Innings', 'Sheidow Park III 1st Innings', 'Sheidow Park III 2nd Innings']
-
+    match_info['innings_list'] = ['Adelaide Lutheran','PHA']
+    match_info['date_day_1'] = '13 Oct 2019'
 # Check for missing/not recognised players
+# Unknown PlayerX
 # !!! add any new players - see sql_scripts/misc/utility.pgsql
 util.check_player_ids(match_info)
+
+if False:
+    newplayer=util.check_player_ids(match_info)[0]
+    fname=newplayer.split()[0]
+    lname=newplayer.split()[1]
+    util.add_new_player(fname,lname)
+
+    util.add_new_player('Milad John','Rezaee')
+
+
 
 # !!! Validate:
 # all playerids are there
@@ -57,5 +69,4 @@ wd.wrangle_match_data(match_info, write_to_postgres = False)
 if False:
     # !!! run this after validating
     wd.wrangle_match_data(match_info, write_to_postgres = True)
-
 

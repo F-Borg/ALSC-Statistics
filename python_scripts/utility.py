@@ -2,7 +2,7 @@ import pandas as pd
 import re
 import math
 from sqlalchemy import create_engine
-from sqlalchemy import select
+from sqlalchemy import insert
 from sqlalchemy import text
 
 engine = create_engine('postgresql+psycopg2://postgres:postgres1!@localhost/dev')
@@ -18,7 +18,8 @@ def check_player_ids(match_info):
 
     for i in range(1,match_info['num_innings']+1):
         # i=1
-        if 'Adelaide Lutheran' in match_info['innings_list'][i-1]:
+        if 'Adelaide Lutheran' in match_info['innings_list'][i-1] \
+            or           'ADE' in match_info['innings_list'][i-1]:
             batting = pd.read_table(f'{match_dir}/innings_{i}_batting.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
             batting = batting.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             batting.columns = batting.columns.str.strip()
@@ -29,3 +30,10 @@ def check_player_ids(match_info):
     missing_ids = batting2[batting2['playerid'].isna()]['name_fl'].to_list()
     return missing_ids
 
+
+def add_new_player(firstname,lastname):
+    newplayerid = pd.read_sql(con=pgconn, sql=f"select max(playerid)+1 as playerid from players")['playerid'][0]
+    pgconn.execute(text(f"insert into players values ({newplayerid},'{lastname}, {firstname}','{firstname}','{lastname}',NULL,'{firstname} {lastname}')"))
+    pgconn.commit()
+
+    

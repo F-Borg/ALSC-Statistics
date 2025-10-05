@@ -4,6 +4,7 @@ import math
 from sqlalchemy import create_engine
 from sqlalchemy import select
 from sqlalchemy import text
+import os
 
 engine = create_engine('postgresql+psycopg2://postgres:postgres1!@localhost/dev')
 pgconn = engine.connect()
@@ -85,6 +86,46 @@ def split_fow(s):
 # match_info = {'season': '22-23', 'grade': 'ISC Teamwear LO Division 1', 'round': '2', 'num_days': 1, 'date_day_1': '22 Oct 2022', 'date_day_2': '', 'num_innings': 2, 'innings_list': ['Adelaide Lutheran 1st Innings', 'Kilburn 1st Innings'], 'fow_list': [['1-0 Daniel Grosser, 2-25 Jeremy Borgas, 3-64 Marko Fedojuk, 4-67 Manmeet Singh, 5-102 Joshua Waldhuter, 6-109 Finley Borgas, 7-126 Ajay Agnihotri, 8-132 Matthew Nitschke, 9-142 Azadar Malik'], ['1-4 Hussain Ahmadi, 2-36 Irfan Raza, 3-69 Ali Khan, 4-74 Asif Ali Shafa']], 'extras': [{'wd': 2, 'nb': 2, 'lb': 0, 'b': 4, 'p': 0}, {'wd': 7, 'nb': 1, 'lb': 0, 'b': 0, 'p': 0}], 'overs': ['40', '31.2'], 'venue': 'Blair Athol Reserve / Blair Athol Reserve - Main Oval', 'opponent': 'Kilburn', 'winner': 'Kilburn', 'result': 'L1', 'captain': 'Finley Borgas', 'game_dir': 'data/22-23/ISC Teamwear LO Division 1/Rnd_2', 'wicketkeeper': 'Marko Fedojuk'}
 
 def wrangle_match_data(match_info, write_to_postgres = False):
+    # get grade to determine whether seniors/juniors/inclusion
+    if re.search(r'(Under|Junior)',match_info['grade']):
+        grade = 'Junior'
+        pg_tbl = {
+            'batting' 		: 'batting_j',
+            'bowling' 		: 'bowling_j',
+            'fielding'      : 'fielding_j',
+            'innings' 		: 'innings_j',
+            'matches' 	    : 'matches_j',
+            'players' 		: 'players',
+            'seasons'       : 'seasons_j',
+            'wickets'   	: 'wickets_j'
+            }        
+    elif re.search(r'(Section)',match_info['grade']):
+        grade = 'Senior'
+        pg_tbl = {
+            'batting' 		: 'batting',
+            'bowling' 		: 'bowling',
+            'fielding'      : '',
+            'innings' 		: 'innings',
+            'matches' 	    : 'matches',
+            'players' 		: 'players',
+            'seasons'       : 'seasons',
+            'wickets'   	: 'wickets'
+            }
+    elif re.search(r'(Inclusive)',match_info['grade']):
+        grade = 'Inclusive'
+        pg_tbl = {
+            'batting' 		: 'batting_i',
+            'bowling' 		: 'bowling_i',
+            'fielding'      : 'fielding_i',
+            'innings' 		: 'innings_i',
+            'matches' 	    : 'matches_i',
+            'players' 		: 'players',
+            'seasons'       : 'seasons_i',
+            'wickets'   	: 'wickets_i'
+            }
+    else:
+        raise Exception(f"grade not recognised: {match_info['grade']}")
+
     match_dir = match_info['game_dir']
 
     # Player IDs
@@ -96,15 +137,19 @@ def wrangle_match_data(match_info, write_to_postgres = False):
     #########################################################################################################################
     # Season, Match - numerical order does not matter
     #########################################################################################################################
-    season = pd.read_sql(con=pgconn, sql=f"select * from seasons where playhq_season='{match_info['grade']}' and year='20'||replace('{match_info['season']}','-','/')")
+    season = pd.read_sql(con=pgconn, sql=f"select * from {pg_tbl['seasons']} where playhq_season='{match_info['grade']}' and year='20'||replace('{match_info['season']}','-','/')")
 
-    matchid   = pd.read_sql(con=pgconn, sql=f"select max(matchid)   as n from matches")['n'][0]+1
-    inningsid = pd.read_sql(con=pgconn, sql=f"select max(inningsid) as n from innings")['n'][0]+1
+    matchid   = pd.read_sql(con=pgconn, sql=f"select max(matchid)   as n from {pg_tbl['matches']}")['n'][0]+1
+    inningsid = pd.read_sql(con=pgconn, sql=f"select max(inningsid) as n from {pg_tbl['innings']}")['n'][0]+1
 
     this_match = pd.DataFrame(columns=['matchid','opponent','ground','round','seasonid','result','date1','date2','nodays','captain','wicketkeeper','fv_1st','fv_2nd'])
 
-    captain_id = players.loc[players['name_fl'] == match_info['captain']]['playerid'].values[0].tolist()
-    wicketkeeper_id = players.loc[players['name_fl'] == match_info['wicketkeeper']]['playerid'].values[0].tolist()
+    if grade in ('Senior','Inclusive'):
+        captain_id = players.loc[players['name_fl'] == match_info['captain']]['playerid'].values[0].tolist()
+        wicketkeeper_id = players.loc[players['name_fl'] == match_info['wicketkeeper']]['playerid'].values[0].tolist()
+    else: 
+        captain_id = 0
+        wicketkeeper_id = 0
 
     this_match.loc[0] = [matchid, match_info['opponent'], match_info['venue'], match_info['round'], season['seasonid'][0], match_info['result'], 
                         match_info['date_day_1'], match_info['date_day_2'], match_info['num_days'], captain_id, wicketkeeper_id,0,0]
@@ -112,7 +157,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
         this_match['date2'] = None
 
     if(write_to_postgres):
-        this_match.to_sql('matches', engine, if_exists='append', index=False)
+        this_match.to_sql(pg_tbl['matches'], engine, if_exists='append', index=False)
     else:
         print(this_match)
 
@@ -136,7 +181,9 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             batting['name_fl'] = batting['batter']
 
             # FOW
-            if len(match_info['fow_list'][i-1]) > 0:
+            if len(match_info['fow_list']) == 0:
+                print('Missing FOW')
+            elif len(match_info['fow_list'][i-1]) > 0:
                 fow = [split_fow(s) for s in match_info['fow_list'][i-1][0].split(', ')]
                 batter_pos_1 = 1
                 batter_pos_2 = 2
@@ -165,7 +212,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
 
             batting3 = batting2[['inningsid','playerid','batting_position','how_out','bowler_name','score','_4s','_6s','balls_faced','fow','wicket','not_out_batter']]
             if(write_to_postgres):
-                batting3.to_sql('batting', engine, if_exists='append', index=False)
+                batting3.to_sql(pg_tbl['batting'], engine, if_exists='append', index=False)
             else:
                 print(batting3)
 
@@ -183,19 +230,19 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             this_innings.loc[0] = [inningsid + (i-1), extras, matchid, i, 'bat', overs, extra_balls]
 
             if(write_to_postgres):
-                this_innings.to_sql('innings', engine, if_exists='append', index=False)
+                this_innings.to_sql(pg_tbl['innings'], engine, if_exists='append', index=False)
             else:
                 print(this_innings)  
 
         # i=2
-        else: #bowling and wickets
+        else: 
             #########################################################################################################################
-            # Bowling, Innings
+            # Bowling Innings
             #########################################################################################################################
             bowling = pd.read_table(f'{match_dir}/innings_{i}_bowling.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
             bowling = bowling.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             bowling.columns = bowling.columns.str.strip()
-            bowling = bowling.applymap(lambda x: x.replace('-','0') if isinstance(x, str) else x).fillna(0)
+            # bowling = bowling.applymap(lambda x: x.replace('-','0') if isinstance(x, str) else x).fillna(0)
 
             bowling['inningsid'] = inningsid + (i-1)
             bowling['name_fl'] = bowling['bowler']
@@ -208,9 +255,12 @@ def wrangle_match_data(match_info, write_to_postgres = False):
 
 
             bowling2 = bowling.merge(players1, on="name_fl", how="left")
-            bowling3 = bowling2[['inningsid','playerid','overs','extra_balls','maidens','wides','no_balls','runs_off_bat','_4s_against','_6s_against','highover','_2nd_high_over']]
+            if grade in ('Junior'):
+                bowling3 = bowling2[['inningsid','playerid','overs','extra_balls','maidens','wides','no_balls','runs_off_bat','_4s_against','_6s_against','highover','_2nd_high_over','wickets']]
+            else:
+                bowling3 = bowling2[['inningsid','playerid','overs','extra_balls','maidens','wides','no_balls','runs_off_bat','_4s_against','_6s_against','highover','_2nd_high_over']]
             if(write_to_postgres):
-                bowling3.to_sql('bowling', engine, if_exists='append', index=False)
+                bowling3.to_sql(pg_tbl['bowling'], engine, if_exists='append', index=False)
             else:
                 print(bowling3)
             
@@ -223,7 +273,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             this_innings = pd.DataFrame(columns=['inningsid','extras','matchid','inningsno','innings_type','bat_overs','extra_balls'])
             this_innings.loc[0] = [inningsid + (i-1), extras, matchid, i, 'bowl', None, None]
             if(write_to_postgres):
-                this_innings.to_sql('innings', engine, if_exists='append', index=False)
+                this_innings.to_sql(pg_tbl['innings'], engine, if_exists='append', index=False)
             else:
                 print(this_innings)
             
@@ -247,8 +297,40 @@ def wrangle_match_data(match_info, write_to_postgres = False):
 
             wickets3 = wickets2[['inningsid','batting_position','batter_name','how_out','assist','playerid','hat_trick']]
             if(write_to_postgres):
-                wickets3.to_sql('wickets', engine, if_exists='append', index=False)
+                wickets3.to_sql(pg_tbl['wickets'], engine, if_exists='append', index=False)
             else:
                 print(wickets3)
-            
+
+            #########################################################################################################################
+            # Fielding (if applicable)
+            #########################################################################################################################
+            if os.path.exists(f'{match_dir}/innings_{i}_fielding.md'):
+                fielding = pd.read_table(f'{match_dir}/innings_{i}_fielding.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
+                fielding = fielding.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+                fielding.columns = fielding.columns.str.strip()
+                
+                fielding['inningsid'] = inningsid + (i-1)
+                fielding['name_fl'] = fielding['player']
+
+                fielding2 = fielding.merge(players1, on="name_fl", how="left")
+
+                fielding3 = fielding2[['inningsid','playerid','catches','run_outs','stumpings']]
+                if(write_to_postgres):
+                    fielding3.to_sql(pg_tbl['fielding'], engine, if_exists='append', index=False)
+                else:
+                    print(fielding3)
+
+            elif grade == 'Junior':
+                print('fielding table missing')
+
+
+
+
+
+
+
+
+
+
+
 

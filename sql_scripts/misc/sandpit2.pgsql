@@ -1,4 +1,11 @@
 
+
+select * from fielding_j
+
+delete from innings_j where inningsid=0
+
+
+
 select * from team_16_ind_most_matches_together
 
 CREATE OR REPLACE VIEW team_16_ind_most_matches_together AS
