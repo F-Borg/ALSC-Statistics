@@ -5,27 +5,18 @@
 #################################
 
 Junior stats:
-    - DONE - player ids - add as I go
-    - DONE - scrape playcricket scorecards
-    - DONE - new postgres tables for junior stats
-    - DONE - upload to new junior tables
     - new postgres views for junior stats
-    - DONE - translate ADE to Adelaide Lutheran in match_info['innings_list']
+    - red/blue for same season
+venue - get everything after the "/"
 
-DONE - add Unknown PlayerX to players table
-
-wrangle_match_data
-    - DONE - get grade from match_info to determine whether seniors/juniors/inclusion
-        - DONE - update which tables to insert into accordingly
 
 #################################
 # additional stats:
 home/away stats
-
 multiple fielders in run out
-
 pct runs in boundaries as a bowler
 oldest known players
+
 
 #################################
 # Updates to data

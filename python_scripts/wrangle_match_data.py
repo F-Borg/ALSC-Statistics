@@ -243,6 +243,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             bowling = bowling.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             bowling.columns = bowling.columns.str.strip()
             # bowling = bowling.applymap(lambda x: x.replace('-','0') if isinstance(x, str) else x).fillna(0)
+            bowling[['maidens','wides','no_balls']] = bowling[['maidens','wides','no_balls']].applymap(lambda x: x.replace('-','0') if isinstance(x, str) else x).fillna(0)
 
             bowling['inningsid'] = inningsid + (i-1)
             bowling['name_fl'] = bowling['bowler']

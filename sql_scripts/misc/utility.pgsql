@@ -18,7 +18,7 @@ select * from batting_j;
 -- Add new season
 select * from seasons;
 insert into seasons values (
-    82, '2024/25', 'ASCA', 'S09', '2nd', 435, 0, 0, 'true', 'Section 9 Hopkins McGowran Cup'
+    84, '2025/26', 'ASCA', 'S09', '2nd', 439, 0, 0, 'true', 'Section 9 Hopkins McGowran Cup'
 );
 insert into seasons_j values (
     1, '2019/20', 'WSJCA', 'Under 10', '1st', 0, 0, 0, 'true', 'WSJCA Under 10 Pool A'

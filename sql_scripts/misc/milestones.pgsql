@@ -9,11 +9,11 @@ FROM (
     SELECT 
         name_fl as "Name",
         playerid,
-        sum(case when "Year" = '2024/25' then "Matches" else 0 end) as "Season Matches", 
+        sum(case when "Year" = (select max(year) from seasons) then "Matches" else 0 end) as "Season Matches", 
         sum("Matches") as "Total Matches"
     FROM yb_02_batting_summary
     group by playerid, name_fl
-    having sum(case when "Year" = '2024/25' then "Matches" else 0 end) >= 0
+    having sum(case when "Year" = (select max(year) from seasons) then "Matches" else 0 end) >= 0
     ) a
 --WHERE mod("Total Matches"::int,50) <= "Season Matches"
 WHERE "Total Matches" - mod("Total Matches"::int,50) >= 0
@@ -32,11 +32,11 @@ FROM (
     SELECT 
         name_fl as "Name",
         playerid,
-        sum(case when "Year" = '2024/25' then "Total Runs" else 0 end) as "Season Runs", 
-        sum(case when "Year" <= '2024/25' then "Total Runs" else 0 end) as "Total Runs"
+        sum(case when "Year" = (select max(year) from seasons) then "Total Runs" else 0 end) as "Season Runs", 
+        sum(case when "Year" <= (select max(year) from seasons) then "Total Runs" else 0 end) as "Total Runs"
     FROM yb_02_batting_summary
     group by playerid, name_fl
-    having sum(case when "Year" = '2024/25' then "Total Runs" else 0 end) > 0
+    having sum(case when "Year" = (select max(year) from seasons) then "Total Runs" else 0 end) > 0
     ) a
 WHERE mod("Total Runs"::int,500) < "Season Runs"
 ;
@@ -54,8 +54,8 @@ FROM (
     SELECT 
         Players.name_fl AS "Name",
         Players.playerid,
-        sum(case when Seasons.Year = '2022/23' then z_Bowling_Figures_All.w else 0 end) as "Season Wickets", 
-        sum(case when Seasons.Year <= '2022/23' then z_Bowling_Figures_All.w else 0 end) as "Total Wickets"
+        sum(case when Seasons.Year in (select max(year) from seasons) then z_Bowling_Figures_All.w else 0 end) as "Season Wickets", 
+        sum(case when Seasons.Year <= (select max(year) from seasons) then z_Bowling_Figures_All.w else 0 end) as "Total Wickets"
     FROM Seasons
     INNER JOIN Matches 
     ON Seasons.SeasonID = Matches.SeasonID 
@@ -72,10 +72,12 @@ FROM (
     AND z_Bowling_Figures_All.InningsID = Bowling.InningsID
 
     group by Players.playerid, Players.name_fl
-    having sum(case when Seasons.Year = '2022/23' then z_Bowling_Figures_All.w else 0 end) > 0
+    having sum(case when Seasons.Year = (select max(year) from seasons) then z_Bowling_Figures_All.w else 0 end) > 0
     ) a
 WHERE mod("Total Wickets"::int,50) < "Season Wickets"
 ;
+
+
 
 -- upcoming milestones
 select 
@@ -91,7 +93,7 @@ left join z_bocsa
 on batting_01_summary_ind.playerid = z_bocsa.playerid
 join players
 on batting_01_summary_ind.playerid = players.playerid
-where batting_01_summary_ind."Last Season" in ('2024/25','2023/24')
+where batting_01_summary_ind."Last Season" in ('2024/25','2025/26')
 and (
     mod(batting_01_summary_ind.mat,50) > 44
     or mod(total::int,500) > 349
@@ -115,7 +117,7 @@ left join z_bocsa
 on batting_01_summary_ind.playerid = z_bocsa.playerid
 join players
 on batting_01_summary_ind.playerid = players.playerid
-where batting_01_summary_ind."Last Season" in ('2024/25')
+where batting_01_summary_ind."Last Season" in ((select max(year) from seasons))
 order by stats
 ;
 

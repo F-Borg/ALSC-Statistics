@@ -25,6 +25,7 @@ def scrape_scorecard(url, overwrite_md=False):
     # !!! better way to do this?
     time.sleep(2) # wait for firefox to open
     driver.get(url)
+    time.sleep(2) # wait for page to load
 
     page_source = driver.page_source
     soup = BeautifulSoup(page_source, 'lxml')
@@ -36,7 +37,7 @@ def scrape_scorecard(url, overwrite_md=False):
     # default values
     mi_captain = 'ERROR'
     # if toss info is missing then structure is different:
-    #             /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[1]/span[1]
+    #             /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[1]/span[2]
     if dom.xpath('/html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[1]/span[1]/text()')[0]=='Toss':
         div_a = 4
     else: 
