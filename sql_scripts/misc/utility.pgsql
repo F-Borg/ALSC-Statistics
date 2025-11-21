@@ -12,6 +12,7 @@ select * from players order by playerid desc;
 
 select * from batting_j;
 
+select * from matches_j;
 
 
 
@@ -20,8 +21,10 @@ select * from seasons;
 insert into seasons values (
     84, '2025/26', 'ASCA', 'S09', '2nd', 439, 0, 0, 'true', 'Section 9 Hopkins McGowran Cup'
 );
+
+select * from seasons_j;
 insert into seasons_j values (
-    1, '2019/20', 'WSJCA', 'Under 10', '1st', 0, 0, 0, 'true', 'WSJCA Under 10 Pool A'
+    5, '2021/22', 'WSJCA', 'Under 10', 'Red', 0, 0, 0, 'true', 'WSJCA Under 10 Pool A - Red'
 )
 
 
@@ -50,7 +53,7 @@ select * from players where surname = 'Kupke';
 
 update seasons set posn = 1 where seasonid = 79
 
-select * from seasons where seasonid = 80
+select * from seasons where seasonid = 84
 
 select * from players where playerid = 435
 ;
@@ -58,9 +61,9 @@ select * from players where surname = 'Jongeneel'
 ;
 select * from players where firstname = 'Justin'
 ;
-select * from matches
+select * from matches 
 ;
--- drop view z_All_Player_Dates cascade
+
 
 select * from players order by playerid desc
 
@@ -100,9 +103,16 @@ and innings.extras = 0
 
 
 select * from seasons;
-select * from matches where seasonid = 77 and round = '13';
-select * from innings where matchid = 804;
-select * from batting where inningsid = 1795;
+select * from matches where seasonid = 84 and round = '4';
+select * from innings where matchid = 875;
+select * from batting where inningsid = 1943;
+select * from bowling where inningsid = 1943;
+select * from wickets where inningsid = 1943;
+
+update wickets 
+set playerid = 488
+where inningsid=1943 and batting_position = 6;
+
 
 update batting set
     balls_faced = 66
@@ -170,4 +180,17 @@ create table fielding_j (
 );
 
 
+/*
+-- delete match
+delete from batting_j where inningsid in 
+    (select inningsid from innings_j where matchid = 34);
+delete from bowling_j where inningsid in 
+    (select inningsid from innings_j where matchid = 34);    
+delete from fielding_j where inningsid in 
+    (select inningsid from innings_j where matchid = 34);    
+delete from wickets_j where inningsid in 
+    (select inningsid from innings_j where matchid = 34);    
+delete from matches_j where matchid = 34;
+delete from innings_j where matchid = 34;
+*/
 

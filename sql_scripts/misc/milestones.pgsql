@@ -99,6 +99,7 @@ and (
     or mod(total::int,500) > 349
     or mod("Total Wickets",50) > 39
 )
+and players.name_fl not in ('Mitesh Shah','Jack Bury')
 order by milestones
 ;
 

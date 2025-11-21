@@ -9,9 +9,9 @@ import lxml
 from pathlib import Path
 import os
 
-# url = "https://play.cricket.com.au/match/befc8418-e18e-42cc-a840-1073d8f99035/adelaide-junior-bulldogs-phantoms-cricket-blue-wsjca-under-10-pool-a?tab=scorecard"
+# url = "https://play.cricket.com.au/match/7383809e-8374-4158-96b2-d73f7df3d78b/adelaide-lutheran-red-adelaide-lutheran-blue-wsjca-under-10-pool-b?tab=scorecard"
 
-def scrape_scorecard_playcricket(url, overwrite_md=False):
+def scrape_scorecard_playcricket(url, overwrite_md=False, team=None):
     """
     Takes a url for a playhq scorecard and returns scraped data
     overwrite_md=False will only write md files if they don't exist
@@ -29,10 +29,10 @@ def scrape_scorecard_playcricket(url, overwrite_md=False):
 
     dom = lxml.etree.HTML(str(soup))
 
-        #########################################################################################################################
-        # setup
-        #########################################################################################################################
-        # default values
+    #########################################################################################################################
+    # setup
+    #########################################################################################################################
+    # default values
 
     # if toss info is missing then structure is different:
     #             /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[1]/span[1]
@@ -49,9 +49,9 @@ def scrape_scorecard_playcricket(url, overwrite_md=False):
     # except:
     #     div_b = 2
 
-        #########################################################################################################################
-        # Match info
-        #########################################################################################################################
+    #########################################################################################################################
+    # Match info
+    #########################################################################################################################
 
     # !!! need to go to summary tab
     time.sleep(2)
@@ -66,7 +66,10 @@ def scrape_scorecard_playcricket(url, overwrite_md=False):
     dom = lxml.etree.HTML(str(soup))
 
     head = dom.xpath('/html/body/main/section/header/div')[0]
-    mi_grade = re.sub(':','',head.xpath('//nav/ol/li[1]/a/span/text()')[0].strip())
+    if team == None:
+        mi_grade = re.sub(':','',head.xpath('//nav/ol/li[1]/a/span/text()')[0].strip())
+    else:
+        mi_grade = re.sub(':','',head.xpath('//nav/ol/li[1]/a/span/text()')[0].strip())+' - '+team
     mi_round = head.xpath('//nav/ol/li[2]/a/span/text()')[0].strip()
 
     if 'Round' in mi_round:
@@ -106,29 +109,10 @@ def scrape_scorecard_playcricket(url, overwrite_md=False):
     # opponent
     mi_team_1 = head.xpath('/html/body/main/section/header/div/div/div[2]/div[1]/div[3]/text()')[0].strip()
     mi_team_2 = head.xpath('/html/body/main/section/header/div/div/div[2]/div[3]/div[3]/text()')[0].strip()
-    if 'Adelaide Junior Bulldogs' in mi_team_1:
+    if re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran)',mi_team_1):
         opponent = mi_team_2
     else:
         opponent = mi_team_1
-
-
-    # result
-
-    tmp_result = dom.xpath('/html/body/main/section/header/div/div/div[4]/span/text()')[0].strip()
-    if 'Adelaide Junior Bulldogs' in tmp_result:
-        mi_winner = 'Adelaide Lutheran'
-    elif opponent in tmp_result:
-        mi_winner = opponent
-    else:
-        mi_winner = "draw"
-
-    if 'Adelaide Lutheran' in mi_winner:
-        mi_result = 'W1'
-    elif mi_winner == "draw":
-        mi_result = 'D'
-    else:
-        mi_result = 'L1'
-
 
     #########################################################################################################################
     # Create directories for markdown tables
@@ -144,9 +128,6 @@ def scrape_scorecard_playcricket(url, overwrite_md=False):
     soup = BeautifulSoup(soup_str, 'lxml')
     dom = lxml.etree.HTML(str(soup))
 
-
-    tmp_bat_1 = dom.xpath('/html/body/main/section/div[4]/div/div/div[2]/section/div[1]/div/div[2]/div/fieldset/div[1]/label/span[1]/text()')[0].strip()
-
     game_dir = f'data/{mi_season}/{mi_grade}/Rnd_{mi_round}'
     Path(game_dir).mkdir(parents=True, exist_ok=True)
 
@@ -159,18 +140,16 @@ def scrape_scorecard_playcricket(url, overwrite_md=False):
 
     for ii in range(1,num_innings+1):
         print(f'Innings no.{ii}')
-        ###
-        # Check if innings played
-        ###
         # check if innings was played - path to first batter name in scorecard
         if len(dom.xpath(f'/html/body/main/section/div[4]/div/div/div[2]/section/div[2]/div[1]/table/tbody/tr[1]/td[1]/a/text()')) == 0:
             print(f'innings {ii} not played.')
             num_innings_played-=1 
             break
-        # get batting scorecard - ignore strike rate from playhq
+        # get batting scorecard
         scorecard=dom.xpath(f'/html/body/main/section/div[4]/div/div/div[2]/section/div[2]/div[1]/table')[0]
         # -1 because extras included
         num_players = len(scorecard.xpath(f'tbody/*'))-1
+
         # check > 0 overs bowled
         # if re.sub('([\d\.]+) Overs','\\1',dom.xpath('/html/body/main/section/div[4]/div/div/div[2]/section/div[2]/div[1]/table/tfoot/tr/td[2]/span[1]/text()')[0].strip()) == '0' \
         #     and ii not in (1,2):
@@ -180,8 +159,15 @@ def scrape_scorecard_playcricket(url, overwrite_md=False):
         
         if dom.xpath(f'/html/body/main/section/div[4]/div/div/div[2]/section/div[1]/div/div[2]/div/fieldset/div[{ii}]/label/span[1]/text()')[0].strip() == 'ADE':
             innings.append('Adelaide Lutheran')
+            alsc_score = scorecard.xpath(f'tfoot/tr/td[3]/text()')[0].strip()
+            # print(innings)
+            # print(scorecard.xpath(f'tfoot/tr/td[3]/text()')[0].strip())
         else:
             innings.append(dom.xpath(f'/html/body/main/section/div[4]/div/div/div[2]/section/div[1]/div/div[2]/div/fieldset/div[{ii}]/label/span[1]/text()')[0].strip())
+            opponent_score = scorecard.xpath(f'tfoot/tr/td[3]/text()')[0].strip()
+            # print(innings)
+            # print(scorecard.xpath(f'tfoot/tr/td[3]/text()')[0].strip())
+
         #########################################################################################################################
         # Batting Scorecard
         #########################################################################################################################
@@ -193,7 +179,7 @@ def scrape_scorecard_playcricket(url, overwrite_md=False):
         extras_str = batting_df.iloc[num_players,0]
 
         batting_df = batting_df.iloc[0:num_players,:].drop('sr', axis=1)
-        batting_df['batter'] = batting_df['batter'].apply(lambda x: re.sub(r'(\s{2}.*|(retired )?not out.*|did not bat)','',x))
+        batting_df['batter'] = batting_df['batter'].apply(lambda x: re.sub(r'(\s{2}.*|(retired\s*)?(not out)?|did not bat)','',x))
         batting_df['score']  = batting_df['score'].apply(lambda x: re.sub(r'\*','',str(x)))
         batting_df['score']  = batting_df['score'].apply(lambda x: re.sub('(\\-|nan)','0',str(x)))
         batting_df['balls_faced']  = batting_df['balls_faced'].apply(lambda x: re.sub('nan','0',str(x)))
@@ -287,6 +273,13 @@ def scrape_scorecard_playcricket(url, overwrite_md=False):
             dom = lxml.etree.HTML(str(soup))
 
     driver.close()
+
+    if  int(alsc_score) > int(opponent_score):
+        mi_winner = 'Adelaide Lutheran'
+        mi_result = 'W1'
+    else:
+        mi_winner = opponent
+        mi_result = 'L1'
 
     match_info = {
         'season' 		: mi_season,

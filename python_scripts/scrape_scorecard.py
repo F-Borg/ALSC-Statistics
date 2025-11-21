@@ -163,7 +163,7 @@ def scrape_scorecard(url, overwrite_md=False):
                 # initiate row
                 data=[]
                 # name 
-                if scorecard[i].xpath('div/span[1]/text()')[0] in ('Fill-in ','Private player '):
+                if scorecard[i].xpath('div/span[1]/text()')[0] in ('Fill-in ','Private player ','Private player  (c)'):
                     data.append('Fill-in')
                 else:
                     data.append(scorecard[i].xpath('div/span[1]/text()')[0]+scorecard[i].xpath('div/span[1]/span/text()')[0])

@@ -43,7 +43,63 @@ sheetname = 'wickets'
 data = pd.read_sql(con=pgconn, sql=f"select * from wickets")
 data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
 
+# juniors
+sheetname = 'batting_j'
+data = pd.read_sql(con=pgconn, sql=f"select * from batting_j")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
 
+sheetname = 'bowling_j'
+data = pd.read_sql(con=pgconn, sql=f"select * from bowling_j")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+sheetname = 'fielding_j'
+data = pd.read_sql(con=pgconn, sql=f"select * from fielding_j")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+sheetname = 'innings_j'
+data = pd.read_sql(con=pgconn, sql=f"select * from innings_j")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+sheetname = 'matches_j'
+data = pd.read_sql(con=pgconn, sql=f"select * from matches_j")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+sheetname = 'seasons_j'
+data = pd.read_sql(con=pgconn, sql=f"select * from seasons_j")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+sheetname = 'wickets_j'
+data = pd.read_sql(con=pgconn, sql=f"select * from wickets_j")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+# inclusive
+sheetname = 'batting_i'
+data = pd.read_sql(con=pgconn, sql=f"select * from batting_i")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+sheetname = 'bowling_i'
+data = pd.read_sql(con=pgconn, sql=f"select * from bowling_i")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+# sheetname = 'fielding_i'
+# data = pd.read_sql(con=pgconn, sql=f"select * from fielding_i")
+# data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+sheetname = 'innings_i'
+data = pd.read_sql(con=pgconn, sql=f"select * from innings_i")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+sheetname = 'matches_i'
+data = pd.read_sql(con=pgconn, sql=f"select * from matches_i")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+sheetname = 'seasons_i'
+data = pd.read_sql(con=pgconn, sql=f"select * from seasons_i")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
+
+sheetname = 'wickets_i'
+data = pd.read_sql(con=pgconn, sql=f"select * from wickets_i")
+data.to_excel(writer, sheet_name=sheetname, startrow = 0, index=False)
 
 ##########################
 # Close Workbook
