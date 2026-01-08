@@ -13,10 +13,11 @@ importlib.reload(util)
 
 # fetch match url
 # !!! copy and paste the url for the match into the url variable below
-url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/cricket-summer-202526/section-9-hopkins-mcgowran-cup/game-centre/353b3800"
+url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/cricket-summer-202526/section-9-hopkins-mcgowran-cup/game-centre/c4f7d42f"
 
 # scrape scorecard (saves multiple tables to data/[year]/[grade]/[round]/)
 match_info = ss.scrape_scorecard(url, overwrite_md=False)
+# match_info = ss.scrape_scorecard(url, overwrite_md=False, team='Blue')
 # match_info = ssp.scrape_scorecard_playcricket(url, overwrite_md=False, team='Red')
 
 # !!! check data/[yy-yy]/[grade]/[round]/ 
@@ -32,7 +33,7 @@ if False:
     match_info['wicketkeeper'] = 'Brett MacTavish'
     match_info['captain'] = 'Jim Wills'
     match_info['captain'] = 'Finley Borgas'
-    match_info['fow_list'] = [[], ['1-22 Josh Wills, 2-73 Jim Wills, 3-163 Marko Fedojuk']]   
+    match_info['fow_list'] = [['1-9 Brett MacTavish, 2-37 Steven Wilson, 3-58 Connor Brown, 4-96 David Fitzsimmons, 5-186 Joshua Waldhuter, 6-186 Christopher Mann, 7-186 Sidhaarth Bamarani Thangaswamy, 8-188 Joshua Fitzsimmons, 9-189 Michael Vardaro'], ['1-97 Player, 2-139 Peter Hughes, 3-176 Michael Bayliss']]
     match_info['extras'] = [{'wd': 11, 'nb': 2, 'lb': 0, 'b': 5, 'p': 0}, {'wd': 6, 'nb': 11, 'lb': 0, 'b': 0, 'p': 0}]
     match_info['result'] = 'W1'
     match_info['grade'] = 'WSJCA Under 10 Pool A - Red'
@@ -49,7 +50,7 @@ if False:
     lname=newplayer.split()[1]
     util.add_new_player(fname,lname)
 
-    util.add_new_player('Takdir Singh','Sahota')
+    # util.add_new_player('Takdir Singh','Sahota')
 
 # !!! Validate:
 # all player ids are there

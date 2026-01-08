@@ -14,7 +14,7 @@ import os
 # three innings game
 # url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202223/section-6-blackwood-sound-cup/game-centre/1d32ce30"
 
-def scrape_scorecard(url, overwrite_md=False):
+def scrape_scorecard(url, overwrite_md=False, team=None):
     """
     Takes a url for a playhq scorecard and returns scraped data
     overwrite_md=False will only write md files if they don't exist
@@ -25,7 +25,7 @@ def scrape_scorecard(url, overwrite_md=False):
     # !!! better way to do this?
     time.sleep(2) # wait for firefox to open
     driver.get(url)
-    time.sleep(2) # wait for page to load
+    time.sleep(4) # wait for page to load
 
     page_source = driver.page_source
     soup = BeautifulSoup(page_source, 'lxml')
@@ -37,6 +37,7 @@ def scrape_scorecard(url, overwrite_md=False):
     # default values
     mi_captain = 'ERROR'
     # if toss info is missing then structure is different:
+    #             /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[1]/span[1]
     #             /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[1]/span[2]
     if dom.xpath('/html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[1]/span[1]/text()')[0]=='Toss':
         div_a = 4
@@ -60,7 +61,11 @@ def scrape_scorecard(url, overwrite_md=False):
 
     head = dom.xpath('//*[@id="root"]/section/main/div/div/div[1]/section/section[1]')[0]
     text1 = head.xpath('header/a/text()')[0]
-    mi_grade = re.split(', ',text1)[0][2:]    
+
+    if team == None:
+        mi_grade = re.split(', ',text1.replace('/',''))[0][2:]
+    else:
+        mi_grade = re.split(', ',text1.replace('/',''))[0][2:]+' - '+team 
 
     if 'Round' in re.split(', ',text1)[1]:
         mi_round = re.split(', Round ',text1)[1]
@@ -73,7 +78,7 @@ def scrape_scorecard(url, overwrite_md=False):
         raise Exception(f"Unknown Round number: {tmp}")
 
     # /html/body/div/section/main/div/div/div[1]/section/section[1]/div[3]/span[1]
-    if head.xpath(f'div[{div_b}]/span[1]/text()')[0] == 'One Day':
+    if head.xpath(f'div[{div_b}]/span[1]/text()')[0] in ('One Day','T20'):
         mi_num_days = 1
     elif head.xpath(f'div[{div_b}]/span[1]/text()')[0] == 'Two Day+':
         mi_num_days = 2
@@ -97,7 +102,7 @@ def scrape_scorecard(url, overwrite_md=False):
     # opponent
     mi_team_1 = head.xpath(f'div[{div_b-1}]/div[1]/div/a/text()')[0]
     mi_team_2 = head.xpath(f'div[{div_b-1}]/div[2]/div/a/text()')[0]
-    if 'Adelaide Lutheran' in mi_team_1:
+    if re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran)',mi_team_1):
         opponent = mi_team_2
     else:
         opponent = mi_team_1
@@ -114,7 +119,7 @@ def scrape_scorecard(url, overwrite_md=False):
     else:
         mi_winner = "draw"
 
-    if 'Adelaide Lutheran' in mi_winner:
+    if re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran)', mi_winner):
         mi_result = 'W1'
     elif mi_winner == "draw":
         mi_result = 'D'
@@ -163,7 +168,7 @@ def scrape_scorecard(url, overwrite_md=False):
                 # initiate row
                 data=[]
                 # name 
-                if scorecard[i].xpath('div/span[1]/text()')[0] in ('Fill-in ','Private player ','Private player  (c)'):
+                if scorecard[i].xpath('div/span[1]/text()')[0] in ('Fill-in ','Private player ','Private player  (c)','Private player  (vc)'):
                     data.append('Fill-in')
                 else:
                     data.append(scorecard[i].xpath('div/span[1]/text()')[0]+scorecard[i].xpath('div/span[1]/span/text()')[0])
@@ -220,7 +225,7 @@ def scrape_scorecard(url, overwrite_md=False):
             # need to add 4's and 6's manually
 
             # only need to do bowling for opposition innings
-            if 'Adelaide Lutheran' not in innings[ii-1]:
+            if not re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran)', innings[ii-1]):
                 # div is different when FOW is missing:
                 if dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[3]/div[2]/div/div[1]/span[1]/text()') == ['Bowlers']:
                     bowl_div = 3

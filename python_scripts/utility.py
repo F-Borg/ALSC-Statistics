@@ -18,8 +18,7 @@ def check_player_ids(match_info):
 
     for i in range(1,match_info['num_innings']+1):
         # i=1
-        if 'Adelaide Lutheran' in match_info['innings_list'][i-1] \
-            or           'ADE' in match_info['innings_list'][i-1]:
+        if re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran|\bADE\b)',match_info['innings_list'][i-1]):
             batting = pd.read_table(f'{match_dir}/innings_{i}_batting.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
             batting = batting.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             batting.columns = batting.columns.str.strip()

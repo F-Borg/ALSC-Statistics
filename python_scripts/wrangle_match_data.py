@@ -87,7 +87,7 @@ def split_fow(s):
 
 def wrangle_match_data(match_info, write_to_postgres = False):
     # get grade to determine whether seniors/juniors/inclusion
-    if re.search(r'(Under|Junior)',match_info['grade']):
+    if re.search(r'(Under|Junior|U\d)',match_info['grade']):
         grade = 'Junior'
         pg_tbl = {
             'batting' 		: 'batting_j',
@@ -163,7 +163,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
 
     for i in range(1,match_info['num_innings']+1):
         # i=1
-        if 'Adelaide Lutheran' in match_info['innings_list'][i-1]:
+        if match_info['opponent'] not in match_info['innings_list'][i-1]:
             #########################################################################################################################
             # Batting, Innings
             #########################################################################################################################
