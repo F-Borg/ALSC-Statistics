@@ -9,10 +9,18 @@ import lxml
 from pathlib import Path
 import os
 
-# url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202425/section-5-at-the-toss-of-a-coin-cup/game-centre/dcfaf983"
+# url = "https://www.playhq.com/cricket-australia/org/saca-inclusive-cricket-league/inclusive-cricket-league-summer-202526/saca-inclusive-cricket-league/game-centre/71182f91"
 # url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202425/section-5-at-the-toss-of-a-coin-cup/game-centre/bbdd7a29"
 # three innings game
 # url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202223/section-6-blackwood-sound-cup/game-centre/1d32ce30"
+
+def int_or_zero(value):
+    try:
+        # Attempt to convert to an integer
+        return int(value)
+    except (ValueError, TypeError):
+        # If a conversion error occurs, return 0
+        return 0
 
 def scrape_scorecard(url, overwrite_md=False, team=None):
     """
@@ -193,7 +201,7 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
                 data.append(scorecard[i].xpath('span[4]/text()')[0].replace('-','0'))
 
                 if '(c)' in data[0] and 'Adelaide Lutheran' in innings[ii-1]:
-                    mi_captain = data[0].replace(' (c)','')
+                    mi_captain = data[0].replace(' (c)','').strip()
                     data[0] = mi_captain
 
                 batting_df.loc[i-1] = data
@@ -245,7 +253,7 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
                     for i in range(1,num_bowlers+1):
                         # initiate row
                         data=[]
-                        if bowling_sc[i].xpath('span[1]/text()')[0] == 'Fill-in ':
+                        if bowling_sc[i].xpath('span[1]/text()')[0].strip() in ('Fill-in','Private player'):
                             data.append('Fill-in')
                         else:
                             data.append(bowling_sc[i].xpath('span[1]/text()')[0]+bowling_sc[i].xpath('span[1]/span/text()')[0])
@@ -274,7 +282,48 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
                     f=open(f'{game_dir}/innings_{ii}_bowling.md','w')
                     f.write(sc)
                     f.close()
-            
+
+                #################################################################################################################
+                # Fielding
+                #################################################################################################################
+                # only run if fielding is entered (check first fielder exists)
+                try: 
+                    #            /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]      /div[3]           /div/div[2]/span[1]
+                    dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div+1}]/div/div[2]/span[1]/text()')[0]
+                    fielding_exists=True
+                except:
+                    fielding_exists=False
+
+                if fielding_exists:              # '/html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]/div[3]/div'
+                    num_fielders = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div+1}]/div/*'))-1 # -1 for the heading row
+                    fielding_sc =      dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div+1}]/div/*')
+                    fielding_df = pd.DataFrame(columns=['player','catches','run_outs','stumpings'])
+                    for i in range(1,num_fielders+1):
+                        # initiate row
+                        data=[]
+                        if fielding_sc[i].xpath('span[1]/text()')[0] == 'Fill-in ':
+                            data.append('Fill-in')
+                        else:
+                            data.append(fielding_sc[i].xpath('span[1]/text()')[0]+fielding_sc[i].xpath('span[1]/span/text()')[0].strip())
+                        data.append(int_or_zero(fielding_sc[i].xpath('span[2]/text()')[0]) + \
+                                    int_or_zero(fielding_sc[i].xpath('span[3]/text()')[0]))
+                        data.append(int_or_zero(fielding_sc[i].xpath('span[5]/text()')[0]) + \
+                                    int_or_zero(fielding_sc[i].xpath('span[6]/text()')[0]))
+                        data.append(int_or_zero(fielding_sc[i].xpath('span[8]/text()')[0]))
+
+                        fielding_df.loc[i-1] = data
+
+                    # Write scorecard to file
+                    if overwrite_md or not os.path.exists(f'{game_dir}/innings_{ii}_fielding.md'):
+                        sc = fielding_df.to_markdown()
+                        f=open(f'{game_dir}/innings_{ii}_fielding.md','w')
+                        f.write(sc)
+                        f.close()
+                else:
+                    print('empty fielding card')
+
+
+
         #########################################################################################################################
         # Load Next Innings
         #########################################################################################################################

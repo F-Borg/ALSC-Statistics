@@ -6,7 +6,7 @@ select * from players where playerid < 900 order by playerid desc;
 --insert into players values (486,'Mayes, Philip','Philip','Mayes',NULL,'Philip Mayes');
 --insert into players values (496,'Astley-Dixon, Javier','Javier','Astley-Dixon',NULL,'Javier Astley-Dixon');
 
-
+select distinct result from matches;
 
 select * from players order by playerid desc;
 
@@ -14,7 +14,7 @@ select * from batting_j;
 
 select * from matches_j;
 
-
+select * from bowling_i
 
 -- Add new season
 select * from seasons;
@@ -27,7 +27,10 @@ insert into seasons_j values (
     6, '2022/23', 'SACA Junior Competitions', 'Under 10', 'Blue', 0, 0, 0, 'true', 'U10 - Blue'
 )
 
-
+select * from seasons_i;
+insert into seasons_i values (
+    1, '2025/26', 'SACA', 'Senior', '1st', 457, 0, 0, 'true', 'SACA Inclusive Cricket League'
+)
 
 -- Update player name
 update players set 
@@ -48,7 +51,7 @@ update players set
 where playerid = 490
 ;
 
-select * from players where surname = 'Kupke';
+select * from players where surname = 'Bell';
 
 
 update seasons set posn = 1 where seasonid = 79
@@ -170,13 +173,21 @@ select * from team_15_ind_youngest order by "Age on Final Game" desc
 
 
 
-
-create table fielding_j (
+create table bowling_i (
     inningsid int,
     playerid int,
-    catches int,
-    run_outs int,
-    stumpings int
+    overs int,
+    extra_balls int,
+    maidens int,
+    wides int,
+    no_balls int,
+    runs_off_bat int,
+    _4s_against int,
+    _6s_against int,
+    highover int,
+    _2nd_high_over int,
+    _3rd_high_over int,
+    wickets integer
 );
 
 

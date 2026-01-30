@@ -146,7 +146,10 @@ def wrangle_match_data(match_info, write_to_postgres = False):
 
     if grade in ('Senior','Inclusive'):
         captain_id = players.loc[players['name_fl'] == match_info['captain']]['playerid'].values[0].tolist()
-        wicketkeeper_id = players.loc[players['name_fl'] == match_info['wicketkeeper']]['playerid'].values[0].tolist()
+        if grade in ('Senior'):
+            wicketkeeper_id = players.loc[players['name_fl'] == match_info['wicketkeeper']]['playerid'].values[0].tolist()
+        else:
+            wicketkeeper_id = 0
     else: 
         captain_id = 0
         wicketkeeper_id = 0
@@ -256,7 +259,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
 
 
             bowling2 = bowling.merge(players1, on="name_fl", how="left")
-            if grade in ('Junior'):
+            if grade in ('Junior','Inclusive'):
                 bowling3 = bowling2[['inningsid','playerid','overs','extra_balls','maidens','wides','no_balls','runs_off_bat','_4s_against','_6s_against','highover','_2nd_high_over','wickets']]
             else:
                 bowling3 = bowling2[['inningsid','playerid','overs','extra_balls','maidens','wides','no_balls','runs_off_bat','_4s_against','_6s_against','highover','_2nd_high_over']]
@@ -321,7 +324,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
                 else:
                     print(fielding3)
 
-            elif grade == 'Junior':
+            elif grade in ('Junior','Inclusive'):
                 print('fielding table missing')
 
 
