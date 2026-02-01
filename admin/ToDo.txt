@@ -5,7 +5,7 @@
 #################################
 
 
-!!! 25-26 s9 r2,3 - need to update bowling: add boundaries against bowler
+remove boundaries against bowler as a stat
 
 
 
@@ -14,12 +14,14 @@ Junior stats:
     - red/blue for same season
 venue - get everything after the "/"
 
+Inclusive:
+    - postgres views
+    
 
 #################################
 # additional stats:
 home/away stats
 multiple fielders in run out
-pct runs in boundaries as a bowler
 oldest known players
 
 

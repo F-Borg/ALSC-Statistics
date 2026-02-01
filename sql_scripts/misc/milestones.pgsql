@@ -104,6 +104,19 @@ order by milestones
 ;
 
 
+
+
+--inclusive also
+select 
+*
+from batting_i
+;
+
+
+
+
+
+
 -- all players this year
 select 
     --batting_01_summary_ind.playerid
@@ -116,7 +129,7 @@ select
 from batting_01_summary_ind
 left join z_bocsa
 on batting_01_summary_ind.playerid = z_bocsa.playerid
-join players
+left join players
 on batting_01_summary_ind.playerid = players.playerid
 where batting_01_summary_ind."Last Season" in ((select max(year) from seasons))
 order by stats
@@ -192,4 +205,23 @@ ORDER BY Extras DESC;
 
 
 
-select * from bowling_09_p3_best_figs
+select * from bowling_09_p3_best_figs;
+
+select * from batting_02_career_runs
+
+select * from yb_milestones_01_matches 
+order by "Total Matches" desc
+
+
+select * from innings;
+
+
+select * from fielding_04_p1_ct_b_combos
+where "Fielder" = 'Taylor, Peter'
+
+select "Fielder", count(*) as _count from fielding_04_p1_ct_b_combos
+group by "Fielder"
+order by _count desc
+
+
+select "name", mat  from z_player_matches_all
