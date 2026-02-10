@@ -66,8 +66,12 @@ Open source software:
 		DONE - history
 		DONE - yearbook
 
+###############################################################################
+#             1.1 - Output to Markdown
+###############################################################################
 
-	
+
+
 ###############################################################################
 #             future features (no particular order)
 ###############################################################################
@@ -96,3 +100,33 @@ Open source software:
 			missing data
 			duplicate records
 		- check order of missing records
+
+
+
+
+
+###############################################################################
+#             Costs
+###############################################################################
+# Labour
+	Set up:
+		- postgres database
+		- tweak code (club name, ...)
+	Per match:
+		- scrape match data
+		- validate
+	yearly stats book - formatting word doc, printing?:
+		- team season summary
+		- individual season summary
+		- club history
+	Code maintenance
+
+
+# Optional
+	one-off one-pager for a player (100th game etc)
+	milestone alerts
+
+
+
+
+

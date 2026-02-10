@@ -308,7 +308,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             #########################################################################################################################
             # Fielding (if applicable)
             #########################################################################################################################
-            if os.path.exists(f'{match_dir}/innings_{i}_fielding.md'):
+            if os.path.exists(f'{match_dir}/innings_{i}_fielding.md') and grade in ('Junior','Inclusive'):
                 fielding = pd.read_table(f'{match_dir}/innings_{i}_fielding.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
                 fielding = fielding.applymap(lambda x: x.strip() if isinstance(x, str) else x)
                 fielding.columns = fielding.columns.str.strip()

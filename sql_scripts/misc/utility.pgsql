@@ -193,15 +193,16 @@ create table bowling_i (
 
 /*
 -- delete match
-delete from batting_j where inningsid in 
-    (select inningsid from innings_j where matchid = 34);
-delete from bowling_j where inningsid in 
-    (select inningsid from innings_j where matchid = 34);    
-delete from fielding_j where inningsid in 
-    (select inningsid from innings_j where matchid = 34);    
-delete from wickets_j where inningsid in 
-    (select inningsid from innings_j where matchid = 34);    
-delete from matches_j where matchid = 34;
-delete from innings_j where matchid = 34;
+delete from batting where inningsid in 
+    (select inningsid from innings where matchid = 886);
+delete from bowling where inningsid in 
+    (select inningsid from innings where matchid = 886);    
+delete from fielding where inningsid in 
+    (select inningsid from innings where matchid = 886);    
+delete from wickets where inningsid in 
+    (select inningsid from innings where matchid = 886);    
+delete from matches where matchid = 886;
+delete from innings where matchid = 886;
 */
 
+select * from wickets where inningsid in (1965,1966)
