@@ -13,11 +13,11 @@ importlib.reload(util)
 
 # fetch match url
 # !!! copy and paste the url for the match into the url variable below
-url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/cricket-summer-202526/section-4-elder-meat-store-cup/game-centre/216711f3"
+url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/cricket-summer-202526/section-9-hopkins-mcgowran-cup/game-centre/126f70fc"
 
 # scrape scorecard (saves multiple tables to data/[year]/[grade]/[round]/)
-match_info = ss.scrape_scorecard(url, overwrite_md=False)
-# match_info = ss.scrape_scorecard(url, overwrite_md=False, team='Blue')
+match_info = ss.scrape_scorecard(url, overwrite_md=True)
+# match_info = ss.scrape_scorecard(url, overwrite_md=False, team='Red')
 # match_info = ssp.scrape_scorecard_playcricket(url, overwrite_md=False, team='Red')
 
 # !!! check data/[yy-yy]/[grade]/[round]/ 
@@ -35,9 +35,9 @@ if False:
     match_info['captain'] = 'Jim Wills'
     match_info['captain'] = 'Finley Borgas'
     match_info['captain'] = 'Matthew Bell'
-    match_info['fow_list'] = [['1-18 Mike Warland, 2-64 ', ', 3-74 Max Johnson, 4-114 ', ', 5-167 ', ', 6-175 Jordan von der Borch, 7-181 Graham Lamacraft'], ['1-20 Jim Wills, 2-49 Lachie Pulford, 3-132 David Fitzsimmons']]
+    match_info['fow_list'] =  [['1-14 Peter Hughes, 2-36 Player, 3-93 ', ', 4-107 Michael Bayliss, 5-147 ', ', 6-147 Player, 7-183 Player'], ['1-0 Jim Wills, 2-110 Connor Brown, 3-110 Matthew Nitschke, 4-152 Joshua Waldhuter, 5-155 Sidhaarth Bamarani Thangaswamy, 6-170 James Carragher']]
     match_info['extras'] = [{'wd': 11, 'nb': 2, 'lb': 0, 'b': 5, 'p': 0}, {'wd': 6, 'nb': 11, 'lb': 0, 'b': 0, 'p': 0}]
-    match_info['result'] = 'T'
+    match_info['result'] = 'W2'
     match_info['grade'] = 'WSJCA Under 10 Pool A - Red'
 
 

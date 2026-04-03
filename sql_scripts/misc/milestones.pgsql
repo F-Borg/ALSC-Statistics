@@ -78,11 +78,8 @@ WHERE mod("Total Wickets"::int,50) < "Season Wickets"
 ;
 
 
---!!! add inclusive games to game count
 -- upcoming milestones
 select 
-    --batting_01_summary_ind.playerid
-    --, batting_01_summary_ind.name
     players.name_fl||': '||
         (case when mod(batting_01_summary_ind.mat,50) > 44 then batting_01_summary_ind.mat::varchar||' games ' else '' end)||
         (case when mod(total::int,500) > 349 then total::text||' runs ' else '' end)||
@@ -103,16 +100,42 @@ and players.name_fl not in ('Mitesh Shah','Jack Bury')
 order by milestones
 ;
 
-
-
-
 --inclusive also
 select 
-*
-from batting_i
+    name_fl||': '||
+        (case when mod(mat,50) > 44 then mat::varchar||' games ' else '' end)||
+        (case when mod(runs,500) > 349 then runs::text||' runs ' else '' end)||
+        (case when mod(a.wickets,50) > 39 then wickets::varchar||' wickets' else '' end) as milestones
+from (
+    select 
+        --batting_01_summary_ind.playerid
+        --, batting_01_summary_ind.name
+        players.name_fl
+        , coalesce(batting_01_summary_ind.mat,0)+coalesce(batting_i_01_summary_ind.mat,0) as mat
+        , coalesce(batting_01_summary_ind.total,0)::int+coalesce(batting_i_01_summary_ind.total,0)::int as runs
+        , coalesce(z_bocsa."Total Wickets",0)+coalesce(z_i_bocsa."Total Wickets",0) as wickets
+
+    from players 
+    left join batting_01_summary_ind
+    on players.playerid = batting_01_summary_ind.playerid
+    left join  z_bocsa
+    on players.playerid = z_bocsa.playerid
+
+    left join batting_i_01_summary_ind
+    on players.playerid = batting_i_01_summary_ind.playerid
+    left join  z_i_bocsa
+    on players.playerid = z_i_bocsa.playerid
+
+    where (batting_01_summary_ind."Last Season" in ('2024/25','2025/26') or batting_i_01_summary_ind."Last Season" in ('2024/25','2025/26'))
+    and players.name_fl not in ('Mitesh Shah','Jack Bury')
+) a
+where (
+    mod(mat,50) > 44
+    or mod(runs::int,500) > 349
+    or mod(wickets,50) > 39
+)
+order by milestones
 ;
-
-
 
 
 
@@ -124,7 +147,7 @@ select
     players.name_fl||': '||
         batting_01_summary_ind.mat::varchar||' games ' ||
         total::text||' runs ' ||
-        "Total Wickets"::varchar||' wickets' as stats
+        coalesce("Total Wickets"::varchar,'0')||' wickets' as stats
     
 from batting_01_summary_ind
 left join z_bocsa

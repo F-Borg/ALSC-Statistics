@@ -39,7 +39,7 @@ GROUP BY Name
     , z_i_all_player_dates."Last Season"
     , z_i_batmax.HS
     , Players.playerid
-HAVING (((Players.playerid)<>999))
+HAVING (((Players.playerid)<>999)) and Sum(CASE WHEN innings_i.inningsno=1 Or innings_i.inningsno=2 then 1 else 0 end)>0
 ORDER BY Name, Sum(Batting_i.Score) DESC;
 
 

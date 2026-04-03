@@ -11,10 +11,15 @@
 # Setup
 ############################################################################### 
 Open source software:
+	git account
+
 	postgres
 	vscode
 	python
-	git account
+
+	MikTex
+	Perl (strawberryperl)
+	
 
 ###############################################################################
 #             0.1 - pilot
@@ -67,8 +72,27 @@ Open source software:
 		DONE - yearbook
 
 ###############################################################################
-#             1.1 - Output to Markdown
+#             1.1 - Output to LaTeX
 ###############################################################################
+
+
+	First steps:
+		output table from pandas to tex file
+		import table to main tex file
+		fit table to width
+		
+
+
+	More complex tasks:
+		multipage table - longtable
+		two columns per page 
+
+\documentclass ?
+
+
+
+
+
 
 
 
@@ -79,8 +103,9 @@ Open source software:
 		- DONE games played together (if this isn't already in 0.3 update)
 		- DONE averages etc. in finals 
 		- finals played, won
+		- performances vs. opposition
 		- consult others for ideas
-	Individual summary - maybe Power BI, or one-pager
+	Individual summary - one-pager?
 	Recreate scorecard for a game
 	additional web scraping
 		- if there is access to ball-by-ball, then 4's and 6's against and high over

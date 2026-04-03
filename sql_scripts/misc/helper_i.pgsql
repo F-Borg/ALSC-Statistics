@@ -362,7 +362,6 @@ select * from (
 where bowling_figures_rank = 1
 ;
 
-
 create or replace view z_i_bocsa AS
 SELECT 
     Players.player_name AS Name
@@ -373,7 +372,7 @@ SELECT
     , Sum(overs)*6+Sum(bowling_i.extra_balls) AS Balls
     , Sum(Bowling_i.Maidens) AS Mdns
     , Sum(z_i_Bowling_Figures_All.runs) AS "Total Runs"
-    , Sum(z_i_Bowling_Figures_All.w) AS "Total Wickets_i"
+    , Sum(z_i_Bowling_Figures_All.w) AS "Total Wickets"
     , CASE WHEN Sum(z_i_Bowling_Figures_All.w)=0 THEN -9 ELSE Sum(z_i_Bowling_Figures_All.runs)/Sum(z_i_Bowling_Figures_All.w) END AS Average
     , CASE WHEN Sum(z_i_Bowling_Figures_All.w)=0 THEN -9 ELSE (Sum(overs)*6+Sum(bowling_i.extra_balls))/Sum(z_i_Bowling_Figures_All.w) END AS "Strike Rate"
     , 6*(Sum(z_i_Bowling_Figures_All.runs))/(Sum(overs)*6+Sum(bowling_i.extra_balls)) AS RPO
@@ -408,7 +407,7 @@ SELECT
     , z_i_bocsa.Balls
     , z_i_bocsa.Mdns
     , z_i_bocsa."Total Runs"
-    , z_i_bocsa."Total Wickets_i"
+    , z_i_bocsa."Total Wickets"
     , z_i_bocsa.Average
     , z_i_bocsa."Strike Rate"
     , z_i_bocsa.RPO
@@ -429,6 +428,6 @@ INNER JOIN z_i_player_matches_all
 ON Players.PlayerID = z_i_player_matches_all.PlayerID
 LEFT JOIN z_i_bocsa 
 ON z_i_player_matches_all.Name = z_i_bocsa.Name
-GROUP BY z_i_player_matches_all.Name, z_i_player_matches_all.Mat, z_i_bocsa.O, z_i_bocsa.Balls, z_i_bocsa.Mdns, z_i_bocsa."Total Runs", z_i_bocsa."Total Wickets_i", z_i_bocsa.Average, z_i_bocsa."Strike Rate", z_i_bocsa.RPO, z_i_bocsa.ABD, z_i_bocsa._4s, z_i_bocsa._6s, z_i_bocsa.Figures, z_i_bocsa."5WI", z_i_bocsa."Expensive Over", Players.PlayerID, z_i_player_matches_all.Mat
+GROUP BY z_i_player_matches_all.Name, z_i_player_matches_all.Mat, z_i_bocsa.O, z_i_bocsa.Balls, z_i_bocsa.Mdns, z_i_bocsa."Total Runs", z_i_bocsa."Total Wickets", z_i_bocsa.Average, z_i_bocsa."Strike Rate", z_i_bocsa.RPO, z_i_bocsa.ABD, z_i_bocsa._4s, z_i_bocsa._6s, z_i_bocsa.Figures, z_i_bocsa."5WI", z_i_bocsa."Expensive Over", Players.PlayerID, z_i_player_matches_all.Mat
 ORDER BY Dismissals DESC , catches DESC;
 

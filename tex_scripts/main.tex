@@ -1,0 +1,29 @@
+\documentclass[12pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs} % for nicer tables
+
+\begin{document}
+
+\title{Sample LaTeX Document}
+\author{Your Name}
+\date{\today}
+\maketitle
+
+\section{Introduction}
+This is a simple LaTeX document containing a table.
+
+\section{Sample Table}
+Table~\ref{tab:example} shows an example of a formatted table.
+
+\begin{table}[h]
+    \centering
+    \caption{Example Table}
+    \label{tab:example}
+    \input{tables/milestones.tex}
+\end{table}
+
+\section{Conclusion}
+This concludes the sample document.
+
+\end{document}

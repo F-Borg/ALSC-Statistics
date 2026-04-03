@@ -1,0 +1,11 @@
+# Fdb version 4
+["pdflatex"] 1772078869.17099 "c:/Users/Fin/Documents/GitHub/ALSC-Statistics/tex_scripts/testcol.tex" "testcol.pdf" "testcol" 1772078869.61247 2
+  "%OUTDIR%/testcol.aux" 1772078861 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "C:/Users/Fin/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1770797102 13332560 25e46eaa00942ec37b57b0d1dfee2991 ""
+  "c:/Users/Fin/Documents/GitHub/ALSC-Statistics/tex_scripts/testcol.tex" 1772078867 0 d41d8cd98f00b204e9800998ecf8427e ""
+  "testcol.tex" 1772078867 0 d41d8cd98f00b204e9800998ecf8427e ""
+  (generated)
+  "%OUTDIR%/testcol.aux"
+  "%OUTDIR%/testcol.log"
+  "testcol.pdf"
+  (rewritten before read)

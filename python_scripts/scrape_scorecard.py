@@ -14,6 +14,8 @@ import os
 # three innings game
 # url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/saturdays-summer-202223/section-6-blackwood-sound-cup/game-centre/1d32ce30"
 
+# url="https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/cricket-summer-202526/section-4-elder-meat-store-cup/game-centre/cc1bdabc"
+
 def int_or_zero(value):
     try:
         # Attempt to convert to an integer
@@ -31,7 +33,7 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
     driver = webdriver.Firefox()
     driver.maximize_window()
     # !!! better way to do this?
-    time.sleep(2) # wait for firefox to open
+    time.sleep(1) # wait for firefox to open
     driver.get(url)
     time.sleep(4) # wait for page to load
 
@@ -43,7 +45,7 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
     # setup
     #########################################################################################################################
     # default values
-    mi_captain = 'ERROR'
+    mi_captain = 'none'
     # if toss info is missing then structure is different:
     #             /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[1]/span[1]
     #             /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[1]/span[2]
@@ -111,7 +113,11 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
     mi_team_1 = head.xpath(f'div[{div_b-1}]/div[1]/div/a/text()')[0]
     mi_team_2 = head.xpath(f'div[{div_b-1}]/div[2]/div/a/text()')[0]
     if re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran)',mi_team_1):
-        opponent = mi_team_2
+        # check for showdown games
+        if re.match(rf'(Adelaide Junior Bulldogs {team}|Adelaide Lutheran)',mi_team_2):
+            opponent = mi_team_1     
+        else:
+            opponent = mi_team_2
     else:
         opponent = mi_team_1
 
@@ -153,7 +159,10 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
         # Check if innings played
         ###
         # check if innings was played - path to first batter name in scorecard
-        if len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[1]/div[2]/div/div[2]/div/span[1]/text()')) == 0:
+        #                   /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]      /div[1]/div[2]/div/div[2]/div/a!!!new!!!/span
+        #                   /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[1]/div[2]/div/div[2]/div/span[1]
+        if len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[1]/div[2]/div/div[2]/div/a/span[1]/text()')) + \
+           len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[1]/div[2]/div/div[2]/div/span[1]/text()')) == 0:
             print(f'innings {ii} not played.')
             num_innings_played-=1 
             break
@@ -172,39 +181,53 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
             #########################################################################################################################
             innings.append(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a-1}]/button[{ii}]/text()')[0])
             batting_df = pd.DataFrame(columns=['batter','how_out','score','balls_faced','_4s','_6s'])
-            for i in range(1,num_players+1):
-                # initiate row
-                data=[]
-                # name 
-                if scorecard[i].xpath('div/span[1]/text()')[0] in ('Fill-in ','Private player ','Private player  (c)','Private player  (vc)'):
-                    data.append('Fill-in')
-                else:
-                    data.append(scorecard[i].xpath('div/span[1]/text()')[0]+scorecard[i].xpath('div/span[1]/span/text()')[0])
-                # how out
-                if len(scorecard[i].xpath('div/span[2]/span/text()'))>0: 
-                    how_out = scorecard[i].xpath('div/span[2]/span/text()')
-                elif len(scorecard[i].xpath('div/span[2]/div/span[1]/text()'))>0: 
-                    how_out = [scorecard[i].xpath('div/span[2]/div/span[1]/text()')[0] + ' ' + scorecard[i].xpath('div/span[2]/div/span[2]/text()')[0]]
-                elif len(scorecard[i].xpath('div/span[2]/text()'))>0:
-                    how_out = scorecard[i].xpath('div/span[2]/text()')
-                else:
-                    how_out = ['did not bat']
-                data.append(how_out[0])
-                # batter 1 score, bf, 4s, 6s
-                if len(scorecard[i].xpath('span[1]/div[1]/svg[@name="duck"]')) > 0:
-                    # picture of a duck
-                    data.append('0')    
-                else:
-                    data.append(scorecard[i].xpath('span[1]/text()')[0].replace('-','0').replace('*',''))
-                data.append(scorecard[i].xpath('span[2]/text()')[0].replace('-','0'))
-                data.append(scorecard[i].xpath('span[3]/text()')[0].replace('-','0'))
-                data.append(scorecard[i].xpath('span[4]/text()')[0].replace('-','0'))
+            # check batting is listed
+            if num_players>1:
+                for i in range(1,num_players+1):
+                    # initiate row
+                    data=[]
+                    # name
+                    try:
+                        if scorecard[i].xpath('div/span[1]/text()')[0] in ('Fill-in ','Private player ','Private player  (c)','Private player  (vc)'):
+                            data.append('Fill-in')
+                            jj=2
+                        else:
+                            data.append(scorecard[i].xpath('div/a/text()')[0]+scorecard[i].xpath('div/a/span[1]/text()')[0])
+                            jj=1
+                    except:
+                        data.append(scorecard[i].xpath('div/a/text()')[0]+scorecard[i].xpath('div/a/span[1]/text()')[0])
+                        jj=1
+                    # how out
+                    if len(scorecard[i].xpath(f'div/span[{jj}]/span/text()'))>0: 
+                        # e.g. lbw: blah blah
+                        how_out = scorecard[i].xpath(f'div/span[{jj}]/span/text()')
+                    elif len(scorecard[i].xpath(f'div/span[{jj}]/div/span[1]/text()'))>0: 
+                        # e.g. c: ? b: blah blah
+                        how_out = [scorecard[i].xpath(f'div/span[{jj}]/div/span[1]/text()')[0] + ' ' + scorecard[i].xpath(f'div/span[{jj}]/div/span[2]/text()')[0]]
+                    elif len(scorecard[i].xpath(f'div/span/text()'))>0:
+                        # not out
+                        how_out = scorecard[i].xpath(f'div/span/text()')
+                    else:
+                        how_out = ['did not bat']
+                    data.append(how_out[0])
+                    # batter 1 score, bf, 4s, 6s
+                    if len(scorecard[i].xpath('span[1]/div[1]/svg[@name="duck"]')) > 0:
+                        # picture of a duck
+                        data.append('0')    
+                    else:
+                        data.append(scorecard[i].xpath('span[1]/text()')[0].replace('-','0').replace('*',''))
+                    data.append(scorecard[i].xpath('span[2]/text()')[0].replace('-','0'))
+                    data.append(scorecard[i].xpath('span[3]/text()')[0].replace('-','0'))
+                    data.append(scorecard[i].xpath('span[4]/text()')[0].replace('-','0'))
 
-                if '(c)' in data[0] and 'Adelaide Lutheran' in innings[ii-1]:
-                    mi_captain = data[0].replace(' (c)','').strip()
-                    data[0] = mi_captain
+                    if '(c)' in data[0] and 'Adelaide Lutheran' in innings[ii-1]:
+                        mi_captain = data[0].replace(' (c)','').strip()
+                        data[0] = mi_captain
 
-                batting_df.loc[i-1] = data
+                    batting_df.loc[i-1] = data
+            else:
+                print(f'Innings no.{ii} missing batting')
+                batting_df.loc[0] = ['scorecard missing','did not bat',' ',' ',' ',' ']
 
             # FOW
             fow.append(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[2]/div/span[2]/text()'))
@@ -233,94 +256,104 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
             # need to add 4's and 6's manually
 
             # only need to do bowling for opposition innings
-            if not re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran)', innings[ii-1]):
-                # div is different when FOW is missing:
-                if dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[3]/div[2]/div/div[1]/span[1]/text()') == ['Bowlers']:
-                    bowl_div = 3
-                else:
-                    bowl_div = 2
-                # only run if our bowling is entered (check first bowler exists)
-                try: 
-                    dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div}]/div[2]/div/div[2]/span[1]/text()')[0]
-                    bowling_sc_exists=True
-                except:
-                    bowling_sc_exists=False
+            # if not re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran)', innings[ii-1]): #!!! commented out for follow-on innings. can leave like this though
+            # div is different when FOW is missing:
+            if dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[3]/div[2]/div/div[1]/span[1]/text()') == ['Bowlers']:
+                bowl_div = 3
+            else:
+                bowl_div = 2
+            # only run if our bowling is entered (check first bowler exists)
+            try: 
+                dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div}]/div[2]/div/div[2]/span[1]/text()')[0]
+                bowling_sc_exists=True
+            except:
+                bowling_sc_exists=False
 
-                if  bowling_sc_exists:
-                    num_bowlers = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div}]/div[2]/div/*'))-1 # -1 for the heading row
-                    bowling_sc =      dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div}]/div[2]/div/*')
-                    bowling_df = pd.DataFrame(columns=['bowler','overs','maidens','runs','wickets','wides','no_balls','_4s_against','_6s_against','highover','_2nd_high_over'])
-                    for i in range(1,num_bowlers+1):
-                        # initiate row
-                        data=[]
-                        if bowling_sc[i].xpath('span[1]/text()')[0].strip() in ('Fill-in','Private player'):
-                            data.append('Fill-in')
-                        else:
-                            data.append(bowling_sc[i].xpath('span[1]/text()')[0]+bowling_sc[i].xpath('span[1]/span/text()')[0])
-                        data.append(bowling_sc[i].xpath('span[2]/text()')[0])
-                        data.append(bowling_sc[i].xpath('span[3]/text()')[0])
-                        data.append(bowling_sc[i].xpath('span[4]/text()')[0])
-                        data.append(bowling_sc[i].xpath('span[5]/text()')[0])
-                        data.append(bowling_sc[i].xpath('span[7]/text()')[0])
-                        data.append(bowling_sc[i].xpath('span[8]/text()')[0])
-                        data.append(0) #4s
-                        data.append(0) #6s
-                        data.append(0) #High Over
-                        data.append(0) #2nd High Over
-                        if '(c)' in data[0]:
-                            data[0] = data[0].replace(' (c)','')
+            if  bowling_sc_exists:
+                num_bowlers = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div}]/div[2]/div/*'))-1 # -1 for the heading row
+                bowling_sc =      dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div}]/div[2]/div/*')
+                bowling_df = pd.DataFrame(columns=['bowler','overs','maidens','runs','wickets','wides','no_balls','_4s_against','_6s_against','highover','_2nd_high_over'])
+                for i in range(1,num_bowlers+1):
+                    # initiate row
+                    data=[]
+                    # /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]/div[3]/div[2]/div/div[2]/a
+                    # /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]/div[3]/div[2]/div/div[6]/span[1]
+                    # bowling_sc[5].xpath('span[1]/text()')[0]
+                    if bowling_sc[i].xpath('span[1]/text()')[0].strip() in ('Fill-in','Private player'):
+                        data.append('Fill-in')
+                        # fill-in messes up the span number
+                        jj=1
+                    else:
+                        data.append(bowling_sc[i].xpath('a/text()')[0]+bowling_sc[i].xpath('a/span/text()')[0])
+                        jj=0
+                    data.append(bowling_sc[i].xpath(f'span[{jj+1}]/text()')[0])
+                    data.append(bowling_sc[i].xpath(f'span[{jj+2}]/text()')[0])
+                    data.append(bowling_sc[i].xpath(f'span[{jj+3}]/text()')[0])
+                    data.append(bowling_sc[i].xpath(f'span[{jj+4}]/text()')[0])
+                    data.append(bowling_sc[i].xpath(f'span[{jj+6}]/text()')[0])
+                    data.append(bowling_sc[i].xpath(f'span[{jj+7}]/text()')[0])
+                    data.append(0) #4s
+                    data.append(0) #6s
+                    data.append(0) #High Over
+                    data.append(0) #2nd High Over
+                    if '(c)' in data[0]:
+                        data[0] = data[0].replace(' (c)','')
 
-                        bowling_df.loc[i-1] = data
-                else:
-                    print('empty bowling scorecard')
-                    bowling_df = pd.DataFrame(columns=['bowler','overs','maidens','runs','wickets','wides','no_balls','_4s_against','_6s_against','highover','_2nd_high_over'])
-                    for i in range(1,7):
-                        bowling_df.loc[i] = ['','','','','','','','','','','']
+                    bowling_df.loc[i-1] = data
+            else:
+                print('empty bowling scorecard')
+                bowling_df = pd.DataFrame(columns=['bowler','overs','maidens','runs','wickets','wides','no_balls','_4s_against','_6s_against','highover','_2nd_high_over'])
+                for i in range(1,7):
+                    bowling_df.loc[i] = ['','','','','','','','','','','']
+            # Write scorecard to file
+            if overwrite_md or not os.path.exists(f'{game_dir}/innings_{ii}_bowling.md'):
+                sc = bowling_df.to_markdown()
+                f=open(f'{game_dir}/innings_{ii}_bowling.md','w')
+                f.write(sc)
+                f.close()
+
+            #################################################################################################################
+            # Fielding
+            #################################################################################################################
+            # only run if fielding is entered (check first fielder exists)
+            try: 
+                #            /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]      /div[3]           /div/div[2]/span[1]
+                dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div+1}]/div/div[2]/span[1]/text()')[0]
+                fielding_exists=True
+            except:
+                fielding_exists=False
+
+            if fielding_exists:              # '/html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]/div[3]/div'
+                num_fielders = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div+1}]/div/*'))-1 # -1 for the heading row
+                fielding_sc =      dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div+1}]/div/*')
+                fielding_df = pd.DataFrame(columns=['player','catches','run_outs','stumpings'])
+                for i in range(1,num_fielders+1):
+                    # initiate row
+                    data=[]
+                    # /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]/div[4]/div/div[2]/a
+                    # /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]/div[4]/div/div[4]/span[1]
+                    if fielding_sc[i].xpath('span[1]/text()')[0].strip() in ('Fill-in','Private player'):
+                        data.append('Fill-in')
+                        jj=1
+                    else:
+                        data.append(fielding_sc[i].xpath('a/text()')[0]+fielding_sc[i].xpath('a/span/text()')[0].strip())
+                        jj=0
+                    data.append(int_or_zero(fielding_sc[i].xpath(f'span[{jj+1}]/text()')[0]) + \
+                                int_or_zero(fielding_sc[i].xpath(f'span[{jj+2}]/text()')[0]))
+                    data.append(int_or_zero(fielding_sc[i].xpath(f'span[{jj+4}]/text()')[0]) + \
+                                int_or_zero(fielding_sc[i].xpath(f'span[{jj+5}]/text()')[0]))
+                    data.append(int_or_zero(fielding_sc[i].xpath(f'span[{jj+7}]/text()')[0]))
+
+                    fielding_df.loc[i-1] = data
+
                 # Write scorecard to file
-                if overwrite_md or not os.path.exists(f'{game_dir}/innings_{ii}_bowling.md'):
-                    sc = bowling_df.to_markdown()
-                    f=open(f'{game_dir}/innings_{ii}_bowling.md','w')
+                if overwrite_md or not os.path.exists(f'{game_dir}/innings_{ii}_fielding.md'):
+                    sc = fielding_df.to_markdown()
+                    f=open(f'{game_dir}/innings_{ii}_fielding.md','w')
                     f.write(sc)
                     f.close()
-
-                #################################################################################################################
-                # Fielding
-                #################################################################################################################
-                # only run if fielding is entered (check first fielder exists)
-                try: 
-                    #            /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]      /div[3]           /div/div[2]/span[1]
-                    dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div+1}]/div/div[2]/span[1]/text()')[0]
-                    fielding_exists=True
-                except:
-                    fielding_exists=False
-
-                if fielding_exists:              # '/html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]/div[3]/div'
-                    num_fielders = len(dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div+1}]/div/*'))-1 # -1 for the heading row
-                    fielding_sc =      dom.xpath(f'//*[@id="root"]/section/main/div/div/div[1]/section/section[2]/div[2]/div[{div_a}]/div[{bowl_div+1}]/div/*')
-                    fielding_df = pd.DataFrame(columns=['player','catches','run_outs','stumpings'])
-                    for i in range(1,num_fielders+1):
-                        # initiate row
-                        data=[]
-                        if fielding_sc[i].xpath('span[1]/text()')[0] == 'Fill-in ':
-                            data.append('Fill-in')
-                        else:
-                            data.append(fielding_sc[i].xpath('span[1]/text()')[0]+fielding_sc[i].xpath('span[1]/span/text()')[0].strip())
-                        data.append(int_or_zero(fielding_sc[i].xpath('span[2]/text()')[0]) + \
-                                    int_or_zero(fielding_sc[i].xpath('span[3]/text()')[0]))
-                        data.append(int_or_zero(fielding_sc[i].xpath('span[5]/text()')[0]) + \
-                                    int_or_zero(fielding_sc[i].xpath('span[6]/text()')[0]))
-                        data.append(int_or_zero(fielding_sc[i].xpath('span[8]/text()')[0]))
-
-                        fielding_df.loc[i-1] = data
-
-                    # Write scorecard to file
-                    if overwrite_md or not os.path.exists(f'{game_dir}/innings_{ii}_fielding.md'):
-                        sc = fielding_df.to_markdown()
-                        f=open(f'{game_dir}/innings_{ii}_fielding.md','w')
-                        f.write(sc)
-                        f.close()
-                else:
-                    print('empty fielding card')
+            else:
+                print('empty fielding card')
 
 
 

@@ -490,3 +490,107 @@ GROUP BY players.player_name
 HAVING coalesce(Sum(Batting.Score),0) > 99
 ORDER BY Average DESC;
 
+-- per opponent
+CREATE OR REPLACE VIEW batting_30_opp_runs AS
+SELECT 
+    players.player_name AS Name
+    , regexp_replace(matches.Opponent,' (II|III|IV|V|VI)$','',1,1,'c') AS opponent
+    , Count(Batting.Score) as innings
+    , coalesce(Sum(Batting.Score),0) AS Runs
+    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)=0
+        THEN -9 ELSE Sum(Batting.Score)::float/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)) END AS Average
+FROM Matches
+INNER JOIN Innings 
+ON Matches.MatchID = Innings.MatchID
+INNER JOIN Batting 
+ON Innings.InningsID = Batting.InningsID
+INNER JOIN players
+ON Players.PlayerID = Batting.PlayerID
+--where matches.round in ('SF','GF')
+GROUP BY players.player_name, opponent
+HAVING coalesce(Sum(Batting.Score),0) > 199
+ORDER BY Runs DESC;
+
+CREATE OR REPLACE VIEW batting_31_opp_ave AS
+SELECT 
+    players.player_name AS Name
+    , regexp_replace(matches.Opponent,' (II|III|IV|V|VI)$','',1,1,'c') AS opponent
+    , Count(Batting.Score) as innings
+    , coalesce(Sum(Batting.Score),0) AS Runs
+    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)=0
+        THEN -9 ELSE Sum(Batting.Score)::float/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)) END AS Average
+FROM Matches
+INNER JOIN Innings 
+ON Matches.MatchID = Innings.MatchID
+INNER JOIN Batting 
+ON Innings.InningsID = Batting.InningsID
+INNER JOIN players
+ON Players.PlayerID = Batting.PlayerID
+--where matches.round in ('SF','GF')
+GROUP BY players.player_name, opponent
+--HAVING coalesce(Sum(Batting.Score),0) > 299
+having Count(Batting.Score) > 4
+ORDER BY Average DESC;
+
+select 
+ground ,
+case when ground similar to '(Bulldog Park|Park 21|Adelaide Lutheran|Schmidt Oval)%' then 'home' else 'away' end as ha
+, count(*)  as _c
+from matches
+group by  ground ,ha
+order by ha, _c desc;
+
+-- venue
+CREATE OR REPLACE VIEW batting_32_ha_runs AS
+SELECT 
+    players.player_name AS Name
+    , case when ground similar to '(Bulldog Park|Park 21|Adelaide Lutheran|Schmidt Oval)%' then 'home' else 'away' end as ha
+    , Count(Batting.Score) as innings
+    , coalesce(Sum(Batting.Score),0) AS Runs
+    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)=0
+        THEN -9 ELSE Sum(Batting.Score)::float/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)) END AS Average
+FROM Matches
+INNER JOIN Innings 
+ON Matches.MatchID = Innings.MatchID
+INNER JOIN Batting 
+ON Innings.InningsID = Batting.InningsID
+INNER JOIN players
+ON Players.PlayerID = Batting.PlayerID
+where matches.ground is not null
+GROUP BY players.player_name, opponent
+HAVING coalesce(Sum(Batting.Score),0) > 199
+ORDER BY Runs DESC;
+
+CREATE OR REPLACE VIEW tmp_batting_33_ha_ave AS
+SELECT 
+    players.player_name AS Name
+    , case when ground similar to '(Bulldog Park|Park 21|Adelaide Lutheran|Schmidt Oval)%' then 'home' else 'away' end as ha
+    , Count(Batting.Score) as innings
+    , coalesce(Sum(Batting.Score),0) AS Runs
+    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)=0
+        THEN -9 ELSE Sum(Batting.Score)::float/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)) END AS Average
+FROM Matches
+INNER JOIN Innings 
+ON Matches.MatchID = Innings.MatchID
+INNER JOIN Batting 
+ON Innings.InningsID = Batting.InningsID
+INNER JOIN players
+ON Players.PlayerID = Batting.PlayerID
+--where matches.round in ('SF','GF')
+GROUP BY players.player_name, ha
+HAVING coalesce(Sum(Batting.Score),0) > 100
+ORDER BY Average DESC;
+
+CREATE OR REPLACE VIEW batting_33_ha_ave AS
+select 
+    a.Name
+    , a.innings as home_inn, a.runs as home_runs, a.Average as home_average
+    , b.innings as away_inn, b.runs as away_runs, b.Average as away_average
+    , a.Average-b.Average as diff
+from tmp_batting_33_ha_ave a
+inner join tmp_batting_33_ha_ave b
+on a.Name = b.Name
+and a.ha='home'
+and b.ha='away'
+order by abs(a.Average-b.Average) desc
+;

@@ -1,8 +1,37 @@
 
 
-select * from fielding_j
 
-delete from innings_j where inningsid=0
+
+SELECT 
+    --matches.Opponent
+    regexp_replace(matches.Opponent,' (II|III|IV|V|VI)$','',1,1,'c') AS "Opponent"
+    , Count(matches.matchid) AS Played
+    , Sum(case when upper(matches.result)='W2' then 1 else 0 end) AS WO
+    , Sum(case when upper(matches.result)='W1' then 1 else 0 end) AS W1
+    , Sum(case when upper(matches.result) in ('D','T') then 1 else 0 end) AS D
+    , Sum(case when upper(matches.result)='L1' then 1 else 0 end) AS L1
+    , Sum(case when upper(matches.result)='L2' then 1 else 0 end) AS LO
+    , (0.00+(Sum(case when upper(matches.result) in ('W1','W2') then 1 else 0 end)))/Count(matches.matchid) AS "Win %"
+FROM seasons 
+INNER JOIN matches 
+ON seasons.seasonID = matches.seasonID
+WHERE (((seasons.year)<>'1994/95'))
+GROUP BY "Opponent"
+ORDER BY "Opponent" ;
+
+
+
+select * from matches
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -265,117 +294,4 @@ select * from yb_02_batting_summary where seasonid = 76
 
 
 
-
-select * from seasons where playhq_season='Section 6 Blackwood Sound Cup' and year='20'||replace('23-24','-','/')
-
-
-
--- update batting
--- set batting_position = NULL
---     , bowler_name = NULL
---     , score = NULL
---     , _4s = NULL
---     , _6s = NULL
---     , balls_faced = NULL
--- where how_out = 'DNB'
-
-update batting
-set how_out = 'DNB'
-where how_out = '0'
-and inningsid = 1695
-and batting_position in (12,13)
-
-select * from batting 
-where how_out = 'Absent Out'
-
-where playerid = 386
-order by score
-
-select * from innings where inningsid = 1695
-select * from matches where matchid = 756
-select * from seasons where seasonid = 74
-
-
-SELECT 
-    players.Surname ||', '|| players.firstname AS Name
-    , Sum(CASE WHEN innings.inningsno=1 Or innings.inningsno=2 then 1 else 0 end) AS Mat
-    , Sum(CASE WHEN lower(coalesce(Batting.how_out,'0')) in ('dnb','0','absent out') then 0 else 1 end) AS Inn
-    , Sum(CASE WHEN lower(batting.how_out) in ('not out','forced retirement','retired hurt','retired not out') then 1 else 0 end) AS "NO"
-    , Sum(CASE WHEN lower(batting.how_out) not in ('dnb','0','absent out','not out','forced retirement','retired hurt','retired not out','retired') And batting.score=0 then 1 else 0 end) AS Ducks
-    , Sum(Batting.Score) AS Total
-    , Count(Batting.Score) AS count_bat_score
-    , (CASE WHEN Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end))=0 then -9 
-        else Sum(Batting.Score)/(Count(Batting.Score)-Sum((CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end))) end) AS "Average"
-    , Sum(batting.balls_faced) AS BF
-    , CASE WHEN Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)=0 then -9
-        else Sum(Batting.balls_faced)/(Count(Batting.Score)-Sum(CASE WHEN lower(batting.how_out) in ('not out','retired hurt','retired not out','forced retirement') then 1 else 0 end)) end AS "Average BF"
-    , players.playerid
-FROM Players
-LEFT JOIN Batting
-ON Players.playerid = Batting.playerid
-LEFT JOIN Innings 
-ON Innings.InningsID = Batting.InningsID
-LEFT JOIN Matches 
-ON Matches.MatchID = Innings.MatchID
-LEFT JOIN z_all_player_dates 
-ON z_all_player_dates.playerid = Players.playerid
-LEFT JOIN z_batmax 
-ON z_batmax.playerid = Players.playerid
-
-GROUP BY Name
-    , z_all_player_dates."First Season"
-    , z_all_player_dates."Last Season"
-    , z_batmax.HS
-    , Players.playerid
-HAVING (((Players.playerid)<>999))
-ORDER BY Name, Sum(Batting.Score) DESC;
-
-
-
-
-
-select 
-    round(sum(case when wickets.batting_position in (1,2,3,4) then 1 else 0 end) / z_bocsa."Total Wickets",3) as "Top 4 Pct"
-    , z_bocsa.name
-    , z_bocsa."Total Wickets"
-    , sum(case when wickets.batting_position in (1,2,3,4) then 1 else 0 end) as "Top 4 wickets"
-from wickets
-inner join z_bocsa 
-on wickets.playerid = z_bocsa.playerid
-where z_bocsa."Total Wickets" > 14
-group by z_bocsa.name, z_bocsa."Total Wickets"
-order by "Top 4 Pct" desc
-;
-
-select 
-    round(sum(case when wickets.batting_position in (8,9,10,11) then 1 else 0 end) / z_bocsa."Total Wickets",3) as "Bottom 4 Pct"
-    , z_bocsa.name
-    , z_bocsa."Total Wickets"
-    , sum(case when wickets.batting_position in (8,9,10,11) then 1 else 0 end) as "Bottom 4 wickets"
-from wickets
-inner join z_bocsa 
-on wickets.playerid = z_bocsa.playerid
-where z_bocsa."Total Wickets" > 14
-
-group by z_bocsa.name, z_bocsa."Total Wickets"
-order by "Bottom 4 Pct" desc
-;
-
-select 
-    z_bocsa.name
-    , z_bocsa."Total Wickets"
-    , sum(case when wickets.batting_position in (1,2,3,4) then 1 else 0 end) as top_4
-    , sum(case when wickets.batting_position in (1,2,3,4) then 1 else 0 end) / z_bocsa."Total Wickets" as top_4_pct
-    , sum(case when wickets.batting_position in (8,9,10,11) then 1 else 0 end) as bottom_4
-    , sum(case when wickets.batting_position in (8,9,10,11) then 1 else 0 end) / z_bocsa."Total Wickets" as bottom_4_pct
-    , sum(case when wickets.batting_position in (11) then 1 else 0 end) as no_11
-from wickets
-inner join z_bocsa 
-on wickets.playerid = z_bocsa.playerid
-where z_bocsa."Total Wickets" > 14
-
-group by z_bocsa.name, z_bocsa."Total Wickets"
-order by top_4_pct desc
---order by bottom_4_pct desc
-order by no_11 desc
 

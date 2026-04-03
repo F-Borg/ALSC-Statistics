@@ -197,6 +197,7 @@ INNER JOIN Innings
 ON Matches.MatchID = Innings.MatchID
 INNER JOIN Batting
 ON Innings.InningsID = Batting.InningsID
+where Seasons.Grade <> 'T20'
 GROUP BY Matches.Opponent, Seasons.Year, Matches.Round, Seasons.Eleven, Seasons.Grade, Seasons.Association, Matches.Ground, Innings.InningsID
 HAVING (max(innings.bat_overs)>15) AND (
     (CASE WHEN Sum(CASE WHEN lower(batting.how_out) in ('not out','dnb','retired hurt','retired not out','forced retirement') then 0 else 1 end)=10 then '' 

@@ -24,7 +24,7 @@ insert into seasons values (
 
 select * from seasons_j;
 insert into seasons_j values (
-    6, '2022/23', 'SACA Junior Competitions', 'Under 10', 'Blue', 0, 0, 0, 'true', 'U10 - Blue'
+    7, '2022/23', 'SACA Junior Competitions', 'Under 10', 'Red', 0, 0, 0, 'true', 'U10 - Red'
 )
 
 select * from seasons_i;

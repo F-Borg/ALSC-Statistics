@@ -342,3 +342,77 @@ group by players.player_name
 having sum(bf.w) > 9
 order by "Ave"
 ;
+
+--per opponent
+CREATE OR REPLACE VIEW bowling_24_opp_wickets AS
+select 
+      players.player_name as "Name"
+    , regexp_replace(matches.Opponent,' (II|III|IV|V|VI)$','',1,1,'c') AS opponent
+    , sum(bf.w) as "Wickets"
+    , count(inningsid) as "Inn"
+    , case when sum(bf.w) > 0 then sum(bf.runs)/sum(bf.w) 
+        else null end as "Ave"
+from z_Bowling_Figures_All as bf
+inner join matches 
+on bf.matchid = matches.matchid
+inner join players 
+on bf.playerid = players.playerid
+group by players.player_name, opponent
+having sum(bf.w) > 9
+order by "Wickets" desc
+;
+
+CREATE OR REPLACE VIEW bowling_25_opp_ave AS
+select 
+      players.player_name as "Name"
+    , regexp_replace(matches.Opponent,' (II|III|IV|V|VI)$','',1,1,'c') AS opponent
+    , case when sum(bf.w) > 0 then sum(bf.runs)/sum(bf.w) 
+        else null end as "Ave"
+    , count(inningsid) as "Inn"
+    , sum(bf.w) as "Wickets"
+
+from z_Bowling_Figures_All as bf
+inner join matches 
+on bf.matchid = matches.matchid
+inner join players 
+on bf.playerid = players.playerid
+group by players.player_name, opponent
+having sum(bf.w) > 9
+order by "Ave"
+;
+
+-- home/away
+--, case when ground similar to '(Bulldog Park|Park 21|Adelaide Lutheran|Schmidt Oval)%' then 'home' else 'away' end as ha
+-- drop view tmp_bowling_26_ha_ave;
+CREATE OR REPLACE VIEW tmp_bowling_26_ha_ave AS
+select 
+      players.player_name as "Name"
+    , case when ground similar to '(Bulldog Park|Park 21|Adelaide Lutheran|Schmidt Oval)%' then 'home' else 'away' end as ha
+    , case when sum(bf.w) > 0 then sum(bf.runs)/sum(bf.w) 
+        else null end as "Ave"
+    , count(inningsid) as "Inn"
+    , sum(bf.w) as "Wickets"
+
+from z_Bowling_Figures_All as bf
+inner join matches 
+on bf.matchid = matches.matchid
+inner join players 
+on bf.playerid = players.playerid
+group by players.player_name, ha
+having sum(bf.w) > 9
+order by "Ave"
+;
+
+-- drop view bowling_26_ha_ave;
+CREATE OR REPLACE VIEW bowling_26_ha_ave AS
+select 
+    h."Name"
+    , h."Inn" as h_inn, h."Wickets" as h_wickets, h."Ave" as h_ave
+    , a."Inn" as a_inn, a."Wickets" as a_wickets, a."Ave" as a_ave
+    , a."Ave"-h."Ave" as diff
+from tmp_bowling_26_ha_ave h
+inner join tmp_bowling_26_ha_ave a
+on h."Name" = a."Name"
+and h.ha='home'
+and a.ha='away'
+order by abs(h."Ave"-a."Ave") desc
