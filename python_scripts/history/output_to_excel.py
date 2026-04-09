@@ -28,7 +28,7 @@ pgconn = engine.connect()
 ############################
 # User input               
 ############################
-_season_ = '2024/25' # e.g. _season_ = '2021/22'
+_season_ = '2025/26' # e.g. _season_ = '2021/22'
 
 
 ############################
@@ -306,8 +306,21 @@ worksheet = writer.sheets[sheetname]
 worksheet.merge_range(row_end+2,0,row_end+2,10,"Most Matches as Captain",fmt['heading1'])
 worksheet.set_row(row_end+2,fmt['heading1_height'])
 
+row_end += stats_table.shape[0] + 2
+
+##########################
+# Most Matches as Teammates
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Player 1", "Player 2", matches
+    from team_16_ind_most_matches_together where "matches">60""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,10,"Most Matches as Teammates",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
+
 
 worksheet.set_column('A:L',None,fmt['arial8'])
+
 
 
 #########################################################################################################################
@@ -683,6 +696,75 @@ worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 worksheet.set_column('B:B',None,fmt['arial10pct1dec'])
 worksheet.set_column('C:G',None,fmt['arial10'])
+
+
+#########################################################################################################################
+#########################################################################################################################
+# Batting Finals
+#########################################################################################################################
+#########################################################################################################################
+sheetname = 'Batting Finals'
+row_end = 0
+
+##########################
+# Run out involvements
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select  "Name", innings as "Innings", run_outs as "Run Outs", out_batter as "Times Out"
+    , not_out_batter as "Times Not Out", "R/O per Inn"
+    from batting_27_run_out_involvements limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, startcol=1, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:I1',"Most Run Out Involvements",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
+
+row_end = stats_table.shape[0] + 2
+
+##########################
+# Most Runs in Finals
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select runs as "Runs", name as "Name", innings as "Inn", average as "Average"
+    from batting_28_finals_runs limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,3,"Most Runs in Finals",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
+
+##########################
+# Highest Average in Finals
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select average as "Average", name as "Name", runs as "Runs", innings as "Inn"
+    from batting_29_finals_ave limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, startcol=5, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,5,row_end+2,8,"Highest Average in Finals",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
+
+row_end += stats_table.shape[0] + 4
+
+##########################
+# Most Runs Against Single Opponent
+# too much of a proxy for Most Runs
+##########################
+# stats_table = pd.read_sql(con=pgconn, sql=f"""select runs as "Runs", name as "Name", opponent as "Opp", innings as "Inn", average as "Average"
+#     from batting_30_opp_runs limit 10""")
+# stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+# worksheet = writer.sheets[sheetname]
+# worksheet.merge_range(row_end+2,0,row_end+2,3,"Most Runs Against Single Opponent",fmt['heading1'])
+# worksheet.set_row(0,fmt['heading1_height'])
+
+##########################
+# Highest Average Against Single Opponent
+# Min 5 inn
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select average as "Average", name as "Name", opponent as "Opp", runs as "Runs", innings as "Inn"
+    from batting_31_opp_ave limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,4,"Highest Average Against Single Opponent",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
+
+row_end += stats_table.shape[0] + 3
+
 
 
 #########################################################################################################################
@@ -1129,6 +1211,107 @@ worksheet.set_column('A:I',None,fmt['arial10'])
 
 #########################################################################################################################
 #########################################################################################################################
+# Bowling Finals
+#########################################################################################################################
+#########################################################################################################################
+sheetname = 'Bowling Finals'
+row_end = 0
+
+##########################
+# Most Wickets in Finals
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Wickets", "Name", "Inn", "Ave"
+    from bowling_22_finals_wickets limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('A1:D1',"Most Wickets in Finals",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
+
+##########################
+# Lowest Average in Finals
+# Min 10 wickets
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Ave", "Name", "Inn", "Wickets"
+    from bowling_23_finals_ave limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, startcol=5, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range('F1:I1',"Lowest Average in Finals",fmt['heading1'])
+worksheet.set_row(0,fmt['heading1_height'])
+
+row_end += stats_table.shape[0] + 2
+
+##########################
+# Wickets are Top 4 Batters
+# Min 15 wickets
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Pct of Wickets"
+    , "Name"
+    , "Total Wickets"
+    , "Top 4 Wickets" 
+from bowling_27_top4_wickets
+limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,3,"Highest Rate of Wickets are Top 4 Batters (min 15 wickets)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
+
+##########################
+# Wickets are Bottom 4 Batters
+# Min 15 wickets
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Pct of Wickets"
+    , "Name"
+    , "Total Wickets"
+    , "Bottom 4 Wickets" 
+from bowling_28_bottom4_wickets
+limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, startcol=5, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,5,row_end+2,8,"Highest Rate of Wickets are Bottom 4 Batters (min 15 wickets)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
+
+
+row_end += stats_table.shape[0] + 4
+
+##########################
+# Most Wickets against a single opponent
+# Min 10 wickets
+# Exclude - too much of a proxy for "most wickets"
+##########################
+# stats_table = pd.read_sql(con=pgconn, sql=f"""select 
+#       "Name"
+#     , opponent
+#     , "Wickets"
+#     , "Inn"
+#     , "Ave"
+# FROM bowling_24_opp_wickets
+# limit 10
+# """)
+# stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+# worksheet = writer.sheets[sheetname]
+# worksheet.merge_range(row_end+2,0,row_end+2,3,"Most Wickets against Single Opponent (min 10 wickets)",fmt['heading1'])
+# worksheet.set_row(0,fmt['heading1_height'])
+
+##########################
+# Bowling Average against a single opponent
+# Min 10 wickets
+##########################
+stats_table = pd.read_sql(con=pgconn, sql=f"""select 
+      "Name"
+    , opponent
+    , "Ave"
+    , "Inn"
+    , "Wickets"
+FROM bowling_25_opp_ave
+limit 10""")
+stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
+worksheet = writer.sheets[sheetname]
+worksheet.merge_range(row_end+2,0,row_end+2,4,"Bowling Average against a single opponent (min 10 wickets)",fmt['heading1'])
+worksheet.set_row(row_end+2,fmt['heading1_height'])
+
+
+#########################################################################################################################
+#########################################################################################################################
 # Fielding
 #########################################################################################################################
 #########################################################################################################################
@@ -1138,7 +1321,7 @@ row_end = 0
 ##########################
 # Most Career Fielding Dismissals
 ##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catches","Stumpings","Matches"
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catches","Stumpings","Run Outs","Matches"
     from fielding_01_p1_career_dismissals limit 15""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 worksheet = writer.sheets[sheetname]
@@ -1146,13 +1329,13 @@ worksheet.merge_range('A1:J1',"Most Career Fielding Dismissals",fmt['heading1'])
 worksheet.set_row(0,fmt['heading1_height'])
 
 row_end = stats_table.shape[0] + 2
-worksheet.merge_range(row_end+2,0,row_end+2,9,"Note: details of who took each catch is not complete")
+worksheet.merge_range(row_end+2,0,row_end+2,9,"Note: fielding information is not complete")
 row_end += 2
 
 ##########################
 # Most Dismissals In a Season
 ##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catches","Stumpings","Season"
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catches","Stumpings","Run Outs","Season"
     from fielding_02_p1_season_dismissals where "Dismissals" >= 17""")
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
@@ -1164,7 +1347,7 @@ row_end += stats_table.shape[0] + 4
 ##########################
 # Most Dismissals In An Innings
 ##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catches","Stumpings" 
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Name", "Dismissals","Catches","Stumpings","Run Outs" 
                           , Year AS "Year", Opponent as "Opponent", round as "Round", eleven AS "XI", Association AS "Association", Grade AS "Grade"
     from fielding_03_p1_innings_dismissals where "Dismissals" >= 5 """)
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
@@ -1175,13 +1358,13 @@ worksheet.set_row(row_end+2,fmt['heading1_height'])
 row_end += stats_table.shape[0] + 4
 
 ##########################
-# Most Career Caught & Bowled Dismissal Combinations
+# Most Career Bowler/Fielder Dismissal Combinations
 ##########################
-stats_table = pd.read_sql(con=pgconn, sql=f"""select "Dismissals", "Fielder", '' as " ", "Bowler"
+stats_table = pd.read_sql(con=pgconn, sql=f"""select "Dismissals","Catches" as "c", "Stupings" as "st", "Fielder", '' as " ", "Bowler"
     from fielding_04_p1_ct_b_combos where "Dismissals" >= 10 """)
 stats_table.to_excel(writer, sheet_name=sheetname, startrow = row_end+4, index=False)
 worksheet = writer.sheets[sheetname]
-worksheet.merge_range(row_end+2,0,row_end+2,3,"Most Career Caught & Bowled Dismissal Combinations",fmt['heading1'])
+worksheet.merge_range(row_end+2,0,row_end+2,3,"Most Career Bowler/Fielder Dismissal Combinations",fmt['heading1'])
 worksheet.set_row(row_end+2,fmt['heading1_height'])
 
 

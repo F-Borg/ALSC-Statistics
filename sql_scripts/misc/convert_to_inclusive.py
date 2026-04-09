@@ -6,14 +6,17 @@ import shutil
 # C:\Users\Fin\Documents\GitHub\ALSC-Statistics\sql_scripts\misc\batting_test.pgsql
 # C:\Users\Fin\Documents\GitHub\ALSC-Statistics\sql_scripts\misc\helper.pgsql
 
-shutil.copyfile("sql_scripts/misc/helper.pgsql","sql_scripts/misc/helper_i.pgsql")
-shutil.copyfile("sql_scripts/alsc-history/batting.pgsql","sql_scripts/alsc-history/batting_i.pgsql")
-shutil.copyfile("sql_scripts/alsc-history/bowling.pgsql","sql_scripts/alsc-history/bowling_i.pgsql")
+# shutil.copyfile("sql_scripts/misc/helper.pgsql","sql_scripts/misc/helper_i.pgsql")
+# shutil.copyfile("sql_scripts/alsc-history/batting.pgsql","sql_scripts/alsc-history/batting_i.pgsql")
+# shutil.copyfile("sql_scripts/alsc-history/bowling.pgsql","sql_scripts/alsc-history/bowling_i.pgsql")
+# shutil.copyfile("sql_scripts/alsc-history/team.pgsql","sql_scripts/alsc-history/team_i.pgsql")
+# shutil.copyfile("sql_scripts/alsc-yearbook/yb_all.pgsql","sql_scripts/alsc-yearbook/yb_all_i.pgsql")
 
 
 
 
-for line in fileinput.input(files=["sql_scripts/misc/helper_i.pgsql","sql_scripts/alsc-history/batting_i.pgsql","sql_scripts/alsc-history/bowling_i.pgsql"], inplace=True):
+# for line in fileinput.input(files=["sql_scripts/misc/helper_i.pgsql","sql_scripts/alsc-history/batting_i.pgsql","sql_scripts/alsc-history/bowling_i.pgsql"], inplace=True):
+for line in fileinput.input(files=["sql_scripts/alsc-history/team_i.pgsql"], inplace=True):
     # sys.stdout.write ensures the modified line goes back to the file
     _z = sys.stdout.write(
         re.sub(r"\bz_",r"z_i_",
@@ -25,7 +28,7 @@ fileinput.close()
 
 
 
-for line in fileinput.input(files=['sql_scripts/misc/helper_i.pgsql'], inplace=True):
+for line in fileinput.input(files=['sql_scripts/alsc-yearbook/yb_all_i.pgsql'], inplace=True):
     # sys.stdout.write ensures the modified line goes back to the file
     _z = sys.stdout.write(
         re.sub(r"\bz_",r"z_i_",

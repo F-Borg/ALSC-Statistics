@@ -416,3 +416,36 @@ on h."Name" = a."Name"
 and h.ha='home'
 and a.ha='away'
 order by abs(h."Ave"-a."Ave") desc
+;
+
+-- drop view bowling_27_top4_wickets;
+CREATE OR REPLACE VIEW bowling_27_top4_wickets AS
+select 
+    to_char(100*sum(case when wickets.batting_position < 5 then 1 else 0 end)::float / count(wickets.playerid), '99%') 
+     as "Pct of Wickets"
+    , players.player_name as "Name"
+    , count(wickets.playerid) as "Total Wickets"
+    , sum(case when wickets.batting_position < 5 then 1 else 0 end) as "Top 4 Wickets"
+from wickets
+inner join players
+on wickets.playerid = players.playerid
+group by players.player_name
+having count(wickets.playerid) > 15
+order by "Pct of Wickets" desc
+;
+
+--drop view bowling_28_bottom4_wickets;
+CREATE OR REPLACE VIEW bowling_28_bottom4_wickets AS
+select 
+    to_char(100*sum(case when wickets.batting_position > 7 then 1 else 0 end)::float / count(wickets.playerid), '99%') 
+     as "Pct of Wickets"
+    , players.player_name as "Name"
+    , count(wickets.playerid) as "Total Wickets"
+    , sum(case when wickets.batting_position > 7 then 1 else 0 end) as "Bottom 4 Wickets"
+from wickets
+inner join players
+on wickets.playerid = players.playerid
+group by players.player_name
+having count(wickets.playerid) > 15
+order by "Pct of Wickets" desc
+;

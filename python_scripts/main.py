@@ -13,7 +13,7 @@ importlib.reload(util)
 
 # fetch match url
 # !!! copy and paste the url for the match into the url variable below
-url = "https://www.playhq.com/cricket-australia/org/adelaide-and-suburban-cricket-association/cricket-summer-202526/section-9-hopkins-mcgowran-cup/game-centre/126f70fc"
+url = "https://www.playhq.com/cricket-australia/org/saca-inclusive-cricket-league/inclusive-cricket-league-summer-202526/saca-inclusive-cricket-league/game-centre/7a04afc1"
 
 # scrape scorecard (saves multiple tables to data/[year]/[grade]/[round]/)
 match_info = ss.scrape_scorecard(url, overwrite_md=True)

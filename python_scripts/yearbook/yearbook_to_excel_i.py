@@ -25,7 +25,7 @@ from sqlalchemy import select
 from sqlalchemy import text
 # from math import ceil
 import pandas as pd
-import python_scripts.yearbook.yearbook_to_excel_fns as yb
+import python_scripts.yearbook.yearbook_to_excel_fns_i as yb
 import python_scripts.text_formats as tf
 import os
 
@@ -45,19 +45,19 @@ pgconn = engine.connect()
 # User input               
 ############################
 _season_ = '2025/26' # e.g. _season_ = '2021/22'
-seasonid_1stxi = 83
-seasonid_2ndxi = 84
+seasonid_1stxi = 1
+# seasonid_2ndxi = 84
 # seasonid_3rdxi = 78
 
-xi_1 = '1st XI'
-xi_2 = '2nd XI'
+xi_1 = 'Inclusive'
+# xi_2 = '2nd XI'
 # xi_3 = '3rd XI'
 
 ############################
 # Create Excel doc.
 ############################
 latest_season = _season_.replace('/','-')
-writer = pd.ExcelWriter(f"data/excel/ALSC_yearbook_{latest_season}.xlsx", engine="xlsxwriter")
+writer = pd.ExcelWriter(f"data/excel/ALSC_yearbook_i_{latest_season}.xlsx", engine="xlsxwriter")
 wb = writer.book
 # fmt = tf.add_text_formats(wb)
 
@@ -82,7 +82,7 @@ yb.yb_milestones(_season_, writer, wb, pgconn)
 #########################################################################################################################
 #########################################################################################################################
 yb.yb_summary(_season_, seasonid_1stxi, xi_1, writer, wb, pgconn)
-yb.yb_summary(_season_, seasonid_2ndxi, xi_2, writer, wb, pgconn)
+# yb.yb_summary(_season_, seasonid_2ndxi, xi_2, writer, wb, pgconn)
 # yb.yb_summary(_season_, seasonid_3rdxi, xi_3, writer, wb, pgconn)
 
 
@@ -95,7 +95,7 @@ yb.yb_ind_bat(_season_, writer, wb, pgconn)
 yb.yb_ind_bowl(_season_, writer, wb, pgconn)
 
 
-
+pgconn.commit()
 writer.close()
 
 

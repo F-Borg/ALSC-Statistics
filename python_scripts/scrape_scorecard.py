@@ -188,7 +188,7 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
                     data=[]
                     # name
                     try:
-                        if scorecard[i].xpath('div/span[1]/text()')[0] in ('Fill-in ','Private player ','Private player  (c)','Private player  (vc)'):
+                        if re.search(r'(Fill-in|Private player)',scorecard[i].xpath('div/span[1]/text()')[0]):
                             data.append('Fill-in')
                             jj=2
                         else:
@@ -278,13 +278,15 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
                     data=[]
                     # /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]/div[3]/div[2]/div/div[2]/a
                     # /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]/div[3]/div[2]/div/div[6]/span[1]
-                    # bowling_sc[5].xpath('span[1]/text()')[0]
-                    if bowling_sc[i].xpath('span[1]/text()')[0].strip() in ('Fill-in','Private player'):
+                    if re.search(r'(Fill-in|Private player)',bowling_sc[i].xpath('span[1]/text()')[0].strip()):
                         data.append('Fill-in')
                         # fill-in messes up the span number
                         jj=1
                     else:
-                        data.append(bowling_sc[i].xpath('a/text()')[0]+bowling_sc[i].xpath('a/span/text()')[0])
+                        try:
+                            data.append(bowling_sc[i].xpath('a/text()')[0]+bowling_sc[i].xpath('a/span/text()')[0])
+                        except:
+                            data.append('Fill-in')
                         jj=0
                     data.append(bowling_sc[i].xpath(f'span[{jj+1}]/text()')[0])
                     data.append(bowling_sc[i].xpath(f'span[{jj+2}]/text()')[0])
@@ -332,7 +334,7 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
                     data=[]
                     # /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]/div[4]/div/div[2]/a
                     # /html/body/div/section/main/div/div/div[1]/section/section[2]/div[2]/div[4]/div[4]/div/div[4]/span[1]
-                    if fielding_sc[i].xpath('span[1]/text()')[0].strip() in ('Fill-in','Private player'):
+                    if re.search(r'(Fill-in|Private player)',fielding_sc[i].xpath('span[1]/text()')[0].strip()):
                         data.append('Fill-in')
                         jj=1
                     else:

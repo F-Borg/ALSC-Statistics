@@ -5,7 +5,14 @@
 #################################
 
 
+Most Runs in a Season - bat average is miscalculated???
+
+decimal places - do when selecting from postgres into excel:
+to_char(ave, '990D9%')
+
 remove boundaries against bowler as a stat
+
+
 
 apostrophes in names
 

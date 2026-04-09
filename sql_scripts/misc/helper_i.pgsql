@@ -285,12 +285,12 @@ ORDER BY Sum((CASE WHEN innings_i.inningsno=1 Or innings_i.inningsno=2 then 1 el
 ;
 
 
+--drop view z_i_Bowling_Figures_All cascade;
 create or replace view z_i_Bowling_Figures_All as
-SELECT Count(wickets_i.playerid) ||'/'|| (CASE WHEN lower(Seasons_i.nbw_status)='true' THEN bowling_i.no_balls+bowling_i.wides+bowling_i.runs_off_bat ELSE bowling_i.runs_off_bat end) AS Figures
+SELECT Bowling_i.wickets ||'/'|| (CASE WHEN lower(Seasons_i.nbw_status)='true' THEN bowling_i.no_balls+bowling_i.wides+bowling_i.runs_off_bat ELSE bowling_i.runs_off_bat end) AS Figures
 , Bowling_i.PlayerID
 , Bowling_i.InningsID
-, Count(Wickets_i.playerID) AS w
-, Sum(CASE WHEN Wickets_i.batting_position > 1 then Wickets_i.batting_position-1 else 1 END) AS TBD
+, Bowling_i.wickets as w
 , (CASE WHEN lower(Seasons_i.nbw_status)='true' THEN bowling_i.no_balls+bowling_i.wides+bowling_i.runs_off_bat ELSE bowling_i.runs_off_bat END) AS runs
 , Bowling_i.Overs AS Ov1
 , Bowling_i.Extra_Balls
@@ -301,10 +301,13 @@ SELECT Count(wickets_i.playerid) ||'/'|| (CASE WHEN lower(Seasons_i.nbw_status)=
 , Bowling_i.no_balls
 , Seasons_i.SeasonID
 FROM Seasons_i 
-INNER JOIN (Matches_i INNER JOIN (Innings_i 
-INNER JOIN (Wickets_i RIGHT JOIN Bowling_i ON (Wickets_i.playerID = Bowling_i.PlayerID) AND (Wickets_i.InningsID = Bowling_i.InningsID)) 
-ON Innings_i.InningsID = Bowling_i.InningsID) ON Matches_i.MatchID = Innings_i.MatchID) ON Seasons_i.SeasonID = Matches_i.SeasonID
-GROUP BY Bowling_i.PlayerID, Seasons_i.SeasonID, Bowling_i.InningsID, Bowling_i.Overs, Bowling_i.Extra_Balls, Bowling_i.Maidens, Matches_i.MatchID, bowling_i.no_balls, bowling_i.wides, bowling_i.runs_off_bat, seasons_i.nbw_status
+INNER JOIN Matches_i 
+ON Seasons_i.SeasonID = Matches_i.SeasonID
+INNER JOIN Innings_i 
+ON Matches_i.MatchID = Innings_i.MatchID
+INNER JOIN Bowling_i
+ON Innings_i.InningsID = Bowling_i.InningsID 
+--GROUP BY Bowling_i.PlayerID, Seasons_i.SeasonID, Bowling_i.InningsID, Bowling_i.Overs, Bowling_i.Extra_Balls, Bowling_i.Maidens, Matches_i.MatchID, bowling_i.no_balls, bowling_i.wides, bowling_i.runs_off_bat, seasons_i.nbw_status
 ORDER BY w DESC, runs;
 
 

@@ -63,7 +63,7 @@ def yb_milestones(_season_, writer, wb, pgconn):
             playerid,
             sum(case when "Year" = '{_season_}' then "Matches" else 0 end) as "Season Matches", 
             sum(case when "Year" <= '{_season_}' then "Matches" else 0 end) as "Total Matches"
-        FROM yb_02_batting_summary
+        FROM yb_i_02_batting_summary
         group by playerid, name_fl
         having sum(case when "Year" = '{_season_}' then "Matches" else 0 end) > 0
         ) a
@@ -87,7 +87,7 @@ def yb_milestones(_season_, writer, wb, pgconn):
             playerid,
             sum(case when "Year" = '{_season_}' then "Total Runs" else 0 end) as "Season Runs", 
             sum(case when "Year" <= '{_season_}' then "Total Runs" else 0 end) as "Total Runs"
-        FROM yb_02_batting_summary
+        FROM yb_i_02_batting_summary
         group by playerid, name_fl
         having sum(case when "Year" = '{_season_}' then "Total Runs" else 0 end) > 0
         ) a
@@ -110,25 +110,25 @@ def yb_milestones(_season_, writer, wb, pgconn):
         SELECT 
             Players.name_fl AS "Name",
             Players.playerid,
-            sum(case when Seasons.Year = '{_season_}' then z_Bowling_Figures_All.w else 0 end) as "Season Wickets", 
-            sum(case when Seasons.Year <= '{_season_}' then z_Bowling_Figures_All.w else 0 end) as "Total Wickets"
-        FROM Seasons
-        INNER JOIN Matches 
-        ON Seasons.SeasonID = Matches.SeasonID 
-        INNER JOIN Innings 
-        ON Matches.MatchID = Innings.MatchID
-        INNER JOIN Bowling 
-        ON Innings.InningsID = Bowling.InningsID 
+            sum(case when Seasons_i.Year = '{_season_}' then z_i_Bowling_Figures_All.w else 0 end) as "Season Wickets", 
+            sum(case when Seasons_i.Year <= '{_season_}' then z_i_Bowling_Figures_All.w else 0 end) as "Total Wickets"
+        FROM Seasons_i
+        INNER JOIN Matches_i 
+        ON Seasons_i.SeasonID = Matches_i.SeasonID 
+        INNER JOIN Innings_i 
+        ON Matches_i.MatchID = Innings_i.MatchID
+        INNER JOIN Bowling_i 
+        ON Innings_i.InningsID = Bowling_i.InningsID 
 
         INNER JOIN Players 
-        ON Players.PlayerID = Bowling.PlayerID 
+        ON Players.PlayerID = Bowling_i.PlayerID 
 
-        INNER JOIN z_Bowling_Figures_All 
-        ON z_Bowling_Figures_All.PlayerID = Bowling.PlayerID
-        AND z_Bowling_Figures_All.InningsID = Bowling.InningsID
+        INNER JOIN z_i_Bowling_Figures_All 
+        ON z_i_Bowling_Figures_All.PlayerID = Bowling_i.PlayerID
+        AND z_i_Bowling_Figures_All.InningsID = Bowling_i.InningsID
 
         group by Players.playerid, Players.name_fl
-        having sum(case when Seasons.Year = '{_season_}' then z_Bowling_Figures_All.w else 0 end) > 0
+        having sum(case when Seasons_i.Year = '{_season_}' then z_i_Bowling_Figures_All.w else 0 end) > 0
         ) a
     WHERE mod("Total Wickets"::int,50) < "Season Wickets"
     ORDER BY "Total Wickets" DESC
@@ -164,7 +164,7 @@ def yb_summary(_season_, seasonid, xi, writer, wb, pgconn):
     
 
     # Load summary table
-    stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_01_season_summary
+    stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_i_01_season_summary
     where seasonid = {seasonid}""")
     # Get number of rounds for later use
     num_rounds = len(stats_table['round'].drop_duplicates())
@@ -220,7 +220,7 @@ def yb_summary(_season_, seasonid, xi, writer, wb, pgconn):
     worksheet.merge_range('A1:E1',f"{xi} Batting Summary - {_season_}",fmt['heading1'])
     worksheet.set_row(0, fmt['heading1_height'])
 
-    stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_02_batting_summary
+    stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_i_02_batting_summary
     where seasonid = {seasonid}""").iloc[:,4:20]
 
     stats_table = stats_table.applymap(lambda x: None if x==-9 else x)
@@ -228,12 +228,9 @@ def yb_summary(_season_, seasonid, xi, writer, wb, pgconn):
 
     smry = ['Team Totals',num_rounds,sum(stats_table['Innings']),sum(stats_table['Not Outs']),
             sum(stats_table['Fours']),sum(stats_table['Sixes']),sum(stats_table['Ducks']),
-            sum(stats_table['Fifties']),sum(stats_table['Hundreds']),max(stats_table['Highest Score'].apply(lambda x: x.replace('*',''))),
+            sum(stats_table['20s']),max(stats_table['Highest Score'].apply(lambda x: x.replace('*',''))),
             sum(stats_table['Total Runs']),
             sum(stats_table['Total Runs'])/(sum(stats_table['Innings'])-sum(stats_table['Not Outs'])), # Average
-            sum(stats_table['Balls Faced']), # BF
-            sum(stats_table['Balls Faced'])/(sum(stats_table['Innings'])-sum(stats_table['Not Outs'])), # BF / dismissal
-            100*sum(stats_table['Total Runs'])/sum(stats_table['Balls Faced']), # Strike rate
             100*(4*sum(stats_table['Fours'])+6*sum(stats_table['Sixes']))/sum(stats_table['Total Runs'])] # pct runs in boundaries
 
     i = len(stats_table)
@@ -242,31 +239,12 @@ def yb_summary(_season_, seasonid, xi, writer, wb, pgconn):
     stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 
     # Formatting
-    worksheet.set_column('A:P',None,fmt['arial8'])
-    worksheet.set_column('A:B',None,fmt['arial8bold'])
-    worksheet.set_column('K:K',None,fmt['arial8bold'])
-    worksheet.set_column('L:L',None,fmt['arial8boldnum1dec'])
-    worksheet.set_column('N:P',None,fmt['arial8num1dec'])
+    # worksheet.set_column('A:P',None,fmt['arial8'])
+    # worksheet.set_column('A:B',None,fmt['arial8bold'])
+    # worksheet.set_column('K:K',None,fmt['arial8bold'])
+    # worksheet.set_column('L:L',None,fmt['arial8boldnum1dec'])
+    # worksheet.set_column('N:P',None,fmt['arial8num1dec'])
 
-
-    ##########################
-    # Batting Partnerships
-    ##########################
-    sheetname = f'{xi} Batting Partnerships'
-
-    row_end = 0
-    worksheet = wb.add_worksheet(sheetname)
-    worksheet.merge_range('A1:F1',f"{xi} Partnership Records - {_season_}",fmt['heading1'])
-    worksheet.set_row(0, fmt['heading1_height'])
-
-    stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_03_batting_pships
-    where seasonid = {seasonid}""").iloc[:,0:6]
-
-    stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
-
-    # Formatting
-    worksheet.set_column('A:F',None,fmt['arial9'])
-    worksheet.set_column('B:B',None,fmt['arial9bold'])
 
 
     ##########################
@@ -279,7 +257,7 @@ def yb_summary(_season_, seasonid, xi, writer, wb, pgconn):
     worksheet.merge_range('A1:L1',f"{xi} Bowling Summary - {_season_}",fmt['heading1'])
     worksheet.set_row(0, fmt['heading1_height'])
 
-    stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_04_bowling_summary
+    stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_i_04_bowling_summary
     where seasonid = {seasonid}""").iloc[:,0:12]
 
     stats_table = stats_table.applymap(lambda x: None if x==-9 else x)
@@ -303,11 +281,11 @@ def yb_summary(_season_, seasonid, xi, writer, wb, pgconn):
     stats_table.to_excel(writer, sheet_name=sheetname, startrow = 2, index=False)
 
     # Formatting
-    worksheet.set_column('A:L',None,fmt['arial8'])
-    worksheet.set_column('A:B',None,fmt['arial8bold'])
-    worksheet.set_column('G:G',None,fmt['arial8bold'])
-    worksheet.set_column('H:H',None,fmt['arial8boldnum1dec'])
-    worksheet.set_column('J:L',None,fmt['arial8num1dec'])
+    # worksheet.set_column('A:L',None,fmt['arial8'])
+    # worksheet.set_column('A:B',None,fmt['arial8bold'])
+    # worksheet.set_column('G:G',None,fmt['arial8bold'])
+    # worksheet.set_column('H:H',None,fmt['arial8boldnum1dec'])
+    # worksheet.set_column('J:L',None,fmt['arial8num1dec'])
 
 
     ##########################
@@ -320,7 +298,7 @@ def yb_summary(_season_, seasonid, xi, writer, wb, pgconn):
     worksheet.merge_range('A1:E1',f"{xi} Fielding Summary - {_season_}",fmt['heading1'])
     worksheet.set_row(0, fmt['heading1_height'])
 
-    stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_05_fielding_summary
+    stats_table = pd.read_sql(con=pgconn, sql=f"""select * from yb_i_05_fielding_summary
     where seasonid = {seasonid}""").iloc[:,0:5]
 
     smry = ['Team Totals',num_rounds,sum(stats_table['Catches']), sum(stats_table['Stumpings']), sum(stats_table['Run Outs'])] 
@@ -356,11 +334,11 @@ def yb_ind_bat(_season_, writer, wb, pgconn):
         "Rd",
         "Opponent",
         "Runs",
-        "Balls",
+        '-' as "Balls",
         "4s",
         "6s",
         "Pos"
-    FROM zz_temp_yb_batting
+    FROM zz_temp_yb_i_batting
     """)
 
     players = stats_table['Name'].drop_duplicates()
@@ -395,7 +373,7 @@ def yb_ind_bowl(_season_, writer, wb, pgconn):
         "M",
         "R",
         "W"
-    FROM zz_temp_yb_bowling
+    FROM zz_temp_yb_I_bowling
     """)
 
     players = stats_table['Name'].drop_duplicates()

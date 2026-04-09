@@ -213,10 +213,8 @@ ORDER BY "Catches" DESC, "Stumpings" DESC, "Run Outs" DESC, z_player_season_matc
 --CREATE OR REPLACE VIEW yb_16_batting_ind AS
 --CREATE OR REPLACE VIEW yb_17_bowling_ind AS
 
-
-
 --drop table zz_temp_yb_batting;
-CREATE TABLE zz_temp_yb_batting AS
+CREATE OR REPLACE VIEW zz_temp_yb_batting AS
 SELECT 
     players.player_name AS "Name"
     , Matches.Date1
@@ -229,13 +227,13 @@ SELECT
     , Batting._6s::int as "6s"
     , Batting.Batting_Position::int as "Pos"
 FROM Seasons INNER JOIN (Matches INNER JOIN (Innings INNER JOIN (Players INNER JOIN Batting ON Players.PlayerID = Batting.PlayerID) ON Innings.InningsID = Batting.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
-WHERE Seasons.SeasonID in (81,82)
+where seasons.year in (select max(year) from seasons)
 and Batting.how_out != 'DNB'
 ORDER BY players.player_name, Matches.Date1, Innings.InningsNO
 ;
 
 --drop table zz_temp_yb_bowling;
-CREATE TABLE zz_temp_yb_bowling AS
+CREATE OR REPLACE VIEW zz_temp_yb_bowling AS
 SELECT 
     players.player_name AS "Name"
     , Matches.Date1 --temp
@@ -248,7 +246,7 @@ SELECT
     , z_Bowling_Figures_All.w AS "W"
     , Innings.InningsNO
 FROM Seasons INNER JOIN (Matches INNER JOIN ((Players INNER JOIN z_Bowling_Figures_All ON Players.PlayerID = z_Bowling_Figures_All.PlayerID) INNER JOIN Innings ON z_Bowling_Figures_All.InningsID = Innings.InningsID) ON Matches.MatchID = Innings.MatchID) ON Seasons.SeasonID = Matches.SeasonID
-WHERE Seasons.SeasonID in (81,82)
+where seasons.year in (select max(year) from seasons)
 ORDER BY players.player_name, Matches.Date1, Innings.InningsNO;
 
 

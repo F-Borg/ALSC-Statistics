@@ -205,4 +205,66 @@ delete from matches where matchid = 886;
 delete from innings where matchid = 886;
 */
 
-select * from wickets where inningsid in (1965,1966)
+
+select * from matches_i
+
+select * from innings_i
+
+select * from bowling_i
+
+select matches_i.opponent, bowling_i.inningsid, bowling_i.playerid, players.name_fl , overs,wickets,runs_off_bat
+from bowling_i 
+join players 
+on bowling_i.playerid = players.playerid
+join innings_i
+on innings_i.inningsid= bowling_i.inningsid
+join matches_i
+on matches_i.matchid=innings_i.matchid
+order by matches_i.round
+;
+
+update bowling_i 
+set wickets=2 
+where inningsid=1
+and playerid=538
+;
+update bowling_i 
+set wickets=1
+where inningsid=1
+and playerid=457
+;
+update bowling_i 
+set wickets=2
+where inningsid=1
+and playerid=534
+;
+--
+update bowling_i 
+set wickets=2
+where inningsid=7
+and playerid=457
+;
+update bowling_i 
+set wickets=1
+where inningsid=7
+and playerid=541
+;
+update bowling_i 
+set wickets=1
+where inningsid=7
+and playerid=553
+;
+--
+update bowling_i 
+set wickets=2
+where inningsid=12
+and playerid=539
+;
+--
+update bowling_i 
+set wickets=3
+where inningsid=14
+and playerid=568
+;
+--
+

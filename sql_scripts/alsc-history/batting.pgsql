@@ -415,7 +415,7 @@ WHERE a.eleven = '3rd'
 order by a.wicket
 ;
 
-
+-- drop view batting_27_run_out_involvements;
 CREATE OR REPLACE VIEW batting_27_run_out_involvements AS
 select 
     p1.player_name as "Name"
@@ -423,7 +423,7 @@ select
     , sum(out_batter+not_out_batter) as run_outs
     , sum(out_batter) as out_batter
     , sum(not_out_batter) as not_out_batter
-    , to_char(100*sum(out_batter+not_out_batter)/b.inn, '990D9%') as "r/o per innings"
+    , to_char(100*sum(out_batter+not_out_batter)/b.inn, '990D9%') as "R/O per Inn"
 from (
     select  
         b1.playerid as player1
@@ -532,13 +532,13 @@ GROUP BY players.player_name, opponent
 having Count(Batting.Score) > 4
 ORDER BY Average DESC;
 
-select 
-ground ,
-case when ground similar to '(Bulldog Park|Park 21|Adelaide Lutheran|Schmidt Oval)%' then 'home' else 'away' end as ha
-, count(*)  as _c
-from matches
-group by  ground ,ha
-order by ha, _c desc;
+--select 
+--ground ,
+--case when ground similar to '(Bulldog Park|Park 21|Adelaide Lutheran|Schmidt Oval)%' then 'home' else 'away' end as ha
+--, count(*)  as _c
+--from matches
+--group by  ground ,ha
+--order by ha, _c desc;
 
 -- venue
 CREATE OR REPLACE VIEW batting_32_ha_runs AS
