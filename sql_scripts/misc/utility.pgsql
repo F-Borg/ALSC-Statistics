@@ -24,7 +24,7 @@ insert into seasons values (
 
 select * from seasons_j;
 insert into seasons_j values (
-    7, '2022/23', 'SACA Junior Competitions', 'Under 10', 'Red', 0, 0, 0, 'true', 'U10 - Red'
+    10, '2022/23', 'SACA Junior Competitions', 'Under 10', 'White', 0, 0, 0, 'true', 'U10 - White'
 )
 
 select * from seasons_i;
@@ -40,6 +40,8 @@ update players set
     , surname = 'PlayerX'
 where playerid = -99
 ;
+
+-- insert into players values (-98, 'Fill In', '-','-',null,'Fill-in');
 
 update players set 
     name_fl = 'Franco Raponi'
@@ -204,6 +206,16 @@ delete from wickets where inningsid in
 delete from matches where matchid = 886;
 delete from innings where matchid = 886;
 */
+
+-- Premierships
+select s.year, s.grade, s.eleven, m.opponent, m.ground --, m.result
+from seasons s
+join matches m
+on s.seasonid = m.seasonid
+where m.round='GF'
+and m.result like 'W%'
+order by s.year desc
+;
 
 
 select * from matches_i

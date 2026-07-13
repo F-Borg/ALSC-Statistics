@@ -1,3 +1,5 @@
+import ast
+import pathlib
 import pandas as pd
 import re
 import math
@@ -5,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import select
 from sqlalchemy import text
 import os
+import python_scripts.utility as util
 
 engine = create_engine('postgresql+psycopg2://postgres:postgres1!@localhost/dev')
 pgconn = engine.connect()
@@ -86,6 +89,8 @@ def split_fow(s):
 # match_info = {'season': '22-23', 'grade': 'ISC Teamwear LO Division 1', 'round': '2', 'num_days': 1, 'date_day_1': '22 Oct 2022', 'date_day_2': '', 'num_innings': 2, 'innings_list': ['Adelaide Lutheran 1st Innings', 'Kilburn 1st Innings'], 'fow_list': [['1-0 Daniel Grosser, 2-25 Jeremy Borgas, 3-64 Marko Fedojuk, 4-67 Manmeet Singh, 5-102 Joshua Waldhuter, 6-109 Finley Borgas, 7-126 Ajay Agnihotri, 8-132 Matthew Nitschke, 9-142 Azadar Malik'], ['1-4 Hussain Ahmadi, 2-36 Irfan Raza, 3-69 Ali Khan, 4-74 Asif Ali Shafa']], 'extras': [{'wd': 2, 'nb': 2, 'lb': 0, 'b': 4, 'p': 0}, {'wd': 7, 'nb': 1, 'lb': 0, 'b': 0, 'p': 0}], 'overs': ['40', '31.2'], 'venue': 'Blair Athol Reserve / Blair Athol Reserve - Main Oval', 'opponent': 'Kilburn', 'winner': 'Kilburn', 'result': 'L1', 'captain': 'Finley Borgas', 'game_dir': 'data/22-23/ISC Teamwear LO Division 1/Rnd_2', 'wicketkeeper': 'Marko Fedojuk'}
 
 def wrangle_match_data(match_info, write_to_postgres = False):
+    # Load match_info from .md file
+
     # get grade to determine whether seniors/juniors/inclusion
     if re.search(r'(Under|Junior|U\d)',match_info['grade']):
         grade = 'Junior'
@@ -99,7 +104,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             'seasons'       : 'seasons_j',
             'wickets'   	: 'wickets_j'
             }        
-    elif re.search(r'(Section)',match_info['grade']):
+    elif re.search(r'(Section|LO Division)',match_info['grade']):
         grade = 'Senior'
         pg_tbl = {
             'batting' 		: 'batting',
@@ -139,15 +144,26 @@ def wrangle_match_data(match_info, write_to_postgres = False):
     #########################################################################################################################
     season = pd.read_sql(con=pgconn, sql=f"select * from {pg_tbl['seasons']} where playhq_season='{match_info['grade']}' and year='20'||replace('{match_info['season']}','-','/')")
 
+    if util.check_game_exists(season['seasonid'][0], match_info['round'], match_info['opponent'], pg_tbl['matches']):
+        raise Exception(f"Match already exists: season {match_info['season']}, round {match_info['round']}, vs {match_info['opponent']}")
+
     matchid   = pd.read_sql(con=pgconn, sql=f"select max(matchid)   as n from {pg_tbl['matches']}")['n'][0]+1
     inningsid = pd.read_sql(con=pgconn, sql=f"select max(inningsid) as n from {pg_tbl['innings']}")['n'][0]+1
 
     this_match = pd.DataFrame(columns=['matchid','opponent','ground','round','seasonid','result','date1','date2','nodays','captain','wicketkeeper','fv_1st','fv_2nd'])
 
     if grade in ('Senior','Inclusive'):
-        captain_id = players.loc[players['name_fl'] == match_info['captain']]['playerid'].values[0].tolist()
+        try:
+            captain_id = players.loc[players['name_fl'] == match_info['captain']]['playerid'].values[0].tolist()
+        except:
+            captain_id = 0
+            print('Captain missing')
         if grade in ('Senior'):
-            wicketkeeper_id = players.loc[players['name_fl'] == match_info['wicketkeeper']]['playerid'].values[0].tolist()
+            try:
+                wicketkeeper_id = players.loc[players['name_fl'] == match_info['wicketkeeper']]['playerid'].values[0].tolist()
+            except:
+                wicketkeeper_id = 0
+                print('Wicket Keeper missing')
         else:
             wicketkeeper_id = 0
     else: 
@@ -328,13 +344,32 @@ def wrangle_match_data(match_info, write_to_postgres = False):
                 print('fielding table missing')
 
 
+def load_match_info_from_md(md_file):
+    match_info = {}
+    with open(md_file, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    for line in lines[2:]:
+        parts = line.strip().strip('|').split('|')
+        if len(parts) < 2:
+            continue
+        key = parts[0].strip()
+        value = parts[1].strip()
+        if not key:
+            continue
+        try:
+            match_info[key] = ast.literal_eval(value)
+        except (ValueError, SyntaxError):
+            match_info[key] = value
+    return match_info
 
 
-
-
-
-
-
+def wrangle_match_data_bulk(directory, write_to_postgres=False):
+    for md_file in pathlib.Path(directory).rglob('match_info.md'):
+        match_info = load_match_info_from_md(md_file)
+        if len(util.check_player_ids(match_info)) > 0:
+            print('Player id not found:')
+            util.check_player_ids(match_info)
+        wrangle_match_data(match_info, write_to_postgres=write_to_postgres)
 
 
 

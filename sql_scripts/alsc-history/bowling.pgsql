@@ -1,5 +1,5 @@
 
-drop view bowling_01_summary_ind;
+
 CREATE OR REPLACE VIEW bowling_01_summary_ind AS
 SELECT 
     z_bcsa.Name

@@ -30,9 +30,35 @@ def check_player_ids(match_info):
     return missing_ids
 
 
+def check_game_exists(seasonid, round, opponent, matches_tbl):
+    # checks whether a match with the same season, round and opponent has already been loaded
+    existing = pd.read_sql(con=pgconn, sql=f"""
+        select matchid from {matches_tbl}
+        where seasonid = {seasonid}
+        and round = '{round}'
+        and opponent = '{opponent}'
+        """)
+    return len(existing) > 0
+
+
 def add_new_player(firstname,lastname):
     newplayerid = pd.read_sql(con=pgconn, sql=f"select max(playerid)+1 as playerid from players")['playerid'][0]
     pgconn.execute(text(f"insert into players values ({newplayerid},'{lastname}, {firstname}','{firstname}','{lastname}',NULL,'{firstname} {lastname}')"))
     pgconn.commit()
 
+
+
+def delete_game_juniors():
+    #     # delete from batting, bowling, wickets, fielding, innings, matches.
+    pd.read_sql(con=pgconn, sql=f"select seasonid from matches_j")
+    #     pd.read_sql(con=pgconn, sql=f"select * from matches_j where seasonid=8")
+    #     pd.read_sql(con=pgconn, sql=f"select * from innings_j where matchid in (select matchid from matches_j where seasonid=8)")
+    #     pgconn.execute(text(f"delete from batting_j  where inningsid in (select inningsid from innings_j where matchid in (select matchid from matches_j where seasonid=8))"))
+    #     pgconn.execute(text(f"delete from bowling_j  where inningsid in (select inningsid from innings_j where matchid in (select matchid from matches_j where seasonid=8))"))
+    #     pgconn.execute(text(f"delete from fielding_j where inningsid in (select inningsid from innings_j where matchid in (select matchid from matches_j where seasonid=8))"))
+    #     pgconn.execute(text(f"delete from innings_j where matchid in (select matchid from matches_j where seasonid=8)"))
+    #     pgconn.execute(text(f"delete from matches_j where seasonid=8"))
+    pd.read_sql(con=pgconn, sql=f"select * from players where playerid < 0")    
     
+
+

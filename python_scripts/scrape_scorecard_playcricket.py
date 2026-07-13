@@ -67,9 +67,9 @@ def scrape_scorecard_playcricket(url, overwrite_md=False, team=None):
 
     head = dom.xpath('/html/body/main/section/header/div')[0]
     if team == None:
-        mi_grade = re.sub(':','',head.xpath('//nav/ol/li[1]/a/span/text()')[0].strip())
+        mi_grade = re.sub('[:/]','',head.xpath('//nav/ol/li[1]/a/span/text()')[0].strip())
     else:
-        mi_grade = re.sub(':','',head.xpath('//nav/ol/li[1]/a/span/text()')[0].strip())+' - '+team
+        mi_grade = re.sub('[:/]','',head.xpath('//nav/ol/li[1]/a/span/text()')[0].strip())+' - '+team
     mi_round = head.xpath('//nav/ol/li[2]/a/span/text()')[0].strip()
 
     if 'Round' in mi_round:
@@ -225,7 +225,7 @@ def scrape_scorecard_playcricket(url, overwrite_md=False, team=None):
             if len(dom.xpath(f'/html/body/main/section/div[4]/div/div/div[2]/section/div[2]/div[2]/table')) == 1:
                 bowling_sc =      dom.xpath(f'/html/body/main/section/div[4]/div/div/div[2]/section/div[2]/div[2]/table')[0]
                 bowling_df = pd.read_html(lxml.etree.tostring(bowling_sc, method='html').decode('utf-8'))[0]
-                bowling_df.columns = ['bowler','overs','overs_hidden','maidens','runs','wickets','econ','wides','no_balls','dot_balls']
+                bowling_df.columns = ['bowler','overs','maidens','runs','wickets','econ','wides','no_balls','dot_balls']
                 bowling_df = bowling_df.loc[:,['bowler','overs','maidens','runs','wickets','wides','no_balls']]
                 bowling_df.insert(loc=7, column='_4s_against', value=0)
                 bowling_df.insert(loc=8, column='_6s_against', value=0)

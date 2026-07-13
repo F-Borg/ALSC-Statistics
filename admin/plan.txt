@@ -6,7 +6,6 @@
 	not prevented from entering same match twice
 	
 
-
 ###############################################################################
 # Setup
 ############################################################################### 
@@ -16,9 +15,6 @@ Open source software:
 	postgres
 	vscode
 	python
-
-	MikTex
-	Perl (strawberryperl)
 	
 
 ###############################################################################
@@ -72,25 +68,30 @@ Open source software:
 		DONE - yearbook
 
 ###############################################################################
-#             1.1 - Output to LaTeX
+#             1.1 - Juniors Stats
+###############################################################################
+	DONE - change wrangle_match_data to accept match_info.md as input
+	- automate get list of urls for season
+	- Bulk generate Juniors games
+	
+
+
+
+###############################################################################
+#             1.? - Website
 ###############################################################################
 
 
-	First steps:
-		output table from pandas to tex file
-		import table to main tex file
-		fit table to width
-		
 
-
-	More complex tasks:
-		multipage table - longtable
-		two columns per page 
-
-\documentclass ?
+###############################################################################
+#             1.? - Automated Stats Book
+###############################################################################
 
 
 
+###############################################################################
+#             1.? - Individual Summary
+###############################################################################
 
 
 
@@ -109,10 +110,6 @@ Open source software:
 	Recreate scorecard for a game
 	additional web scraping
 		DONE - date & venue
-	Power BI integration
-		- web version for all to access
-		- store copy of datasets online
-	electronic version of stats book - don't have to fit things on A4 pages, can distribute via email or put on website
 	junior cricket
 	handover document
 
@@ -125,7 +122,9 @@ Open source software:
 			duplicate records
 		- check order of missing records
 
+	Function to delete a match (and all records from tables that use that match)
 
+	Player Numbers - add another player number column that reflects when the person started playing for the club? Maybe start after 500 or so (whenever it started to get convoluted)
 
 
 

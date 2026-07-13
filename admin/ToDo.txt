@@ -5,7 +5,16 @@
 #################################
 
 
-Most Runs in a Season - bat average is miscalculated???
+
+restructure directories
+
+get match_info from .md file
+then can run wrangle_match_data with the file location.
+This will allow running scrape in bulk
+
+
+
+
 
 decimal places - do when selecting from postgres into excel:
 to_char(ave, '990D9%')
@@ -18,15 +27,30 @@ apostrophes in names
 
 
 
-
-Junior stats:
+#################################
+# Junior stats
     - new postgres views for junior stats
     - red/blue for same season
-venue - get everything after the "/"
 
-Inclusive:
-    - postgres views
-    
+
+
+#################################
+# Expand to other clubs
+new database
+    - update code to connect to club database and check database is correct
+wrangle_match_data
+    - load match_info from the md file rather than use python var
+        (This will help with bulk loads -> can do >1 match at a time)
+main 
+    - crawl over season
+
+missing data
+    - FOW
+        - WHERE MAX(batting.wicket)>0 over innings
+    - balls faced
+        - put a WHERE batting.balls_faced>0 clause in the views
+
+
 
 #################################
 # additional stats:
@@ -38,6 +62,9 @@ oldest known players
 #################################
 # Updates to data
 DONE -- Youngest players
+Most Runs in a Season - bat average is miscalculated???
+balls faced for career strike rate
+venue - get everything after the "/"
 
 
 #################################

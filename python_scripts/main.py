@@ -2,6 +2,7 @@ import python_scripts.scrape_scorecard as ss
 import python_scripts.scrape_scorecard_playcricket as ssp
 import python_scripts.wrangle_match_data as wd
 import python_scripts.utility as util
+import pathlib
 
 # reload when required after updates to code
 import importlib
@@ -13,12 +14,11 @@ importlib.reload(util)
 
 # fetch match url
 # !!! copy and paste the url for the match into the url variable below
-url = "https://www.playhq.com/cricket-australia/org/saca-inclusive-cricket-league/inclusive-cricket-league-summer-202526/saca-inclusive-cricket-league/game-centre/7a04afc1"
+url = "https://www.playhq.com/cricket-australia/org/saca-junior-competitions/wsjca-summer-202223/u10/game-centre/9c2d2fdf"
 
 # scrape scorecard (saves multiple tables to data/[year]/[grade]/[round]/)
-match_info = ss.scrape_scorecard(url, overwrite_md=True)
-# match_info = ss.scrape_scorecard(url, overwrite_md=False, team='Red')
-# match_info = ssp.scrape_scorecard_playcricket(url, overwrite_md=False, team='Red')
+# match_info = ss.scrape_scorecard(url, overwrite_md=True)
+match_info = ss.scrape_scorecard(url, overwrite_md=False, team='White')
 
 # !!! check data/[yy-yy]/[grade]/[round]/ 
 # add any missing info:
@@ -37,14 +37,22 @@ if False:
     match_info['captain'] = 'Matthew Bell'
     match_info['fow_list'] =  [['1-14 Peter Hughes, 2-36 Player, 3-93 ', ', 4-107 Michael Bayliss, 5-147 ', ', 6-147 Player, 7-183 Player'], ['1-0 Jim Wills, 2-110 Connor Brown, 3-110 Matthew Nitschke, 4-152 Joshua Waldhuter, 5-155 Sidhaarth Bamarani Thangaswamy, 6-170 James Carragher']]
     match_info['extras'] = [{'wd': 11, 'nb': 2, 'lb': 0, 'b': 5, 'p': 0}, {'wd': 6, 'nb': 11, 'lb': 0, 'b': 0, 'p': 0}]
-    match_info['result'] = 'W2'
+    match_info['result'] = 'D'
     match_info['grade'] = 'WSJCA Under 10 Pool A - Red'
 
+
+url_list = ["https://www.playhq.com/cricket-australia/org/saca-junior-competitions/wsjca-summer-202223/u10/game-centre/b2bee372",
+            "https://www.playhq.com/cricket-australia/org/saca-junior-competitions/wsjca-summer-202223/u10/game-centre/4bc1170a"]
+
+for url in url_list:
+    match_info = ss.scrape_scorecard(url, overwrite_md=False, team='White')
+    util.check_player_ids(match_info)
 
 # Check for missing/not recognised players
 # Unknown PlayerX
 # !!! add any new players
 util.check_player_ids(match_info)
+
 
 if False:
     newplayer=util.check_player_ids(match_info)[0]
@@ -52,7 +60,7 @@ if False:
     lname=newplayer.split()[1]
     util.add_new_player(fname,lname)
 
-    # util.add_new_player('Takdir Singh','Sahota')
+    # util.add_new_player('Daniyal','Syed')
 
 # !!! Validate:
 # all player ids are there
@@ -65,3 +73,21 @@ if False:
     # !!! run this after validating
     wd.wrangle_match_data(match_info, write_to_postgres = True)
 
+
+
+
+
+
+
+
+
+
+
+directory='data/22-23/U10 - White'
+
+# wd.wrangle_match_data_bulk(directory, write_to_postgres=False)
+
+for md_file in pathlib.Path(directory).rglob('match_info.md'):
+    # match_info = load_match_info_from_md(md_file)
+    print(md_file)
+    match_info=wd.load_match_info_from_md(md_file)

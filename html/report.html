@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>A4 Report Example</title>
+
+<style>
+/* A4 page setup */
+@page {
+    size: A4;
+    margin: 12mm;
+}
+
+/* Base styling */
+body {
+    font-family: Arial, sans-serif;
+    font-size: 10pt;
+    color: #222;
+}
+
+/* Section spacing */
+.report-section {
+    margin-bottom: 18mm;
+}
+
+/* Titles */
+.section-title {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-bottom: 5mm;
+}
+
+/* Table styling */
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    page-break-inside: avoid;
+}
+
+/* Cells */
+.report-table th,
+.report-table td {
+    border: 1px solid #999;
+    padding: 4px 6px;
+    text-align: left;
+    vertical-align: top;
+    word-break: break-word;
+}
+
+/* Header row */
+.report-table th {
+    background-color: #eaeaea;
+    font-weight: bold;
+}
+
+/* Zebra striping */
+.report-table tbody tr:nth-child(even) {
+    background-color: #f8f8f8;
+}
+
+/* Auto shrink if content is wide */
+.shrink {
+    font-size: 8pt;
+}
+</style>
+
+</head>
+<body>
+
+<!-- TABLE 1 -->
+<div class="report-section">
+
+    <div class="section-title">
+        Batting Statistics
+    </div>
+
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>Player</th>
+                <th>Matches</th>
+                <th>Runs</th>
+                <th>Average</th>
+                <th>Strike Rate</th>
+                <th>100s</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>John Smith</td>
+                <td>18</td>
+                <td>742</td>
+                <td>49.47</td>
+                <td>91.8</td>
+                <td>2</td>
+            </tr>
+
+            <tr>
+                <td>Alex Brown</td>
+                <td>16</td>
+                <td>601</td>
+                <td>42.92</td>
+                <td>84.2</td>
+                <td>1</td>
+            </tr>
+
+            <tr>
+                <td>Michael Lee</td>
+                <td>15</td>
+                <td>512</td>
+                <td>36.57</td>
+                <td>78.1</td>
+                <td>0</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<!-- TABLE 2 -->
+<div class="report-section">
+
+    <div class="section-title">
+        Bowling Statistics
+    </div>
+
+    <table class="report-table shrink">
+        <thead>
+            <tr>
+                <th>Player</th>
+                <th>Overs</th>
+                <th>Maidens</th>
+                <th>Runs</th>
+                <th>Wickets</th>
+                <th>Average</th>
+                <th>Economy</th>
+                <th>Strike Rate</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Tom Wilson</td>
+                <td>144.2</td>
+                <td>18</td>
+                <td>512</td>
+                <td>31</td>
+                <td>16.52</td>
+                <td>3.54</td>
+                <td>27.9</td>
+            </tr>
+
+            <tr>
+                <td>Chris Taylor</td>
+                <td>132.0</td>
+                <td>12</td>
+                <td>488</td>
+                <td>24</td>
+                <td>20.33</td>
+                <td>3.70</td>
+                <td>33.0</td>
+            </tr>
+
+            <tr>
+                <td>Ryan Cooper</td>
+                <td>118.1</td>
+                <td>10</td>
+                <td>467</td>
+                <td>19</td>
+                <td>24.58</td>
+                <td>3.95</td>
+                <td>37.3</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
