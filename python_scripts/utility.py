@@ -1,11 +1,11 @@
 import pandas as pd
 import re
 import math
-from sqlalchemy import create_engine
 from sqlalchemy import insert
 from sqlalchemy import text
+from python_scripts.db import get_engine
 
-engine = create_engine('postgresql+psycopg2://postgres:postgres1!@localhost/dev')
+engine = get_engine()
 pgconn = engine.connect()
 
 
@@ -32,18 +32,31 @@ def check_player_ids(match_info):
 
 def check_game_exists(seasonid, round, opponent, matches_tbl):
     # checks whether a match with the same season, round and opponent has already been loaded
-    existing = pd.read_sql(con=pgconn, sql=f"""
-        select matchid from {matches_tbl}
-        where seasonid = {seasonid}
-        and round = '{round}'
-        and opponent = '{opponent}'
-        """)
+    existing = pd.read_sql(
+        con=pgconn,
+        sql=text(f"""
+            select matchid from {matches_tbl}
+            where seasonid = :seasonid
+            and round = :round
+            and opponent = :opponent
+            """),
+        params={'seasonid': seasonid, 'round': round, 'opponent': opponent},
+    )
     return len(existing) > 0
 
 
 def add_new_player(firstname,lastname):
     newplayerid = pd.read_sql(con=pgconn, sql=f"select max(playerid)+1 as playerid from players")['playerid'][0]
-    pgconn.execute(text(f"insert into players values ({newplayerid},'{lastname}, {firstname}','{firstname}','{lastname}',NULL,'{firstname} {lastname}')"))
+    pgconn.execute(
+        text("insert into players values (:playerid, :name_lf, :firstname, :lastname, NULL, :name_fl)"),
+        {
+            'playerid': int(newplayerid),
+            'name_lf': f'{lastname}, {firstname}',
+            'firstname': firstname,
+            'lastname': lastname,
+            'name_fl': f'{firstname} {lastname}',
+        },
+    )
     pgconn.commit()
 
 

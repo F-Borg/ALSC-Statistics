@@ -4,11 +4,70 @@
 #################################
 #################################
 
+#################################
+# Get juniors up-to-date
+Which juniors seasons are we missing still?
+list and then add to database
 
+2023/24
+SACA Junior Competitions
+WSJCA
+U10 Blue
+U10 Red
+U12 Blue
+U12 Red
+
+2024/25
+SACA Junior Competitions
+WSJCA
+U10 Blue
+U12 Blue
+U12 Red
+
+2024/25
+ATCA
+Junior Boys Competition
+U10 (division U10 Green)
+
+2025/26
+SACA Junior Competitions
+Western Suburbs
+U10 Blue
+U12
+U14
+
+2025/26
+ATCA
+Junior Boys Competition
+U10 White
+U10 Red
+U12
+(all division 2)
+
+
+
+#################################
+# API 
+get credentials:
+    DONE - ASCA
+    DONE - ATCA
+    DONE - SACA Juniors
+    SACA Inclusive
+
+Create script to call for a single game/season
+
+
+
+
+
+
+
+
+#################################
 
 restructure directories
 
-get match_info from .md file
+DONE - get match_info from .md file
 then can run wrangle_match_data with the file location.
 This will allow running scrape in bulk
 
@@ -27,10 +86,19 @@ apostrophes in names
 
 
 
+
+
+
+
+
 #################################
 # Junior stats
     - new postgres views for junior stats
     - red/blue for same season
+
+
+
+
 
 
 

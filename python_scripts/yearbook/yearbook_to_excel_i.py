@@ -20,7 +20,6 @@
 # Setup
 #########################################################################################################################
 #########################################################################################################################
-from sqlalchemy import create_engine
 from sqlalchemy import select
 from sqlalchemy import text
 # from math import ceil
@@ -28,6 +27,7 @@ import pandas as pd
 import python_scripts.yearbook.yearbook_to_excel_fns_i as yb
 import python_scripts.text_formats as tf
 import os
+from python_scripts.db import get_engine
 
 
 # reload when required
@@ -37,7 +37,7 @@ importlib.reload(tf)
 
 
 
-engine = create_engine('postgresql+psycopg2://postgres:postgres1!@localhost/dev')
+engine = get_engine()
 pgconn = engine.connect()
 
 

@@ -1,9 +1,9 @@
-from sqlalchemy import create_engine
 from sqlalchemy import select
 from sqlalchemy import text
 import pandas as pd
+from python_scripts.db import get_engine
 
-engine = create_engine('postgresql+psycopg2://postgres:postgres1!@localhost/dev')
+engine = get_engine()
 
 pgconn = engine.connect()
 

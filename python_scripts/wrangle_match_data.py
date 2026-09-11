@@ -3,13 +3,13 @@ import pathlib
 import pandas as pd
 import re
 import math
-from sqlalchemy import create_engine
 from sqlalchemy import select
 from sqlalchemy import text
 import os
 import python_scripts.utility as util
+from python_scripts.db import get_engine
 
-engine = create_engine('postgresql+psycopg2://postgres:postgres1!@localhost/dev')
+engine = get_engine()
 pgconn = engine.connect()
 
 
@@ -142,7 +142,11 @@ def wrangle_match_data(match_info, write_to_postgres = False):
     #########################################################################################################################
     # Season, Match - numerical order does not matter
     #########################################################################################################################
-    season = pd.read_sql(con=pgconn, sql=f"select * from {pg_tbl['seasons']} where playhq_season='{match_info['grade']}' and year='20'||replace('{match_info['season']}','-','/')")
+    season = pd.read_sql(
+        con=pgconn,
+        sql=text(f"select * from {pg_tbl['seasons']} where playhq_season = :grade and year = '20'||replace(:season, '-', '/')"),
+        params={'grade': match_info['grade'], 'season': match_info['season']},
+    )
 
     if util.check_game_exists(season['seasonid'][0], match_info['round'], match_info['opponent'], pg_tbl['matches']):
         raise Exception(f"Match already exists: season {match_info['season']}, round {match_info['round']}, vs {match_info['opponent']}")
