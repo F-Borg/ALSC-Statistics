@@ -188,7 +188,7 @@ def _appearance_name(appearance):
         return 'Fill-in'
     first = appearance.get('firstName')
     last = appearance.get('lastName')
-    if appearance.get('isFillIn') or not first or not last:
+    if not first or not last:
         return 'Fill-in'
     return f"{first} {last}"
 
@@ -257,12 +257,16 @@ def _how_out_text(status, dismissal, appearances_by_id):
 # main entry point
 #########################################################################################################################
 
-def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, overwrite_md=False):
+def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, overwrite_md=False, our_team_id=None):
     """
     Takes the dict returned by PlayHQClient.get_game_summary() and writes the same
     innings_N_batting.md / innings_N_bowling.md / innings_N_fielding.md / match_info.md
     files that scrape_scorecard() writes, then returns match_info.
     overwrite_md=False will only write md files if they don't exist
+
+    our_team_id: use this to disambiguate which team is "ours" when two of our own teams
+    (e.g. Red vs Blue) play each other and both match our_club_regex. If not given, falls
+    back to matching our_club_regex against the teams' names.
     """
     teams_by_id = {t['id']: t for t in game_summary['teams']}
     appearances_by_id = {a['id']: a for a in game_summary['appearances']}
@@ -270,25 +274,32 @@ def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, ov
     #########################################################################################################################
     # Match info
     #########################################################################################################################
-    our_team = next((t for t in game_summary['teams'] if re.search(our_club_regex, t['name'])), None)
-    if our_team is None:
-        raise Exception(f"Could not find our team in teams: {[t['name'] for t in game_summary['teams']]}")
+    if our_team_id is not None:
+        our_team = teams_by_id.get(our_team_id)
+        if our_team is None:
+            raise Exception(f"our_team_id {our_team_id} not found in teams: {[t['name'] for t in game_summary['teams']]}")
+    else:
+        matching_teams = [t for t in game_summary['teams'] if re.search(our_club_regex, t['name'])]
+        if not matching_teams:
+            raise Exception(f"Could not find our team in teams: {[t['name'] for t in game_summary['teams']]}")
+        if len(matching_teams) > 1:
+            raise Exception(
+                f"Multiple teams match our_club_regex ({[t['name'] for t in matching_teams]}) - "
+                f"pass our_team_id to disambiguate which one is ours"
+            )
+        our_team = matching_teams[0]
     opponent_team = next(t for t in game_summary['teams'] if t['id'] != our_team['id'])
     opponent = opponent_team['name']
 
     if our_team.get('outcome', '').startswith('WON'):
         mi_winner = our_team['name']
+        mi_result = 'W1'
     elif opponent_team.get('outcome', '').startswith('WON'):
         mi_winner = opponent_team['name']
+        mi_result = 'L1'
     else:
         mi_winner = 'draw'
-
-    if re.search(our_club_regex, mi_winner):
-        mi_result = 'W1'
-    elif mi_winner == 'draw':
         mi_result = 'D'
-    else:
-        mi_result = 'L1'
 
     round_name = game_summary['round']['name']
     if round_name.startswith('Round '):
@@ -329,7 +340,14 @@ def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, ov
     #########################################################################################################################
     # Create directories for markdown tables
     #########################################################################################################################
-    game_dir = f'data_playhq/{mi_season}/{grade_name}/Rnd_{mi_round}'
+    team = next((c for c in ('Red', 'White', 'Blue') if re.sub(r'\s+U\d\d$','',our_team['name']).lower().endswith(c.lower())), None)
+
+    if team is None:
+        grade_dirname = grade_name.replace('/','')
+    else:
+        grade_dirname = grade_name.replace('/','')+' - '+team
+
+    game_dir = f'data/{mi_season}/{grade_dirname}/Rnd_{mi_round}'
     Path(game_dir).mkdir(parents=True, exist_ok=True)
 
     #########################################################################################################################
@@ -435,12 +453,17 @@ def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, ov
 
                 catches = _stat(stats, 'TOTAL_CATCHES', None)
                 if catches is None:
-                    catches = _stat(stats, 'CATCHES_AS_FIELDER', 0) + _stat(stats, 'CATCHES_AS_WICKET_KEEPER', 0)
+                    catches = int(_stat(stats, 'CATCHES_AS_FIELDER', 0)) + int(_stat(stats, 'CATCHES_AS_WICKET_KEEPER', 0))
+                else:
+                    catches = int(catches)
                 run_outs = _stat(stats, 'TOTAL_RUN_OUTS', None)
                 if run_outs is None:
-                    run_outs = _stat(stats, 'RUN_OUTS_ASSISTED', 0) + _stat(stats, 'RUN_OUTS_UNASSISTED', 0)
-                stumpings = _stat(stats, 'STUMPINGS', 0)
-                fielding_df.loc[len(fielding_df)] = [name, catches, run_outs, stumpings]
+                    run_outs = int(_stat(stats, 'RUN_OUTS_ASSISTED', 0)) + int(_stat(stats, 'RUN_OUTS_UNASSISTED', 0))
+                else:
+                    run_outs = int(run_outs)
+                stumpings = int(_stat(stats, 'STUMPINGS', 0))
+                if catches or run_outs or stumpings:
+                    fielding_df.loc[len(fielding_df)] = [name, catches, run_outs, stumpings]
 
         if len(bowling_df) == 0:
             for bi in range(1, 7):
@@ -451,19 +474,19 @@ def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, ov
             with open(f'{game_dir}/innings_{ii}_bowling.md', 'w') as f:
                 f.write(bowling_df.to_markdown())
 
-        if len(fielding_df) > 0:
-            if overwrite_md or not os.path.exists(f'{game_dir}/innings_{ii}_fielding.md'):
-                with open(f'{game_dir}/innings_{ii}_fielding.md', 'w') as f:
-                    f.write(fielding_df.to_markdown())
-        else:
+        if len(fielding_df) == 0:
             print('empty fielding card')
+
+        if overwrite_md or not os.path.exists(f'{game_dir}/innings_{ii}_fielding.md'):
+            with open(f'{game_dir}/innings_{ii}_fielding.md', 'w') as f:
+                f.write(fielding_df.to_markdown())
 
     #########################################################################################################################
     # match_info.md
     #########################################################################################################################
     match_info = {
         'season': mi_season,
-        'grade': grade_name,
+        'grade': grade_dirname,
         'round': mi_round,
         'num_days': mi_num_days,
         'date_day_1': mi_date_day_1,
@@ -495,10 +518,11 @@ def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, ov
     return match_info
 
 
-def fetch_match(client, game_id, grade_name, our_club_regex=OUR_CLUB_REGEX, overwrite_md=False):
+def fetch_match(client, game_id, grade_name, our_club_regex=OUR_CLUB_REGEX, overwrite_md=False, our_team_id=None):
     """Fetch a single game from the API and write it out. Equivalent to scrape_scorecard(url, ...)."""
     game_summary = client.get_game_summary(game_id)
-    return build_match_info(game_summary, grade_name, our_club_regex=our_club_regex, overwrite_md=overwrite_md)
+    return build_match_info(game_summary, grade_name, our_club_regex=our_club_regex, overwrite_md=overwrite_md,
+                             our_team_id=our_team_id)
 
 
 def find_grades_for_team(client, organisation_id=None, our_club_regex=OUR_CLUB_REGEX):
@@ -507,7 +531,8 @@ def find_grades_for_team(client, organisation_id=None, our_club_regex=OUR_CLUB_R
     our_club_regex (e.g. 'Adelaide Lutheran') is playing.
 
     Returns a list of dicts with season_id/name, association_id/name, competition_id/name,
-    grade_id/name and the matching team's id/name.
+    grade_id/name and the matching team's id/name. If a grade has more than one matching
+    team (e.g. two of our sides in the same grade), one result is returned per team.
     """
     results = []
     for season in client.get_seasons(organisation_id=organisation_id):
@@ -518,33 +543,54 @@ def find_grades_for_team(client, organisation_id=None, our_club_regex=OUR_CLUB_R
                 print(f"Failed to fetch fixture for grade {grade['id']} ({grade['name']}): {e}")
                 continue
 
-            team = next((t for t in fixture.get('teams', []) if re.search(our_club_regex, t['name'])), None)
-            if team is None:
+            teams = [t for t in fixture.get('teams', []) if re.search(our_club_regex, t['name'])]
+            if not teams:
                 continue
 
-            results.append({
-                'season_id': season['id'],
-                'season_name': season['name'],
-                'association_id': season.get('association', {}).get('id'),
-                'association_name': season.get('association', {}).get('name'),
-                'competition_id': season.get('competition', {}).get('id'),
-                'competition_name': season.get('competition', {}).get('name'),
-                'grade_id': grade['id'],
-                'grade_name': grade['name'],
-                'team_id': team['id'],
-                'team_name': team['name'],
-            })
+            for team in teams:
+                results.append({
+                    'season_id': season['id'],
+                    'season_name': season['name'],
+                    'association_id': season.get('association', {}).get('id'),
+                    'association_name': season.get('association', {}).get('name'),
+                    'competition_id': season.get('competition', {}).get('id'),
+                    'competition_name': season.get('competition', {}).get('name'),
+                    'grade_id': grade['id'],
+                    'grade_name': grade['name'],
+                    'team_id': team['id'],
+                    'team_name': team['name'],
+                })
     return results
 
 
 def fetch_grade_matches(client, grade_id, grade_name, our_club_regex=OUR_CLUB_REGEX, overwrite_md=False):
-    """Fetch every completed game in a grade's fixture and write them all out."""
+    """
+    Fetch every completed game in a grade's fixture and write them all out. If both teams
+    in a game are our own (e.g. Red vs Blue), the game is written out twice - once from
+    each team's perspective - so both teams' directories get the match.
+    """
     fixture = client.get_grade_fixture(grade_id)
+    fixture_teams_by_id = {t['id']: t for t in fixture.get('teams', [])}
     match_infos = []
     for round_ in fixture.get('rounds', []):
         for game in round_.get('games', []):
             if game['status'] != 'FINAL':
                 continue
+
+            our_team_ids = [
+                t['id'] for t in game['teams']
+                if re.search(our_club_regex, fixture_teams_by_id[t['id']]['name'])
+            ]
+            if len(our_team_ids) > 1:
+                for our_team_id in our_team_ids:
+                    try:
+                        match_infos.append(fetch_match(client, game['id'], grade_name,
+                                                        our_club_regex=our_club_regex, overwrite_md=overwrite_md,
+                                                        our_team_id=our_team_id))
+                    except Exception as e:
+                        print(f"Failed to fetch game {game['id']} for team {our_team_id}: {e}")
+                continue
+
             try:
                 match_infos.append(fetch_match(client, game['id'], grade_name,
                                                 our_club_regex=our_club_regex, overwrite_md=overwrite_md))

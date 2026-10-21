@@ -1,24 +1,14 @@
-import python_scripts.scrape_scorecard as ss
-import python_scripts.scrape_scorecard_playcricket as ssp
 import python_scripts.wrangle_match_data as wd
 import python_scripts.utility as util
 import pathlib
 
 # reload when required after updates to code
 import importlib
-importlib.reload(ss)
-importlib.reload(ssp)
 importlib.reload(wd)
 importlib.reload(util)
 
 
-# fetch match url
-# !!! copy and paste the url for the match into the url variable below
-url = "https://www.playhq.com/cricket-australia/org/saca-junior-competitions/wsjca-summer-202223/u10/game-centre/9c2d2fdf"
 
-# scrape scorecard (saves multiple tables to data/[year]/[grade]/[round]/)
-# match_info = ss.scrape_scorecard(url, overwrite_md=True)
-match_info = ss.scrape_scorecard(url, overwrite_md=False, team='White')
 
 # !!! check data/[yy-yy]/[grade]/[round]/ 
 # add any missing info:
@@ -26,41 +16,18 @@ match_info = ss.scrape_scorecard(url, overwrite_md=False, team='White')
 # make sure ALL players are listed in our batting innings
 # bowling: boundaries, extras 
 
-# !!! if there is anything missing from the online scorecard, then update them by running relevant lines below
-if False:
-    match_info['wicketkeeper'] = 'Marko Fedojuk' 
-    match_info['wicketkeeper'] = 'Peter Taylor'
-    match_info['wicketkeeper'] = 'Brett MacTavish'
-    match_info['wicketkeeper'] = 'Izaak Osborne'
-    match_info['captain'] = 'Jim Wills'
-    match_info['captain'] = 'Finley Borgas'
-    match_info['captain'] = 'Matthew Bell'
-    match_info['fow_list'] =  [['1-14 Peter Hughes, 2-36 Player, 3-93 ', ', 4-107 Michael Bayliss, 5-147 ', ', 6-147 Player, 7-183 Player'], ['1-0 Jim Wills, 2-110 Connor Brown, 3-110 Matthew Nitschke, 4-152 Joshua Waldhuter, 5-155 Sidhaarth Bamarani Thangaswamy, 6-170 James Carragher']]
-    match_info['extras'] = [{'wd': 11, 'nb': 2, 'lb': 0, 'b': 5, 'p': 0}, {'wd': 6, 'nb': 11, 'lb': 0, 'b': 0, 'p': 0}]
-    match_info['result'] = 'D'
-    match_info['grade'] = 'WSJCA Under 10 Pool A - Red'
 
-
-url_list = ["https://www.playhq.com/cricket-australia/org/saca-junior-competitions/wsjca-summer-202223/u10/game-centre/b2bee372",
-            "https://www.playhq.com/cricket-australia/org/saca-junior-competitions/wsjca-summer-202223/u10/game-centre/4bc1170a"]
-
-for url in url_list:
-    match_info = ss.scrape_scorecard(url, overwrite_md=False, team='White')
-    util.check_player_ids(match_info)
+match_info=wd.load_match_info(year='24-25', grade='WSJCA - U12 - Red', round='Rnd_4', data_dir='data')
 
 # Check for missing/not recognised players
-# Unknown PlayerX
-# !!! add any new players
 util.check_player_ids(match_info)
-
+# util.add_new_player('Daniyal','Syed')
 
 if False:
     newplayer=util.check_player_ids(match_info)[0]
     fname=newplayer.split()[0]
     lname=newplayer.split()[1]
     util.add_new_player(fname,lname)
-
-    # util.add_new_player('Daniyal','Syed')
 
 # !!! Validate:
 # all player ids are there
@@ -83,6 +50,7 @@ if False:
 
 
 
+
 directory='data/22-23/U10 - White'
 
 # wd.wrangle_match_data_bulk(directory, write_to_postgres=False)
@@ -91,3 +59,9 @@ for md_file in pathlib.Path(directory).rglob('match_info.md'):
     # match_info = load_match_info_from_md(md_file)
     print(md_file)
     match_info=wd.load_match_info_from_md(md_file)
+
+
+fillin_matches=wd.find_matches_with_fillins(directory='data')
+
+for i in fillin_matches:
+    print(i)

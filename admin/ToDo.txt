@@ -4,6 +4,8 @@
 #################################
 #################################
 
+
+
 #################################
 # Get juniors up-to-date
 Which juniors seasons are we missing still?
@@ -12,36 +14,36 @@ list and then add to database
 2023/24
 SACA Junior Competitions
 WSJCA
-U10 Blue
-U10 Red
-U12 Blue
-U12 Red
+    U10 Blue - DONE
+    U10 Red - DONE
+    U12 Blue - DONE
+    U12 Red - DONE
 
 2024/25
 SACA Junior Competitions
 WSJCA
-U10 Blue
-U12 Blue
-U12 Red
+    U10 Blue - DONE
+    U12 Blue - DONE
+    U12 Red  - in progress
 
 2024/25
 ATCA
 Junior Boys Competition
-U10 (division U10 Green)
+    U10 (division U10 Green)
 
 2025/26
 SACA Junior Competitions
 Western Suburbs
-U10 Blue
-U12
-U14
+    U10 Blue
+    U12
+    U14
 
 2025/26
 ATCA
 Junior Boys Competition
-U10 White
-U10 Red
-U12
+    U10 White
+    U10 Red
+    U12
 (all division 2)
 
 

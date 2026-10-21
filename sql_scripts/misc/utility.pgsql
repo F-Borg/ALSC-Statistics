@@ -23,9 +23,13 @@ insert into seasons values (
 );
 
 select * from seasons_j;
-insert into seasons_j values (
-    10, '2022/23', 'SACA Junior Competitions', 'Under 10', 'White', 0, 0, 0, 'true', 'U10 - White'
-)
+insert into seasons_j values (11, '2023/24', 'SACA Junior Competitions', 'Under 10', 'Blue', 0, 0, 0, 'true', 'WSJCA - U10 - Blue');
+insert into seasons_j values (12, '2023/24', 'SACA Junior Competitions', 'Under 10', 'Red', 0, 0, 0, 'true', 'WSJCA - U10 - Red');
+insert into seasons_j values (13, '2023/24', 'SACA Junior Competitions', 'Under 12', 'Red', 0, 0, 0, 'true', 'WSJCA - U12 - Red');
+insert into seasons_j values (14, '2023/24', 'SACA Junior Competitions', 'Under 12', 'Blue', 0, 0, 0, 'true', 'WSJCA - U12 - Blue');
+insert into seasons_j values (15, '2024/25', 'SACA Junior Competitions', 'Under 10', 'Blue', 0, 0, 0, 'true', 'WSJCA - U10 - Blue');
+insert into seasons_j values (16, '2024/25', 'SACA Junior Competitions', 'Under 12', 'Blue', 0, 0, 0, 'true', 'WSJCA - U12 - Blue');
+insert into seasons_j values (17, '2024/25', 'SACA Junior Competitions', 'Under 12', 'Red' , 0, 0, 0, 'true', 'WSJCA - U12 - Red');
 
 select * from seasons_i;
 insert into seasons_i values (
@@ -34,11 +38,11 @@ insert into seasons_i values (
 
 -- Update player name
 update players set 
-    player_name = 'PlayerX, Unknown'
-    , name_fl = 'Unknown PlayerX'
-    , firstname = 'Unknown'
-    , surname = 'PlayerX'
-where playerid = -99
+    player_name = 'Wilksch, Elliot'
+    , name_fl = 'Elliott Wilksch'
+    , firstname = 'Elliott'
+    , surname = 'Wilksch'
+where playerid = 582
 ;
 
 -- insert into players values (-98, 'Fill In', '-','-',null,'Fill-in');

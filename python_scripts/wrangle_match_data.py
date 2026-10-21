@@ -13,6 +13,13 @@ engine = get_engine()
 pgconn = engine.connect()
 
 
+def read_table_safe(filepath, **kwargs):
+    try:
+        return pd.read_table(filepath, encoding='utf-8', **kwargs)
+    except UnicodeDecodeError:
+        return pd.read_table(filepath, encoding='cp1252', **kwargs)
+
+
 def get_how_out(how_out_str):
     if re.search('c\&b:',how_out_str):
         return 'c & b'
@@ -76,6 +83,17 @@ if False:
         re.sub('(?:c|stumped|st|run out|c\&b): (\S+)\s(\S+)\s(\S+).*','\\1 \\2 \\3',how_out_str)
     else:
         re.sub('(?:c|stumped|st|run out|c\&b): (\S+)\s(\S+).*','\\1 \\2',how_out_str)
+
+
+def _check_unresolved_players(df, context, write_to_postgres):
+    """Raises (if write_to_postgres) or warns about any name_fl that didn't merge to a playerid."""
+    missing = df.loc[df['playerid'].isna(), 'name_fl'].tolist()
+    if not missing:
+        return
+    msg = f"Unresolved player name(s) in {context}: {missing} (add the player, or map the name to the -99 fill-in sentinel, before loading)"
+    if write_to_postgres:
+        raise Exception(msg)
+    print(f'Warning: {msg}')
 
 
 def split_fow(s):
@@ -190,7 +208,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             #########################################################################################################################
             # Batting, Innings
             #########################################################################################################################
-            batting = pd.read_table(f'{match_dir}/innings_{i}_batting.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
+            batting = read_table_safe(f'{match_dir}/innings_{i}_batting.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
             batting = batting.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             batting.columns = batting.columns.str.strip()
 
@@ -204,7 +222,9 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             batting['name_fl'] = batting['batter']
 
             # FOW
-            if len(match_info['fow_list']) == 0:
+            if re.search(r'\bU(10|12|14)',match_info['grade']):
+                print('No FOW for juniors')
+            elif len(match_info['fow_list']) == 0:
                 print('Missing FOW')
             elif len(match_info['fow_list'][i-1]) > 0:
                 fow = [split_fow(s) for s in match_info['fow_list'][i-1][0].split(', ')]
@@ -232,6 +252,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
                 print('Missing FOW')
 
             batting2 = batting.merge(players1, on="name_fl", how="left").merge(players2, on="not_out_batter_name", how="left")
+            _check_unresolved_players(batting2, f'innings {i} batting', write_to_postgres)
 
             batting3 = batting2[['inningsid','playerid','batting_position','how_out','bowler_name','score','_4s','_6s','balls_faced','fow','wicket','not_out_batter']]
             if(write_to_postgres):
@@ -262,7 +283,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             #########################################################################################################################
             # Bowling Innings
             #########################################################################################################################
-            bowling = pd.read_table(f'{match_dir}/innings_{i}_bowling.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
+            bowling = read_table_safe(f'{match_dir}/innings_{i}_bowling.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
             bowling = bowling.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             bowling.columns = bowling.columns.str.strip()
             # bowling = bowling.applymap(lambda x: x.replace('-','0') if isinstance(x, str) else x).fillna(0)
@@ -279,6 +300,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
 
 
             bowling2 = bowling.merge(players1, on="name_fl", how="left")
+            _check_unresolved_players(bowling2, f'innings {i} bowling', write_to_postgres)
             if grade in ('Junior','Inclusive'):
                 bowling3 = bowling2[['inningsid','playerid','overs','extra_balls','maidens','wides','no_balls','runs_off_bat','_4s_against','_6s_against','highover','_2nd_high_over','wickets']]
             else:
@@ -305,7 +327,7 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             #########################################################################################################################
             # Wickets
             #########################################################################################################################
-            wickets = pd.read_table(f'{match_dir}/innings_{i}_batting.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
+            wickets = read_table_safe(f'{match_dir}/innings_{i}_batting.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
             wickets = wickets.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             wickets.columns = wickets.columns.str.strip()
 
@@ -329,20 +351,27 @@ def wrangle_match_data(match_info, write_to_postgres = False):
             # Fielding (if applicable)
             #########################################################################################################################
             if os.path.exists(f'{match_dir}/innings_{i}_fielding.md') and grade in ('Junior','Inclusive'):
-                fielding = pd.read_table(f'{match_dir}/innings_{i}_fielding.md', sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
+                # note: no index_col here - an empty fielding scorecard (to_markdown() on a
+                # 0-row df) omits the leading row-number column that a non-empty one has, so
+                # selecting a column by position would grab the wrong column when empty.
+                fielding = read_table_safe(f'{match_dir}/innings_{i}_fielding.md', sep="|", header=0, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
                 fielding = fielding.applymap(lambda x: x.strip() if isinstance(x, str) else x)
                 fielding.columns = fielding.columns.str.strip()
-                
-                fielding['inningsid'] = inningsid + (i-1)
-                fielding['name_fl'] = fielding['player']
 
-                fielding2 = fielding.merge(players1, on="name_fl", how="left")
-
-                fielding3 = fielding2[['inningsid','playerid','catches','run_outs','stumpings']]
-                if(write_to_postgres):
-                    fielding3.to_sql(pg_tbl['fielding'], engine, if_exists='append', index=False)
+                if fielding.empty:
+                    print(f'Empty fielding scorecard for innings {i}')
                 else:
-                    print(fielding3)
+                    fielding['inningsid'] = inningsid + (i-1)
+                    fielding['name_fl'] = fielding['player']
+
+                    fielding2 = fielding.merge(players1, on="name_fl", how="left")
+                    _check_unresolved_players(fielding2, f'innings {i} fielding', write_to_postgres)
+
+                    fielding3 = fielding2[['inningsid','playerid','catches','run_outs','stumpings']]
+                    if(write_to_postgres):
+                        fielding3.to_sql(pg_tbl['fielding'], engine, if_exists='append', index=False)
+                    else:
+                        print(fielding3)
 
             elif grade in ('Junior','Inclusive'):
                 print('fielding table missing')
@@ -350,8 +379,12 @@ def wrangle_match_data(match_info, write_to_postgres = False):
 
 def load_match_info_from_md(md_file):
     match_info = {}
-    with open(md_file, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
+    try:
+        with open(md_file, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    except UnicodeDecodeError:
+        with open(md_file, 'r', encoding='cp1252') as f:
+            lines = f.readlines()
     for line in lines[2:]:
         parts = line.strip().strip('|').split('|')
         if len(parts) < 2:
@@ -365,6 +398,39 @@ def load_match_info_from_md(md_file):
         except (ValueError, SyntaxError):
             match_info[key] = value
     return match_info
+
+
+def load_match_info(year, grade, round, data_dir='data'):
+    md_file = pathlib.Path(data_dir) / year / grade / round / 'match_info.md'
+    if not md_file.exists():
+        raise FileNotFoundError(f"No match_info.md found at {md_file}")
+    return load_match_info_from_md(md_file)
+
+
+def find_matches_with_fillins(directory='data'):
+    # returns the game_dir of every match where our team's batting innings includes at least one Fill-in
+    matches = []
+    for md_file in pathlib.Path(directory).rglob('match_info.md'):
+        match_info = load_match_info_from_md(md_file)
+        match_dir = md_file.parent
+
+        for i in range(1, match_info['num_innings'] + 1):
+            if not re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran|\bADE\b)', match_info['innings_list'][i - 1]):
+                continue
+
+            batting_file = match_dir / f'innings_{i}_batting.md'
+            if not batting_file.exists():
+                continue
+
+            batting = read_table_safe(batting_file, sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
+            batting = batting.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+            batting.columns = batting.columns.str.strip()
+
+            if (batting['batter'] == 'Fill-in').any():
+                matches.append(str(match_dir))
+            break
+
+    return matches
 
 
 def wrangle_match_data_bulk(directory, write_to_postgres=False):
