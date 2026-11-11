@@ -12,15 +12,22 @@ select * from players order by playerid desc;
 
 select * from batting_j;
 
-select * from matches_j;
+select * from matches_j
+where seasonid=24;
 
-select * from bowling_i
+select * from bowling_i;
+
+SELECT * FROM matches where seasonid in (85,86);
+
+update matches set 
+captain=269, 
+wicketkeeper=387
+where matchid=901;
 
 -- Add new season
 select * from seasons;
-insert into seasons values (
-    84, '2025/26', 'ASCA', 'S09', '2nd', 439, 0, 0, 'true', 'Section 9 Hopkins McGowran Cup'
-);
+insert into seasons values (85, '2026/27', 'ASCA', 'S03', '1st', 269, 0, 0, 'true', 'Section 3 Cup');
+insert into seasons values (86, '2026/27', 'ASCA', 'S08', '2nd', 265, 0, 0, 'true', 'Section 8 Claim this Cup');
 
 select * from seasons_j;
 insert into seasons_j values (11, '2023/24', 'SACA Junior Competitions', 'Under 10', 'Blue', 0, 0, 0, 'true', 'WSJCA - U10 - Blue');
@@ -30,6 +37,30 @@ insert into seasons_j values (14, '2023/24', 'SACA Junior Competitions', 'Under 
 insert into seasons_j values (15, '2024/25', 'SACA Junior Competitions', 'Under 10', 'Blue', 0, 0, 0, 'true', 'WSJCA - U10 - Blue');
 insert into seasons_j values (16, '2024/25', 'SACA Junior Competitions', 'Under 12', 'Blue', 0, 0, 0, 'true', 'WSJCA - U12 - Blue');
 insert into seasons_j values (17, '2024/25', 'SACA Junior Competitions', 'Under 12', 'Red' , 0, 0, 0, 'true', 'WSJCA - U12 - Red');
+insert into seasons_j values (18, '2024/25', 'ATCA', 'Under 10', 'Green' , 0, 0, 0, 'true', 'U10 Green');
+insert into seasons_j values (19, '2025/26', 'SACA Junior Competitions', 'Under 10', 'Blue' , 0, 0, 0, 'true', 'WSJCA U10 - Sunday - Blue');
+insert into seasons_j values (20, '2025/26', 'SACA Junior Competitions', 'Under 12', '' , 0, 0, 0, 'true', 'WSJCA - U12 Division 2');
+insert into seasons_j values (21, '2025/26', 'SACA Junior Competitions', 'Under 14', '' , 0, 0, 0, 'true', 'WSJCA - U14');
+insert into seasons_j values (22, '2025/26', 'ATCA', 'Under 10', 'Red' , 0, 0, 0, 'true', 'U10 Division 2 - Red');
+insert into seasons_j values (23, '2025/26', 'ATCA', 'Under 10', 'White' , 0, 0, 0, 'true', 'U10 Division 2 - White');
+insert into seasons_j values (24, '2025/26', 'ATCA', 'Under 12', '' , 0, 0, 0, 'true', 'U12 Division 2');
+
+
+insert into seasons_j values (25, '2026/27', 'ATCA', 'Under 10', 'Red' , 0, 0, 0, 'true', 'U10 Gold (Older Kids) - Red');
+insert into seasons_j values (26, '2026/27', 'ATCA', 'Under 10', 'Royal' , 0, 0, 0, 'true', 'U10 Gold (Older Kids) - Royal');
+insert into seasons_j values (27, '2026/27', 'ATCA', 'Under 10', 'White' , 0, 0, 0, 'true', 'U10 Green (Younger Kids) - White');
+insert into seasons_j values (28, '2026/27', 'ATCA', 'Under 12', '' , 0, 0, 0, 'true', 'U12 Division 2');
+insert into seasons_j values (29, '2026/27', 'SACA Junior Competitions', 'Under 10', 'Blue' , 0, 0, 0, 'true', 'Western Suburbs - U10 Sunday - Blue');
+insert into seasons_j values (30, '2026/27', 'SACA Junior Competitions', 'Under 12', 'Blue' , 0, 0, 0, 'true', 'Western Suburbs - U12 Division 2 - Blue');
+insert into seasons_j values (31, '2026/27', 'SACA Junior Competitions', 'Under 14', '' , 0, 0, 0, 'true', 'Western Suburbs - U14');
+
+
+
+
+update seasons_j 
+set playhq_season='U10 Gold (Older Kids) - Red'
+where seasonid = 25
+;
 
 select * from seasons_i;
 insert into seasons_i values (
@@ -38,11 +69,11 @@ insert into seasons_i values (
 
 -- Update player name
 update players set 
-    player_name = 'Wilksch, Elliot'
-    , name_fl = 'Elliott Wilksch'
-    , firstname = 'Elliott'
-    , surname = 'Wilksch'
-where playerid = 582
+    player_name = 'Hodges, Henry'
+    , name_fl = 'Henry Hodges'
+    , firstname = 'Henry'
+    , surname = 'Hodges'
+where playerid = 604
 ;
 
 -- insert into players values (-98, 'Fill In', '-','-',null,'Fill-in');
@@ -66,11 +97,11 @@ select * from seasons where seasonid = 84
 
 select * from players where playerid = 435
 ;
-select * from players where surname = 'Jongeneel'
+select * from players where surname = 'Hodge'
 ;
 select * from players where firstname = 'Justin'
 ;
-select * from matches 
+select * from matches where matchid = 901
 ;
 
 

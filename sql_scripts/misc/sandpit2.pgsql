@@ -26,7 +26,9 @@ select * from matches
 
 
 
-
+select * from batting_j_01_summary_ind
+where mat > 0
+and playerid > 0
 
 
 
@@ -291,7 +293,33 @@ select * from seasons
 select * from wickets where hat_trick > 0
 
 select * from yb_02_batting_summary where seasonid = 76
+;
+
+select * from 
+(
+    select 
+        matches.date1
+        , matches.opponent
+        , innings.inningsid
+        , seasons.eleven
+        , seasons.grade
+        , sum(case when how_out in ('Bowled','LBW') then 1 else 0 end) as bowled_lbw
+        , sum(case when how_out not in ('dnb','0','absent out','not out','forced retirement','retired hurt','retired not out','retired') then 1 else 0 end) as num_wickets
+    from wickets 
+    join innings
+    on wickets.inningsid = innings.inningsid
+    join matches
+    on innings.matchid = matches.matchid 
+    join seasons
+    on seasons.seasonid = matches.seasonid
+    group by         matches.date1
+        , matches.opponent
+        , innings.inningsid
+        , seasons.eleven
+        , seasons.grade
+) a
+where bowled_lbw > 6
+order by date1 desc;
 
 
-
-
+select * from wickets where inningsid = 1482

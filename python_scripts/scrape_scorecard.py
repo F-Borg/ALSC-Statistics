@@ -112,7 +112,7 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
     # opponent
     mi_team_1 = head.xpath(f'div[{div_b-1}]/div[1]/div/a/text()')[0]
     mi_team_2 = head.xpath(f'div[{div_b-1}]/div[2]/div/a/text()')[0]
-    if re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran)',mi_team_1):
+    if re.match(r'(Adelaide (Junior )?Bulldogs|Adelaide Lutheran)',mi_team_1):
         # check for showdown games
         if re.match(rf'(Adelaide Junior Bulldogs {team}|Adelaide Lutheran)',mi_team_2):
             opponent = mi_team_1     
@@ -133,7 +133,7 @@ def scrape_scorecard(url, overwrite_md=False, team=None):
     else:
         mi_winner = "draw"
 
-    if re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran)', mi_winner):
+    if re.match(r'(Adelaide (Junior )?Bulldogs|Adelaide Lutheran)', mi_winner):
         mi_result = 'W1'
     elif mi_winner == "draw":
         mi_result = 'D'

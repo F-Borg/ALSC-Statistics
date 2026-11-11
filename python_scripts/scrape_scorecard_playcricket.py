@@ -109,7 +109,7 @@ def scrape_scorecard_playcricket(url, overwrite_md=False, team=None):
     # opponent
     mi_team_1 = head.xpath('/html/body/main/section/header/div/div/div[2]/div[1]/div[3]/text()')[0].strip()
     mi_team_2 = head.xpath('/html/body/main/section/header/div/div/div[2]/div[3]/div[3]/text()')[0].strip()
-    if re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran)',mi_team_1):
+    if re.match(r'(Adelaide (Junior )?Bulldogs|Adelaide Lutheran)',mi_team_1):
         opponent = mi_team_2
     else:
         opponent = mi_team_1

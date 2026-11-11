@@ -404,7 +404,26 @@ def load_match_info(year, grade, round, data_dir='data'):
     md_file = pathlib.Path(data_dir) / year / grade / round / 'match_info.md'
     if not md_file.exists():
         raise FileNotFoundError(f"No match_info.md found at {md_file}")
-    return load_match_info_from_md(md_file)
+    match_info = load_match_info_from_md(md_file)
+    _warn_if_fillin(match_info, md_file.parent)
+    return match_info
+
+
+def _warn_if_fillin(match_info, match_dir):
+    # warns if a player called 'Fill-in' appears for our team (batting in our innings, bowling/fielding in the opponent's)
+    our_team = r'(Adelaide Junior Bulldogs|Adelaide Bulldogs|Adelaide Lutheran|\bADE\b)'
+    for i in range(1, match_info['num_innings'] + 1):
+        we_bat = bool(re.match(our_team, match_info['innings_list'][i - 1]))
+        for kind, column in (('batting', 'batter'), ('bowling', 'bowler'), ('fielding', 'player')):
+            if (kind == 'batting') != we_bat:
+                continue
+            file = match_dir / f'innings_{i}_{kind}.md'
+            if not file.exists():
+                continue
+            df = read_table_safe(file, sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
+            n = (df.iloc[:,0].str.strip() == 'Fill-in').sum()
+            if n:
+                print(f"Warning: 'Fill-in' player in {kind} (innings {i}, {n} row(s)) - {match_dir} - {match_info['date_day_1']}")
 
 
 def find_matches_with_fillins(directory='data'):
@@ -415,7 +434,7 @@ def find_matches_with_fillins(directory='data'):
         match_dir = md_file.parent
 
         for i in range(1, match_info['num_innings'] + 1):
-            if not re.match(r'(Adelaide Junior Bulldogs|Adelaide Lutheran|\bADE\b)', match_info['innings_list'][i - 1]):
+            if not re.match(r'(Adelaide (Junior )?Bulldogs|Adelaide Lutheran|\bADE\b)', match_info['innings_list'][i - 1]):
                 continue
 
             batting_file = match_dir / f'innings_{i}_batting.md'

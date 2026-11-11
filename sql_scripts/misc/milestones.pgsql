@@ -90,7 +90,7 @@ left join z_bocsa
 on batting_01_summary_ind.playerid = z_bocsa.playerid
 join players
 on batting_01_summary_ind.playerid = players.playerid
-where batting_01_summary_ind."Last Season" in ('2024/25','2025/26')
+where batting_01_summary_ind."Last Season" in ('2026/27','2025/26')
 and (
     mod(batting_01_summary_ind.mat,50) > 44
     or mod(total::int,500) > 349
@@ -126,7 +126,7 @@ from (
     left join  z_i_bocsa
     on players.playerid = z_i_bocsa.playerid
 
-    where (batting_01_summary_ind."Last Season" in ('2024/25','2025/26') or batting_i_01_summary_ind."Last Season" in ('2024/25','2025/26'))
+    where (batting_01_summary_ind."Last Season" in ('2026/27','2025/26') or batting_i_01_summary_ind."Last Season" in ('2026/27','2025/26'))
     and players.name_fl not in ('Mitesh Shah','Jack Bury')
 ) a
 where (

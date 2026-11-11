@@ -7,7 +7,7 @@ edited before wrangle_match_data.wrangle_match_data() loads it.
 
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -18,7 +18,7 @@ BASE_URL = "https://api.playhq.com"
 DEFAULT_CREDENTIALS_PATH = '.api_credentials.yml'
 
 # team name our club plays under on PlayHQ - same regex used in utility.py/check_player_ids
-OUR_CLUB_REGEX = r'(Adelaide Junior Bulldogs|Adelaide Lutheran|\bADE\b)'
+OUR_CLUB_REGEX = r'(Adelaide (Junior )?Bulldogs|Adelaide Lutheran|\bADE\b)'
 
 ORDINALS = {1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th'}
 
@@ -340,7 +340,10 @@ def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, ov
     #########################################################################################################################
     # Create directories for markdown tables
     #########################################################################################################################
-    team = next((c for c in ('Red', 'White', 'Blue') if re.sub(r'\s+U\d\d$','',our_team['name']).lower().endswith(c.lower())), None)
+    # handles "Adelaide Bulldogs Red", "Adelaide Bulldogs Red U14" and "Adelaide Bulldogs (Red)"
+    team_name_clean = re.sub(r'\s+U\d\d\s*$', '', our_team['name']).strip()
+    team = next((c for c in ('Red', 'White', 'Blue', 'Royal')
+                 if re.search(rf'[\s(\[]{c}[\s)\]]*$', team_name_clean, re.IGNORECASE)), None)
 
     if team is None:
         grade_dirname = grade_name.replace('/','')
@@ -390,6 +393,12 @@ def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, ov
             fours = _stat(app.get('statistics'), 'FOURS', 0)
             sixes = _stat(app.get('statistics'), 'SIXES', 0)
             batting_df.loc[i] = [name, how_out, str(score), str(balls_faced), str(fours), str(sixes)]
+
+        # players in the team's squad who aren't listed in the innings did not bat
+        listed_ids = {app['id'] for app in batting_appearances}
+        for app in game_summary['appearances']:
+            if app.get('teamId') == batting_team['id'] and app['id'] not in listed_ids:
+                batting_df.loc[len(batting_df)] = [_appearance_name(app), 'did not bat', '0', '0', '0', '0']
 
         if len(batting_df) == 0:
             batting_df.loc[0] = ['scorecard missing', 'did not bat', ' ', ' ', ' ', ' ']
@@ -525,17 +534,32 @@ def fetch_match(client, game_id, grade_name, our_club_regex=OUR_CLUB_REGEX, over
                              our_team_id=our_team_id)
 
 
-def find_grades_for_team(client, organisation_id=None, our_club_regex=OUR_CLUB_REGEX):
+def _season_is_current(season, now):
+    """True if the season is ACTIVE, or `now` falls between its startDate and endDate."""
+    if season.get('status') == 'ACTIVE':
+        return True
+    start, end = season.get('startDate'), season.get('endDate')
+    if not start or not end:
+        return False
+    parse = lambda s: datetime.fromisoformat(s.replace('Z', '+00:00'))
+    return parse(start) <= now <= parse(end)
+
+
+def find_grades_for_team(client, organisation_id=None, our_club_regex=OUR_CLUB_REGEX, current_only=False):
     """
     Searches every season/grade in an association for grades where a team matching
-    our_club_regex (e.g. 'Adelaide Lutheran') is playing.
+    our_club_regex (e.g. 'Adelaide Lutheran') is playing. If current_only, only
+    seasons that are currently running are searched.
 
     Returns a list of dicts with season_id/name, association_id/name, competition_id/name,
     grade_id/name and the matching team's id/name. If a grade has more than one matching
     team (e.g. two of our sides in the same grade), one result is returned per team.
     """
     results = []
+    now = datetime.now(ZoneInfo("UTC"))
     for season in client.get_seasons(organisation_id=organisation_id):
+        if current_only and not _season_is_current(season, now):
+            continue
         for grade in client.get_grades(season_id=season['id']):
             try:
                 fixture = client.get_grade_fixture(grade_id=grade['id'])
@@ -563,11 +587,21 @@ def find_grades_for_team(client, organisation_id=None, our_club_regex=OUR_CLUB_R
     return results
 
 
-def fetch_grade_matches(client, grade_id, grade_name, our_club_regex=OUR_CLUB_REGEX, overwrite_md=False):
+def _game_start(game):
+    """Start datetime (tz-aware) of a fixture game, or None if the fixture has no schedule for it."""
+    schedule = game.get('schedule') or []
+    if not schedule or 'dateTime' not in schedule[0]:
+        return None
+    return datetime.fromisoformat(schedule[0]['dateTime'].replace('Z', '+00:00'))
+
+
+def fetch_grade_matches(client, grade_id, grade_name, our_club_regex=OUR_CLUB_REGEX, overwrite_md=False, since=None):
     """
     Fetch every completed game in a grade's fixture and write them all out. If both teams
     in a game are our own (e.g. Red vs Blue), the game is written out twice - once from
     each team's perspective - so both teams' directories get the match.
+
+    If since (a tz-aware datetime) is given, games that started before it are skipped.
     """
     fixture = client.get_grade_fixture(grade_id)
     fixture_teams_by_id = {t['id']: t for t in fixture.get('teams', [])}
@@ -576,6 +610,10 @@ def fetch_grade_matches(client, grade_id, grade_name, our_club_regex=OUR_CLUB_RE
         for game in round_.get('games', []):
             if game['status'] != 'FINAL':
                 continue
+            if since is not None:
+                start = _game_start(game)
+                if start is not None and start < since:
+                    continue
 
             our_team_ids = [
                 t['id'] for t in game['teams']
@@ -596,4 +634,59 @@ def fetch_grade_matches(client, grade_id, grade_name, our_club_regex=OUR_CLUB_RE
                                                 our_club_regex=our_club_regex, overwrite_md=overwrite_md))
             except Exception as e:
                 print(f"Failed to fetch game {game['id']}: {e}")
+    return match_infos
+
+
+def list_associations(credentials_path=DEFAULT_CREDENTIALS_PATH):
+    """Association keys in .api_credentials.yml (every `credentials_<x>` block that has a tenant)."""
+    path = Path(credentials_path)
+    if not path.exists():
+        return []
+    try:
+        import yaml
+        with open(path) as f:
+            blocks = yaml.safe_load(f) or {}
+    except ImportError:
+        blocks = _parse_simple_yaml(path)
+    return [k[len('credentials_'):] for k, v in blocks.items()
+            if k.startswith('credentials_') and isinstance(v, dict) and v.get('tenant')]
+
+
+def fetch_recent_matches(client, days, our_club_regex=OUR_CLUB_REGEX, overwrite_md=False, organisation_id=None):
+    """
+    Fetch all of our teams' completed games from the past `days` days, across every
+    grade in the association's current season(s).
+    """
+    since = datetime.now(ZoneInfo('Australia/Adelaide')) - timedelta(days=days)
+    grades = pd.DataFrame(find_grades_for_team(client, organisation_id=organisation_id,
+                                               our_club_regex=our_club_regex, current_only=True))
+    if grades.empty:
+        return []
+
+    match_infos = []
+    for row in grades[['grade_id', 'grade_name']].drop_duplicates().itertuples(index=False):
+        try:
+            match_infos.extend(fetch_grade_matches(client, grade_id=row.grade_id, grade_name=row.grade_name,
+                                                   our_club_regex=our_club_regex, overwrite_md=overwrite_md,
+                                                   since=since))
+        except Exception as e:
+            print(f"Failed to fetch grade {row.grade_id} ({row.grade_name}): {e}")
+    return match_infos
+
+
+def fetch_recent_matches_all_associations(days=14, associations=None, our_club_regex=OUR_CLUB_REGEX, overwrite_md=False):
+    """
+    Run fetch_recent_matches for every association in .api_credentials.yml (or just the
+    given list, e.g. ['asca', 'atca']) and return all the match_infos together.
+    """
+    match_infos = []
+    for association in (associations or list_associations()):
+        try:
+            client = PlayHQClient(association=association)
+            print(f"[{association}] organisation_id={client.organisation_id}, tenant={client.tenant}")
+            found = fetch_recent_matches(client, days, our_club_regex=our_club_regex, overwrite_md=overwrite_md)
+            print(f"[{association}] fetched {len(found)} match(es)")
+            match_infos.extend(found)
+        except Exception as e:
+            print(f"[{association}] failed: {e}")
     return match_infos

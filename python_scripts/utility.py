@@ -61,17 +61,17 @@ def add_new_player(firstname,lastname):
 
 
 
-def delete_game_juniors():
-    #     # delete from batting, bowling, wickets, fielding, innings, matches.
-    pd.read_sql(con=pgconn, sql=f"select seasonid from matches_j")
-    #     pd.read_sql(con=pgconn, sql=f"select * from matches_j where seasonid=8")
-    #     pd.read_sql(con=pgconn, sql=f"select * from innings_j where matchid in (select matchid from matches_j where seasonid=8)")
-    #     pgconn.execute(text(f"delete from batting_j  where inningsid in (select inningsid from innings_j where matchid in (select matchid from matches_j where seasonid=8))"))
-    #     pgconn.execute(text(f"delete from bowling_j  where inningsid in (select inningsid from innings_j where matchid in (select matchid from matches_j where seasonid=8))"))
-    #     pgconn.execute(text(f"delete from fielding_j where inningsid in (select inningsid from innings_j where matchid in (select matchid from matches_j where seasonid=8))"))
-    #     pgconn.execute(text(f"delete from innings_j where matchid in (select matchid from matches_j where seasonid=8)"))
-    #     pgconn.execute(text(f"delete from matches_j where seasonid=8"))
-    pd.read_sql(con=pgconn, sql=f"select * from players where playerid < 0")    
+# def delete_game_juniors():
+#     #     # delete from batting, bowling, wickets, fielding, innings, matches.
+#     pd.read_sql(con=pgconn, sql=f"select seasonid from matches_j")
+#     #     pd.read_sql(con=pgconn, sql=f"select * from matches_j where seasonid=8")
+#     #     pd.read_sql(con=pgconn, sql=f"select * from innings_j where matchid in (select matchid from matches_j where seasonid=8)")
+#     #     pgconn.execute(text(f"delete from batting_j  where inningsid in (select inningsid from innings_j where matchid in (select matchid from matches_j where seasonid=8))"))
+#     #     pgconn.execute(text(f"delete from bowling_j  where inningsid in (select inningsid from innings_j where matchid in (select matchid from matches_j where seasonid=8))"))
+#     #     pgconn.execute(text(f"delete from fielding_j where inningsid in (select inningsid from innings_j where matchid in (select matchid from matches_j where seasonid=8))"))
+#     #     pgconn.execute(text(f"delete from innings_j where matchid in (select matchid from matches_j where seasonid=8)"))
+#     #     pgconn.execute(text(f"delete from matches_j where seasonid=8"))
+#     pd.read_sql(con=pgconn, sql=f"select * from players where playerid < 0")    
     
 
 
