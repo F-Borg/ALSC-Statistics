@@ -1,2 +1,8 @@
 /data/
 .api_credentials*
+# Google Drive upload
+credentials.json
+token.json
+
+# DB backups
+backups/

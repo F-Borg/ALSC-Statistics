@@ -1,27 +1,27 @@
-CREATE OR REPLACE VIEW yb_milestones_01_matches AS
+CREATE OR REPLACE VIEW yb_j_milestones_01_matches AS
 SELECT
     "Name",
-    "Total Matches_j" - mod("Total Matches_j"::int,50) as "Milestone",
-    "Season Matches_j",
-    "Total Matches_j",
+    "Total Matches" - mod("Total Matches"::int,50) as "Milestone",
+    "Season Matches",
+    "Total Matches",
     playerid
 FROM (
     SELECT 
         name_fl as "Name",
         playerid,
-        sum(case when "Year" = (select max(year) from seasons_j) then "Matches_j" else 0 end) as "Season Matches_j", 
-        sum("Matches_j") as "Total Matches_j"
-    FROM yb_02_batting_summary
+        sum(case when "Year" = (select max(year) from seasons_j) then "Matches" else 0 end) as "Season Matches", 
+        sum("Matches") as "Total Matches"
+    FROM yb_j_02_batting_summary
     group by playerid, name_fl
-    having sum(case when "Year" = (select max(year) from seasons_j) then "Matches_j" else 0 end) >= 0
+    having sum(case when "Year" = (select max(year) from seasons_j) then "Matches" else 0 end) >= 0
     ) a
---WHERE mod("Total Matches_j"::int,50) <= "Season Matches_j"
-WHERE "Total Matches_j" - mod("Total Matches_j"::int,50) >= 0
-and "Season Matches_j" > 0
+--WHERE mod("Total Matches"::int,50) <= "Season Matches"
+WHERE "Total Matches" - mod("Total Matches"::int,50) >= 0
+and "Season Matches" > 0
 ;
 
 
-CREATE OR REPLACE VIEW yb_milestones_02_bat AS
+CREATE OR REPLACE VIEW yb_j_milestones_02_bat AS
 SELECT
     "Name",
     "Total Runs" - mod("Total Runs"::int,500) as "Milestone",
@@ -34,7 +34,7 @@ FROM (
         playerid,
         sum(case when "Year" = (select max(year) from seasons_j) then "Total Runs" else 0 end) as "Season Runs", 
         sum(case when "Year" <= (select max(year) from seasons_j) then "Total Runs" else 0 end) as "Total Runs"
-    FROM yb_02_batting_summary
+    FROM yb_j_02_batting_summary
     group by playerid, name_fl
     having sum(case when "Year" = (select max(year) from seasons_j) then "Total Runs" else 0 end) > 0
     ) a
@@ -42,20 +42,20 @@ WHERE mod("Total Runs"::int,500) < "Season Runs"
 ;
 
 
---drop view yb_milestones_03_bowl;
-CREATE OR REPLACE VIEW yb_milestones_03_bowl AS
+--drop view yb_j_milestones_03_bowl;
+CREATE OR REPLACE VIEW yb_j_milestones_03_bowl AS
 SELECT
     "Name",
-    "Total Wickets_j" - mod("Total Wickets_j"::int,50) as "Milestone",
-    "Season Wickets_j",
-    "Total Wickets_j",
+    "Total Wickets" - mod("Total Wickets"::int,50) as "Milestone",
+    "Season Wickets",
+    "Total Wickets",
     playerid
 FROM (
     SELECT 
         Players.name_fl AS "Name",
         Players.playerid,
-        sum(case when Seasons_j.Year in (select max(year) from seasons_j) then z_j_Bowling_Figures_All.w else 0 end) as "Season Wickets_j", 
-        sum(case when Seasons_j.Year <= (select max(year) from seasons_j) then z_j_Bowling_Figures_All.w else 0 end) as "Total Wickets_j"
+        sum(case when Seasons_j.Year in (select max(year) from seasons_j) then z_j_Bowling_Figures_All.w else 0 end) as "Season Wickets", 
+        sum(case when Seasons_j.Year <= (select max(year) from seasons_j) then z_j_Bowling_Figures_All.w else 0 end) as "Total Wickets"
     FROM Seasons_j
     INNER JOIN Matches_j 
     ON Seasons_j.SeasonID = Matches_j.SeasonID 
@@ -74,7 +74,7 @@ FROM (
     group by Players.playerid, Players.name_fl
     having sum(case when Seasons_j.Year = (select max(year) from seasons_j) then z_j_Bowling_Figures_All.w else 0 end) > 0
     ) a
-WHERE mod("Total Wickets_j"::int,50) < "Season Wickets_j"
+WHERE mod("Total Wickets"::int,50) < "Season Wickets"
 ;
 
 
@@ -83,7 +83,7 @@ select
     players.name_fl||': '||
         (case when mod(batting_j_01_summary_ind.mat,50) > 44 then batting_j_01_summary_ind.mat::varchar||' games ' else '' end)||
         (case when mod(total::int,500) > 349 then total::text||' runs ' else '' end)||
-        (case when mod("Total Wickets_j",50) > 39 then "Total Wickets_j"::varchar||' wickets_j' else '' end) as milestones
+        (case when mod("Total Wickets",50) > 39 then "Total Wickets"::varchar||' wickets_j' else '' end) as milestones
     
 from batting_j_01_summary_ind
 left join z_j_bocsa
@@ -94,45 +94,7 @@ where batting_j_01_summary_ind."Last Season" in ('2026/27','2025/26')
 and (
     mod(batting_j_01_summary_ind.mat,50) > 44
     or mod(total::int,500) > 349
-    or mod("Total Wickets_j",50) > 39
-)
-and players.name_fl not in ('Mitesh Shah','Jack Bury')
-order by milestones
-;
-
---inclusive also
-select 
-    name_fl||': '||
-        (case when mod(mat,50) > 44 then mat::varchar||' games ' else '' end)||
-        (case when mod(runs,500) > 349 then runs::text||' runs ' else '' end)||
-        (case when mod(a.wickets_j,50) > 39 then wickets_j::varchar||' wickets_j' else '' end) as milestones
-from (
-    select 
-        --batting_j_01_summary_ind.playerid
-        --, batting_j_01_summary_ind.name
-        players.name_fl
-        , coalesce(batting_j_01_summary_ind.mat,0)+coalesce(batting_i_01_summary_ind.mat,0) as mat
-        , coalesce(batting_j_01_summary_ind.total,0)::int+coalesce(batting_i_01_summary_ind.total,0)::int as runs
-        , coalesce(z_j_bocsa."Total Wickets_j",0)+coalesce(z_j_i_bocsa."Total Wickets_j",0) as wickets_j
-
-    from players 
-    left join batting_j_01_summary_ind
-    on players.playerid = batting_j_01_summary_ind.playerid
-    left join  z_j_bocsa
-    on players.playerid = z_j_bocsa.playerid
-
-    left join batting_i_01_summary_ind
-    on players.playerid = batting_i_01_summary_ind.playerid
-    left join  z_j_i_bocsa
-    on players.playerid = z_j_i_bocsa.playerid
-
-    where (batting_j_01_summary_ind."Last Season" in ('2026/27','2025/26') or batting_i_01_summary_ind."Last Season" in ('2026/27','2025/26'))
-    and players.name_fl not in ('Mitesh Shah','Jack Bury')
-) a
-where (
-    mod(mat,50) > 44
-    or mod(runs::int,500) > 349
-    or mod(wickets_j,50) > 39
+    or mod("Total Wickets",50) > 39
 )
 order by milestones
 ;
@@ -147,7 +109,7 @@ select
     players.name_fl||': '||
         batting_j_01_summary_ind.mat::varchar||' games ' ||
         total::text||' runs ' ||
-        coalesce("Total Wickets_j"::varchar,'0')||' wickets_j' as stats
+        coalesce("Total Wickets"::varchar,'0')||' wickets_j' as stats
     
 from batting_j_01_summary_ind
 left join z_j_bocsa
@@ -232,8 +194,8 @@ select * from bowling_j_09_p3_best_figs;
 
 select * from batting_j_02_career_runs
 
-select * from yb_milestones_01_matches 
-order by "Total Matches_j" desc
+select * from yb_j_milestones_01_matches 
+order by "Total Matches" desc
 
 
 select * from innings_j;

@@ -1,5 +1,5 @@
 
-
+-- DROP VIEW bowling_j_01_summary_ind;
 CREATE OR REPLACE VIEW bowling_j_01_summary_ind AS
 SELECT 
     z_j_bcsa.Name
@@ -8,26 +8,26 @@ SELECT
     , z_j_bcsa.Balls
     , z_j_bcsa.Mdns
     , z_j_bcsa."Total Runs"
-    , z_j_bcsa."Total Wickets_j"
+    , z_j_bcsa."Total Wickets"
     , z_j_bcsa.Average
     , z_j_bcsa."Strike Rate", z_j_bcsa.RPO, z_j_bcsa.ABD, z_j_bcsa._4s, z_j_bcsa._6s, z_j_bcsa.Figures, z_j_bcsa."5WI", z_j_bcsa."Expensive Over", z_j_bcsa.Catches, 
 z_j_bcsa.Stumpings, z_j_bcsa.PlayerID
 FROM z_j_bcsa
 WHERE z_j_bcsa.Balls>0
---GROUP BY z_j_bcsa.Name, z_j_bcsa.Mat, z_j_bcsa.O, z_j_bcsa.Balls, z_j_bcsa.Mdns, z_j_bcsa."Total Runs", z_j_bcsa."Total Wickets_j", z_j_bcsa.Average, z_j_bcsa."Strike Rate", z_j_bcsa.RPO, z_j_bcsa.ABD, z_j_bcsa._4s, z_j_bcsa._6s, z_j_bcsa.Figures, z_j_bcsa."5WI", z_j_bcsa."Expensive Over", z_j_bcsa.Catches, z_j_bcsa.Stumpings, z_j_bcsa.PlayerID
+--GROUP BY z_j_bcsa.Name, z_j_bcsa.Mat, z_j_bcsa.O, z_j_bcsa.Balls, z_j_bcsa.Mdns, z_j_bcsa."Total Runs", z_j_bcsa."Total Wickets", z_j_bcsa.Average, z_j_bcsa."Strike Rate", z_j_bcsa.RPO, z_j_bcsa.ABD, z_j_bcsa._4s, z_j_bcsa._6s, z_j_bcsa.Figures, z_j_bcsa."5WI", z_j_bcsa."Expensive Over", z_j_bcsa.Catches, z_j_bcsa.Stumpings, z_j_bcsa.PlayerID
 ORDER BY Name
 ;
 
 
 CREATE OR REPLACE VIEW bowling_j_02_p1_wickets AS
 select 
-    "Total Wickets_j"
+    "Total Wickets"
     , Name
     , mat
     , Average
 from z_j_bocsa
-where "Total Wickets_j" > 0
-order by "Total Wickets_j" desc
+where "Total Wickets" > 0
+order by "Total Wickets" desc
 ;
 
 
@@ -36,9 +36,9 @@ select
     Average
     , Name
     , mat
-    , "Total Wickets_j"
+    , "Total Wickets"
 from z_j_bocsa
-where "Total Wickets_j" > 14
+where "Total Wickets" > 14
 order by Average
 ;
 
@@ -48,9 +48,9 @@ select
     "Strike Rate"
     , Name
     , mat
-    , "Total Wickets_j"
+    , "Total Wickets"
 from z_j_bocsa
-where "Total Wickets_j" > 14
+where "Total Wickets" > 14
 order by "Strike Rate"
 ;
 
@@ -138,7 +138,7 @@ ORDER BY Innings_j.inningsid DESC;
 --drop view bowling_j_11_p3_10WM;
 CREATE OR REPLACE VIEW bowling_j_11_p3_10WM AS
 SELECT players.player_Name AS "Name"
-    , aa.wickets_j as "Wickets_j", aa.Figures as "Figures"
+    , aa.wickets_j as "Wickets", aa.Figures as "Figures"
     , Matches_j.Opponent, Seasons_j.Year, Matches_j.Round, Seasons_j.Eleven, Seasons_j.Grade, Seasons_j.Association
 FROM Seasons_j 
 INNER JOIN Matches_j
@@ -251,46 +251,46 @@ ORDER BY (Sum(bowling_j.wides)+Sum(bowling_j.no_balls))/(Sum(overs)*6+Sum(bowlin
 
 CREATE OR REPLACE VIEW bowling_j_17_dismissals_ct AS
 SELECT
-    1.0*Sum(CASE WHEN lower(wickets_j.how_out)='caught' then 1 else 0 end)/z_j_bocsa."Total Wickets_j" as Percentage
+    1.0*Sum(CASE WHEN lower(wickets_j.how_out)='caught' then 1 else 0 end)/z_j_bocsa."Total Wickets" as Percentage
     , z_j_bocsa.Name
-    , z_j_bocsa."Total Wickets_j" AS Wickets_j
+    , z_j_bocsa."Total Wickets" AS Wickets_j
     , Sum(CASE WHEN lower(wickets_j.how_out)='caught' then 1 else 0 end) AS "Caught W"
 FROM z_j_bocsa INNER JOIN (Wickets_j INNER JOIN Players ON Wickets_j.playerID = Players.PlayerID) ON z_j_bocsa.PlayerID = Players.PlayerID
-GROUP BY z_j_bocsa.Name, z_j_bocsa."Total Wickets_j", Players.PlayerID
+GROUP BY z_j_bocsa.Name, z_j_bocsa."Total Wickets", Players.PlayerID
 HAVING (Count(Wickets_j.how_out))>9
-ORDER BY Percentage DESC, z_j_bocsa."Total Wickets_j" Desc;
+ORDER BY Percentage DESC, z_j_bocsa."Total Wickets" Desc;
 
 
 CREATE OR REPLACE VIEW bowling_j_18_dismissals_b AS
 SELECT
-    1.0*Sum(CASE WHEN lower(wickets_j.how_out)='bowled' then 1 else 0 end)/z_j_bocsa."Total Wickets_j" as Percentage
+    1.0*Sum(CASE WHEN lower(wickets_j.how_out)='bowled' then 1 else 0 end)/z_j_bocsa."Total Wickets" as Percentage
     , z_j_bocsa.Name
-    , z_j_bocsa."Total Wickets_j" AS Wickets_j
+    , z_j_bocsa."Total Wickets" AS Wickets_j
     , Sum(CASE WHEN lower(wickets_j.how_out)='bowled' then 1 else 0 end) AS "Bowled W"
 FROM z_j_bocsa INNER JOIN (Wickets_j INNER JOIN Players ON Wickets_j.playerID = Players.PlayerID) ON z_j_bocsa.PlayerID = Players.PlayerID
-GROUP BY z_j_bocsa.Name, z_j_bocsa."Total Wickets_j", Players.PlayerID
+GROUP BY z_j_bocsa.Name, z_j_bocsa."Total Wickets", Players.PlayerID
 HAVING (Count(Wickets_j.how_out))>9
-ORDER BY Percentage DESC, z_j_bocsa."Total Wickets_j" Desc;
+ORDER BY Percentage DESC, z_j_bocsa."Total Wickets" Desc;
 
 
 CREATE OR REPLACE VIEW bowling_j_19_dismissals_lbw AS
 SELECT
-    1.0*Sum(CASE WHEN lower(wickets_j.how_out)='lbw' then 1 else 0 end)/z_j_bocsa."Total Wickets_j" as Percentage
+    1.0*Sum(CASE WHEN lower(wickets_j.how_out)='lbw' then 1 else 0 end)/z_j_bocsa."Total Wickets" as Percentage
     , z_j_bocsa.Name
-    , z_j_bocsa."Total Wickets_j" AS Wickets_j
+    , z_j_bocsa."Total Wickets" AS Wickets_j
     , Sum(CASE WHEN lower(wickets_j.how_out)='lbw' then 1 else 0 end) AS "LBW W"
 FROM z_j_bocsa INNER JOIN (Wickets_j INNER JOIN Players ON Wickets_j.playerID = Players.PlayerID) ON z_j_bocsa.PlayerID = Players.PlayerID
-GROUP BY z_j_bocsa.Name, z_j_bocsa."Total Wickets_j", Players.PlayerID
+GROUP BY z_j_bocsa.Name, z_j_bocsa."Total Wickets", Players.PlayerID
 HAVING (Count(Wickets_j.how_out))>9
-ORDER BY Percentage DESC, z_j_bocsa."Total Wickets_j" Desc;
+ORDER BY Percentage DESC, z_j_bocsa."Total Wickets" Desc;
 
 
 CREATE OR REPLACE VIEW bowling_j_20_dismissals_no_lbw AS
 SELECT
-    z_j_bocsa."Total Wickets_j" AS Wickets_j
+    z_j_bocsa."Total Wickets" AS Wickets_j
     , z_j_bocsa.Name
 FROM z_j_bocsa INNER JOIN (Wickets_j INNER JOIN Players ON Wickets_j.playerID = Players.PlayerID) ON z_j_bocsa.PlayerID = Players.PlayerID
-GROUP BY z_j_bocsa.Name, z_j_bocsa."Total Wickets_j", Players.PlayerID
+GROUP BY z_j_bocsa.Name, z_j_bocsa."Total Wickets", Players.PlayerID
 HAVING Sum(CASE WHEN lower(wickets_j.how_out)='lbw' then 1 else 0 end) = 0
 ORDER BY Wickets_j DESC
 ;
@@ -300,14 +300,14 @@ SELECT
     Sum(CASE WHEN lower(wickets_j.how_out)='stumped' then 1 else 0 end) AS Stumpings
     , z_j_bocsa.Name
 FROM z_j_bocsa INNER JOIN (Wickets_j INNER JOIN Players ON Wickets_j.playerID = Players.PlayerID) ON z_j_bocsa.PlayerID = Players.PlayerID
-GROUP BY z_j_bocsa.Name, z_j_bocsa."Total Wickets_j", Players.PlayerID
+GROUP BY z_j_bocsa.Name, z_j_bocsa."Total Wickets", Players.PlayerID
 HAVING (Count(Wickets_j.how_out))>9
-ORDER BY Stumpings DESC, z_j_bocsa."Total Wickets_j";
+ORDER BY Stumpings DESC, z_j_bocsa."Total Wickets";
 
 
 CREATE OR REPLACE VIEW bowling_j_22_finals_wickets AS
 select 
-    sum(bf.w) as "Wickets_j"
+    sum(bf.w) as "Wickets"
     , players.player_name as "Name"
     , count(inningsid) as "Inn"
     , case when sum(bf.w) > 0 then sum(bf.runs)/sum(bf.w) 
@@ -320,7 +320,7 @@ on bf.playerid = players.playerid
 where matches_j.round in ('SF','GF')
 group by players.player_name
 having sum(bf.w) > 9
-order by "Wickets_j" desc
+order by "Wickets" desc
 ;
 
 
@@ -330,7 +330,7 @@ select
         else null end as "Ave"
     , players.player_name as "Name"
     , count(inningsid) as "Inn"
-    , sum(bf.w) as "Wickets_j"
+    , sum(bf.w) as "Wickets"
 
 from z_j_Bowling_Figures_All as bf
 inner join matches_j 
@@ -348,7 +348,7 @@ CREATE OR REPLACE VIEW bowling_j_24_opp_wickets AS
 select 
       players.player_name as "Name"
     , regexp_replace(matches_j.Opponent,' (II|III|IV|V|VI)$','',1,1,'c') AS opponent
-    , sum(bf.w) as "Wickets_j"
+    , sum(bf.w) as "Wickets"
     , count(inningsid) as "Inn"
     , case when sum(bf.w) > 0 then sum(bf.runs)/sum(bf.w) 
         else null end as "Ave"
@@ -359,7 +359,7 @@ inner join players
 on bf.playerid = players.playerid
 group by players.player_name, opponent
 having sum(bf.w) > 9
-order by "Wickets_j" desc
+order by "Wickets" desc
 ;
 
 CREATE OR REPLACE VIEW bowling_j_25_opp_ave AS
@@ -369,7 +369,7 @@ select
     , case when sum(bf.w) > 0 then sum(bf.runs)/sum(bf.w) 
         else null end as "Ave"
     , count(inningsid) as "Inn"
-    , sum(bf.w) as "Wickets_j"
+    , sum(bf.w) as "Wickets"
 
 from z_j_Bowling_Figures_All as bf
 inner join matches_j 
@@ -391,7 +391,7 @@ select
     , case when sum(bf.w) > 0 then sum(bf.runs)/sum(bf.w) 
         else null end as "Ave"
     , count(inningsid) as "Inn"
-    , sum(bf.w) as "Wickets_j"
+    , sum(bf.w) as "Wickets"
 
 from z_j_Bowling_Figures_All as bf
 inner join matches_j 
@@ -407,8 +407,8 @@ order by "Ave"
 CREATE OR REPLACE VIEW bowling_j_26_ha_ave AS
 select 
     h."Name"
-    , h."Inn" as h_inn, h."Wickets_j" as h_wickets, h."Ave" as h_ave
-    , a."Inn" as a_inn, a."Wickets_j" as a_wickets, a."Ave" as a_ave
+    , h."Inn" as h_inn, h."Wickets" as h_wickets, h."Ave" as h_ave
+    , a."Inn" as a_inn, a."Wickets" as a_wickets, a."Ave" as a_ave
     , a."Ave"-h."Ave" as diff
 from tmp_bowling_26_ha_ave h
 inner join tmp_bowling_26_ha_ave a
@@ -422,30 +422,30 @@ order by abs(h."Ave"-a."Ave") desc
 CREATE OR REPLACE VIEW bowling_j_27_top4_wickets AS
 select 
     to_char(100*sum(case when wickets_j.batting_position < 5 then 1 else 0 end)::float / count(wickets_j.playerid), '99%') 
-     as "Pct of Wickets_j"
+     as "Pct of Wickets"
     , players.player_name as "Name"
-    , count(wickets_j.playerid) as "Total Wickets_j"
-    , sum(case when wickets_j.batting_position < 5 then 1 else 0 end) as "Top 4 Wickets_j"
+    , count(wickets_j.playerid) as "Total Wickets"
+    , sum(case when wickets_j.batting_position < 5 then 1 else 0 end) as "Top 4 Wickets"
 from wickets_j
 inner join players
 on wickets_j.playerid = players.playerid
 group by players.player_name
 having count(wickets_j.playerid) > 15
-order by "Pct of Wickets_j" desc
+order by "Pct of Wickets" desc
 ;
 
 --drop view bowling_j_28_bottom4_wickets;
 CREATE OR REPLACE VIEW bowling_j_28_bottom4_wickets AS
 select 
     to_char(100*sum(case when wickets_j.batting_position > 7 then 1 else 0 end)::float / count(wickets_j.playerid), '99%') 
-     as "Pct of Wickets_j"
+     as "Pct of Wickets"
     , players.player_name as "Name"
-    , count(wickets_j.playerid) as "Total Wickets_j"
-    , sum(case when wickets_j.batting_position > 7 then 1 else 0 end) as "Bottom 4 Wickets_j"
+    , count(wickets_j.playerid) as "Total Wickets"
+    , sum(case when wickets_j.batting_position > 7 then 1 else 0 end) as "Bottom 4 Wickets"
 from wickets_j
 inner join players
 on wickets_j.playerid = players.playerid
 group by players.player_name
 having count(wickets_j.playerid) > 15
-order by "Pct of Wickets_j" desc
+order by "Pct of Wickets" desc
 ;

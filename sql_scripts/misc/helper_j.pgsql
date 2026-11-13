@@ -1,3 +1,4 @@
+DROP VIEW z_j_all_player_dates;
 create or replace view z_j_all_player_dates AS
 SELECT 
     players.surname ||', '|| players.firstname AS "Name"
@@ -135,6 +136,7 @@ GROUP BY Matches_j.Opponent, Innings_j.InningsID, Matches_j.MatchID, Innings_j.I
 HAVING Innings_j.InningsNO in (1,2)
 ORDER BY Sum(Bowling_j.no_balls)+Sum(Bowling_j.Wides)+Sum(Bowling_j.runs_off_bat)+max(Innings_j.Extras) DESC;
 --!!! ran til here
+
 create or replace view z_j_bat_ind_dismissal_types AS
 SELECT 
     players.player_name AS Name
@@ -312,18 +314,18 @@ ORDER BY w DESC, runs;
 -- SELECT 
 --     z_j_Bowling_Figures_All.Figures
 --     , z_j_Bowling_Figures_All.PlayerID
---     , z_j_Bowling_Figures_All.w
+--     , Bowling_j.wickets
 --     , z_j_Bowling_Figures_All.runs
 --     , z_j_Bowling_Figures_All.InningsID
 --     , z_j_Bowling_Figures_All.TBD
 -- FROM z_j_Bowling_Figures_All
--- GROUP BY z_j_Bowling_Figures_All.Figures, z_j_Bowling_Figures_All.PlayerID, z_j_Bowling_Figures_All.w, z_j_Bowling_Figures_All.runs, z_j_Bowling_Figures_All.InningsID, z_j_Bowling_Figures_All.TBD
--- ORDER BY z_j_Bowling_Figures_All.w DESC , z_j_Bowling_Figures_All.runs;
+-- GROUP BY z_j_Bowling_Figures_All.Figures, z_j_Bowling_Figures_All.PlayerID, Bowling_j.wickets, z_j_Bowling_Figures_All.runs, z_j_Bowling_Figures_All.InningsID, z_j_Bowling_Figures_All.TBD
+-- ORDER BY Bowling_j.wickets DESC , z_j_Bowling_Figures_All.runs;
 
 --drop view z_j_Bowling_Career_5WI cascade;
 create or replace view z_j_Bowling_Career_5WI AS
 SELECT 
-    Sum((CASE WHEN z_j_Bowling_Figures_All.w>4 then 1 else 0 end)) AS "5WI"
+    Sum((CASE WHEN Bowling_j.wickets>4 then 1 else 0 end)) AS "5WI"
     , players.player_name AS Name
     , batting_j_01_summary_ind.Mat
     , z_j_Bowling_Figures_All.PlayerID
@@ -349,7 +351,7 @@ select * from (
     SELECT 
         z_j_Bowling_Figures_All.PlayerID
         , z_j_Bowling_Figures_All.Figures
-        , Sum((CASE WHEN z_j_Bowling_Figures_All.w>4 then 1 else 0 end)) over (partition by playerid) AS "5WI"
+        , Sum((CASE WHEN Bowling_j.wickets>4 then 1 else 0 end)) over (partition by playerid) AS "5WI"
         , z_j_Bowling_Figures_All.InningsID
         , row_number() over (partition by playerid order by w desc, runs) as bowling_figures_rank
     FROM z_j_Bowling_Figures_All
@@ -364,7 +366,7 @@ select * from (
         z_j_Bowling_Figures_All.PlayerID
         , z_j_Bowling_Figures_All.seasonid
         , z_j_Bowling_Figures_All.Figures
-        , Sum((CASE WHEN z_j_Bowling_Figures_All.w>4 then 1 else 0 end)) over (partition by playerid) AS "5WI"
+        , Sum((CASE WHEN Bowling_j.wickets>4 then 1 else 0 end)) over (partition by playerid) AS "5WI"
         , z_j_Bowling_Figures_All.InningsID
         , row_number() over (partition by playerid, seasonid order by w desc, runs) as bowling_figures_rank
     FROM z_j_Bowling_Figures_All
@@ -372,7 +374,9 @@ select * from (
 where bowling_figures_rank = 1
 ;
 
+select * from bowling_j limit 100
 
+-- DROP VIEW z_j_bocsa CASCADE;
 create or replace view z_j_bocsa AS
 SELECT 
     Players.player_name AS Name
@@ -383,11 +387,11 @@ SELECT
     , Sum(overs)*6+Sum(bowling_j.extra_balls) AS Balls
     , Sum(Bowling_j.Maidens) AS Mdns
     , Sum(z_j_Bowling_Figures_All.runs) AS "Total Runs"
-    , Sum(z_j_Bowling_Figures_All.w) AS "Total Wickets_j"
-    , CASE WHEN Sum(z_j_Bowling_Figures_All.w)=0 THEN -9 ELSE Sum(z_j_Bowling_Figures_All.runs)/Sum(z_j_Bowling_Figures_All.w) END AS Average
-    , CASE WHEN Sum(z_j_Bowling_Figures_All.w)=0 THEN -9 ELSE (Sum(overs)*6+Sum(bowling_j.extra_balls))/Sum(z_j_Bowling_Figures_All.w) END AS "Strike Rate"
+    , Sum(Bowling_j.wickets) AS "Total Wickets"
+    , CASE WHEN Sum(Bowling_j.wickets)=0 THEN -9 ELSE Sum(z_j_Bowling_Figures_All.runs)/Sum(Bowling_j.wickets) END AS Average
+    , CASE WHEN Sum(Bowling_j.wickets)=0 THEN -9 ELSE (Sum(overs)*6+Sum(bowling_j.extra_balls))/Sum(Bowling_j.wickets) END AS "Strike Rate"
     , 6*(Sum(z_j_Bowling_Figures_All.runs))/(Sum(overs)*6+Sum(bowling_j.extra_balls)) AS RPO
-    , CASE WHEN Sum(z_j_Bowling_Figures_All.w) > 0 then Sum(z_j_Bowling_Figures_All.tbd)/Sum(z_j_Bowling_Figures_All.w) ELSE -9 END AS ABD
+    , CASE WHEN Sum(Bowling_j.wickets) > 0 then Sum(z_j_Bowling_Figures_All.tbd)/Sum(Bowling_j.wickets) ELSE -9 END AS ABD
     , Sum(Bowling_j._4s_against) AS _4s
     , Sum(Bowling_j._6s_against) AS _6s
     , z_j_bbf.Figures
@@ -404,12 +408,11 @@ ON z_j_player_matches_all.PlayerID = Players.PlayerID)
 ON Innings_j.InningsID = Bowling_j.InningsID) 
 ON Matches_j.MatchID = Innings_j.MatchID
 GROUP BY Players.player_name, z_j_player_matches_all.Mat, z_j_bbf.Figures, z_j_bbf."5WI", Players.PlayerID, z_j_Bowling_Figures_All.PlayerID
-ORDER BY Players.player_name, Sum(z_j_Bowling_Figures_All.w) DESC;
+ORDER BY Players.player_name, Sum(Bowling_j.wickets) DESC;
 ;
 
 
-
-
+-- DROP VIEW z_j_bcsa CASCADE;
 create or replace view z_j_bcsa AS
 SELECT 
     z_j_player_matches_all.Name
@@ -418,7 +421,7 @@ SELECT
     , z_j_bocsa.Balls
     , z_j_bocsa.Mdns
     , z_j_bocsa."Total Runs"
-    , z_j_bocsa."Total Wickets_j"
+    , z_j_bocsa."Total Wickets"
     , z_j_bocsa.Average
     , z_j_bocsa."Strike Rate"
     , z_j_bocsa.RPO
@@ -439,6 +442,6 @@ INNER JOIN z_j_player_matches_all
 ON Players.PlayerID = z_j_player_matches_all.PlayerID
 LEFT JOIN z_j_bocsa 
 ON z_j_player_matches_all.Name = z_j_bocsa.Name
-GROUP BY z_j_player_matches_all.Name, z_j_player_matches_all.Mat, z_j_bocsa.O, z_j_bocsa.Balls, z_j_bocsa.Mdns, z_j_bocsa."Total Runs", z_j_bocsa."Total Wickets_j", z_j_bocsa.Average, z_j_bocsa."Strike Rate", z_j_bocsa.RPO, z_j_bocsa.ABD, z_j_bocsa._4s, z_j_bocsa._6s, z_j_bocsa.Figures, z_j_bocsa."5WI", z_j_bocsa."Expensive Over", Players.PlayerID, z_j_player_matches_all.Mat
+GROUP BY z_j_player_matches_all.Name, z_j_player_matches_all.Mat, z_j_bocsa.O, z_j_bocsa.Balls, z_j_bocsa.Mdns, z_j_bocsa."Total Runs", z_j_bocsa."Total Wickets", z_j_bocsa.Average, z_j_bocsa."Strike Rate", z_j_bocsa.RPO, z_j_bocsa.ABD, z_j_bocsa._4s, z_j_bocsa._6s, z_j_bocsa.Figures, z_j_bocsa."5WI", z_j_bocsa."Expensive Over", Players.PlayerID, z_j_player_matches_all.Mat
 ORDER BY Dismissals DESC , catches DESC;
 

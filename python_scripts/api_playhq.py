@@ -351,6 +351,9 @@ def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, ov
         grade_dirname = grade_name.replace('/','')+' - '+team
 
     game_dir = f'data/{mi_season}/{grade_dirname}/Rnd_{mi_round}'
+
+    # same junior test as wrangle_match_data; FOW and captain aren't recorded for juniors
+    is_junior = bool(re.search(r'(Under|Junior|U\d)', grade_name))
     Path(game_dir).mkdir(parents=True, exist_ok=True)
 
     #########################################################################################################################
@@ -418,7 +421,8 @@ def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, ov
             )
             fow.append([fow_str])
         else:
-            print(f'Missing FOW for innings {ii}')
+            if not is_junior:
+                print(f'Missing FOW for innings {ii}')
             fow.append([])
 
         #########################################################################################################################
@@ -513,7 +517,7 @@ def build_match_info(game_summary, grade_name, our_club_regex=OUR_CLUB_REGEX, ov
         'game_dir': game_dir,
     }
 
-    if match_info['captain'] == 'none':
+    if match_info['captain'] == 'none' and not is_junior:
         print('Missing Captain')
     for ii in range(len(match_info['extras'])):
         if match_info['extras'][ii] == {'wd': 0, 'nb': 0, 'lb': 0, 'b': 0, 'p': 0}:
@@ -619,6 +623,8 @@ def fetch_grade_matches(client, grade_id, grade_name, our_club_regex=OUR_CLUB_RE
                 t['id'] for t in game['teams']
                 if re.search(our_club_regex, fixture_teams_by_id[t['id']]['name'])
             ]
+            if not our_team_ids:
+                continue  # not one of our games - nothing to fetch (and no error to report)
             if len(our_team_ids) > 1:
                 for our_team_id in our_team_ids:
                     try:
@@ -685,6 +691,8 @@ def fetch_recent_matches_all_associations(days=14, associations=None, our_club_r
             client = PlayHQClient(association=association)
             print(f"[{association}] organisation_id={client.organisation_id}, tenant={client.tenant}")
             found = fetch_recent_matches(client, days, our_club_regex=our_club_regex, overwrite_md=overwrite_md)
+            for mi in found:
+                print(f"[{association}] {mi['grade']} | Round {mi['round']} | {mi['date_day_1']}")
             print(f"[{association}] fetched {len(found)} match(es)")
             match_infos.extend(found)
         except Exception as e:

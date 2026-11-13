@@ -61,7 +61,7 @@ for row in grades_list_tmp.itertuples(index=False):
 #                                       overwrite_md=False)
 
 
-match_infos = api.fetch_recent_matches_all_associations(days=90)
+match_infos = api.fetch_recent_matches_all_associations(days=7)
 
 
 # seasons = client.get_seasons()
